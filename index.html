@@ -18,23 +18,29 @@
         const basePath = '/dweb-rh';
         const maxImageNumber = 21; // We only have hf-1.jpg through hf-21.jpg
         
-        // Map missing image numbers to existing ones
+        // Map missing image numbers to existing ones and fix extensions
         function getValidImagePath(requestedPath) {
           if (!requestedPath) return null;
           // Extract image number from path like /dweb-rh/assets/images/hf-40.jpg or hf-40.jpg
           const match = requestedPath.match(/hf-(\d+)\.(jpg|webp|png)/i);
           if (match) {
             const requestedNum = parseInt(match[1], 10);
+            const originalExtension = match[2].toLowerCase();
+            
             // Always map to .jpg since we only have .jpg files (except hf-2.webp)
             const validNum = requestedNum > maxImageNumber 
               ? ((requestedNum - 1) % maxImageNumber) + 1 
               : requestedNum;
             
-            // Special case: if validNum is 2, we could use hf-2.webp, but let's use hf-2.jpg for consistency
-            // Change extension to .jpg since we only have .jpg files
-            const fixedPath = requestedPath.replace(/hf-\d+\.(jpg|webp|png)/i, `hf-${validNum}.jpg`);
+            // Always convert to .jpg (we only have .jpg files, not .png or .webp except hf-2.webp)
+            // But we'll use .jpg for consistency
+            let fixedPath = requestedPath.replace(/hf-\d+\.(jpg|webp|png)/i, `hf-${validNum}.jpg`);
+            
+            // If the number changed OR the extension changed, log it
             if (fixedPath !== requestedPath) {
-              console.log('Mapped image:', requestedPath, '->', fixedPath);
+              console.log('Fixed image path:', requestedPath, '->', fixedPath, 
+                (requestedNum > maxImageNumber ? '(number mapped)' : ''), 
+                (originalExtension !== 'jpg' ? '(extension converted)' : ''));
             }
             return fixedPath;
           }
@@ -61,7 +67,7 @@
             fixedPath = basePath + fixedPath;
           }
           
-          // Then fix image number and extension if needed
+          // Always check for image number and extension fixes (even for valid numbers, need to fix .png -> .jpg)
           const validPath = getValidImagePath(fixedPath);
           if (validPath) {
             fixedPath = validPath;
