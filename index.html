@@ -20,7 +20,8 @@
         
         // Map missing image numbers to existing ones
         function getValidImagePath(requestedPath) {
-          // Extract image number from path like /dweb-rh/assets/images/hf-40.jpg
+          if (!requestedPath) return null;
+          // Extract image number from path like /dweb-rh/assets/images/hf-40.jpg or hf-40.jpg
           const match = requestedPath.match(/hf-(\d+)\.(jpg|webp|png)/i);
           if (match) {
             const requestedNum = parseInt(match[1], 10);
@@ -34,6 +35,35 @@
             }
           }
           return null;
+        }
+        
+        // Helper to fix path and image number in one go
+        function fixPathAndImageNumber(path) {
+          if (!path || typeof path !== 'string') return path;
+          
+          // First fix the base path
+          let fixedPath = path;
+          try {
+            const url = new URL(path, window.location.origin);
+            fixedPath = url.pathname;
+          } catch(e) {
+            if (path.startsWith('/')) {
+              fixedPath = path;
+            }
+          }
+          
+          // Fix base path if needed
+          if (fixedPath && fixedPath.startsWith('/assets/') && !fixedPath.startsWith(basePath)) {
+            fixedPath = basePath + fixedPath;
+          }
+          
+          // Then fix image number if needed
+          const validPath = getValidImagePath(fixedPath);
+          if (validPath) {
+            fixedPath = validPath;
+          }
+          
+          return fixedPath;
         }
         
         function fixImageSrc(img) {
@@ -95,15 +125,11 @@
                     path = value;
                   }
                 }
-                if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
-                  const oldValue = value;
-                  value = basePath + path;
-                  console.log('Fixed src setter:', oldValue, '->', value);
-                }
-                // Also check for invalid image numbers
-                const validPath = getValidImagePath(path);
-                if (validPath) {
-                  value = validPath.startsWith('/') ? validPath : basePath + '/' + validPath;
+                // Fix both path and image number
+                const fixedPath = fixPathAndImageNumber(value);
+                if (fixedPath !== value) {
+                  console.log('Fixed src setter:', value, '->', fixedPath);
+                  value = fixedPath;
                 }
               }
               originalSet.call(this, value);
@@ -128,10 +154,11 @@
                   path = value;
                 }
               }
-              if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
-                const oldValue = value;
-                value = basePath + path;
-                console.log('Fixed setAttribute:', name, oldValue, '->', value);
+              // Fix both path and image number
+              const fixedPath = fixPathAndImageNumber(value);
+              if (fixedPath !== value) {
+                console.log('Fixed setAttribute:', name, value, '->', fixedPath);
+                value = fixedPath;
               }
             }
           }
@@ -153,13 +180,12 @@
             console.error('Image failed to load:', src, img);
             
             // Try to map to a valid image
-            const validPath = getValidImagePath(src);
-            if (validPath) {
-              const fullPath = validPath.startsWith('/') ? validPath : '/dweb-rh/' + validPath;
-              img.src = fullPath;
-              if (img.getAttribute('src')) img.setAttribute('src', fullPath);
-              if (img.getAttribute('data-src')) img.setAttribute('data-src', fullPath);
-              console.log('Fixed missing image by mapping to valid image');
+            const fixedPath = fixPathAndImageNumber(src);
+            if (fixedPath && fixedPath !== src) {
+              img.src = fixedPath;
+              if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
+              if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedPath);
+              console.log('Fixed missing image by mapping to valid image:', src, '->', fixedPath);
             } else {
               // Try to fix path one more time
               if (src && src.includes('/assets/')) {
@@ -173,17 +199,12 @@
         function fixImageNumber(img) {
           if (!img) return;
           let src = img.getAttribute('src') || img.getAttribute('data-src') || img.src || '';
-          try {
-            const url = new URL(src, window.location.origin);
-            src = url.pathname;
-          } catch(e) {}
-          
-          const validPath = getValidImagePath(src);
-          if (validPath) {
-            const fullPath = validPath.startsWith('/') ? validPath : '/dweb-rh/' + validPath;
-            img.src = fullPath;
-            if (img.getAttribute('src')) img.setAttribute('src', fullPath);
-            if (img.getAttribute('data-src')) img.setAttribute('data-src', fullPath);
+          const fixedPath = fixPathAndImageNumber(src);
+          if (fixedPath && fixedPath !== src) {
+            img.src = fixedPath;
+            if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
+            if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedPath);
+            console.log('Fixed image number:', src, '->', fixedPath);
             return true;
           }
           return false;
