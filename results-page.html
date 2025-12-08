@@ -70,14 +70,26 @@
       (function() {
         const basePath = '/dweb-rh';
         
+        function fixImageSrc(img) {
+          if (!img) return;
+          let src = img.getAttribute('src') || img.src || '';
+          try {
+            const url = new URL(src, window.location.origin);
+            src = url.pathname;
+          } catch(e) {}
+          
+          if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+            const fixedSrc = basePath + src;
+            img.src = fixedSrc;
+            img.setAttribute('src', fixedSrc);
+            return true;
+          }
+          return false;
+        }
+        
         function fixImagePaths() {
-          const images = document.querySelectorAll('img[src]');
-          images.forEach(img => {
-            const src = img.getAttribute('src');
-            if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
-              img.src = basePath + src;
-            }
-          });
+          const images = document.querySelectorAll('img');
+          images.forEach(fixImageSrc);
         }
         
         const OriginalImage = window.Image;
@@ -96,20 +108,12 @@
           mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
               if (node.nodeType === 1) {
-                if (node.tagName === 'IMG' && node.src) {
-                  const src = node.getAttribute('src') || node.src;
-                  if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
-                    node.src = basePath + src;
-                  }
+                if (node.tagName === 'IMG') {
+                  fixImageSrc(node);
                 }
-                const images = node.querySelectorAll && node.querySelectorAll('img[src]');
+                const images = node.querySelectorAll && node.querySelectorAll('img');
                 if (images) {
-                  images.forEach(img => {
-                    const src = img.getAttribute('src') || img.src;
-                    if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
-                      img.src = basePath + src;
-                    }
-                  });
+                  images.forEach(fixImageSrc);
                 }
               }
             });
@@ -127,21 +131,25 @@
         const attrObserver = new MutationObserver(function(mutations) {
           mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
-              const img = mutation.target;
-              const src = img.getAttribute('src') || img.src;
-              if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
-                img.src = basePath + src;
-              }
+              fixImageSrc(mutation.target);
             }
           });
         });
         
-        document.addEventListener('DOMContentLoaded', function() {
+        function observeAllImages() {
           const allImages = document.querySelectorAll('img');
           allImages.forEach(img => {
             attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+            fixImageSrc(img);
           });
-        });
+        }
+        
+        document.addEventListener('DOMContentLoaded', observeAllImages);
+        setInterval(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 100);
+        setTimeout(fixImagePaths, 500);
+        setTimeout(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 2000);
       })();
       
       <script>
