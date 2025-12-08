@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Boards - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <link rel="stylesheet" crossorigin href="./assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -397,7 +397,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script type="module" crossorigin src="./assets/index-BLL-NyY1.js"></script>
     <script>
       // Fix App-module__app link to home page
       (function() {
@@ -409,14 +409,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/index.html';
-              appLink.setAttribute('href', '/index.html');
+              appLink.href = './index.html';
+              appLink.setAttribute('href', './index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = './index.html';
               });
             }
             return true;
@@ -642,10 +642,10 @@
         
         function replaceSearchIcon() {
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
-          if (searchIconContainer && !searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]')) {
+          if (searchIconContainer && !searchIconContainer.querySelector('img[src="./assets/avatar/avatar.png"]')) {
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.src = './assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
@@ -704,7 +704,7 @@
                 if (e.key === 'Enter' || e.keyCode === 13) {
                   e.preventDefault();
                   const searchQuery = input.value || '';
-                  window.location.href = '/results-page.html?q=' + encodeURIComponent(searchQuery);
+                  window.location.href = './results-page.html?q=' + encodeURIComponent(searchQuery);
                 }
               });
               input.setAttribute('data-enter-handler-added', 'true');
@@ -726,7 +726,7 @@
                   if (isExpanded) {
                     e.preventDefault();
                     const searchQuery = input.value || '';
-                    window.location.href = '/results-page.html?q=' + encodeURIComponent(searchQuery);
+                    window.location.href = './results-page.html?q=' + encodeURIComponent(searchQuery);
                   }
                 }
               });
@@ -760,7 +760,7 @@
       (function() {
         const imageFiles = [];
         for (let i = 1; i <= 21; i++) {
-          imageFiles.push(`/assets/images/hf-${i}.jpg`);
+          imageFiles.push(`./assets/images/hf-${i}.jpg`);
         }
         
         const searchTerms = {
@@ -873,62 +873,62 @@
         <div class="MasonryGrid-module__gridContainer packery-container">
           <div class="board-rep">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-5.jpg" alt="Board image">
+              <img src="./assets/images/hf-5.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-14.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-19.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="./assets/images/hf-14.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="./assets/images/hf-19.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Pink vibes</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-2">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-12.jpg" alt="Board image">
+              <img src="./assets/images/hf-12.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-10.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-9.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="./assets/images/hf-10.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="./assets/images/hf-9.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Freshness</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-3">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-3.jpg" alt="Board image">
+              <img src="./assets/images/hf-3.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-4.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-21.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="./assets/images/hf-4.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="./assets/images/hf-21.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Adventure</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-4">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-13.jpg" alt="Board image">
+              <img src="./assets/images/hf-13.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-12.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-3.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="./assets/images/hf-12.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="./assets/images/hf-3.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Hike</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-5">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-14.jpg" alt="Board image">
+              <img src="./assets/images/hf-14.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-15.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-7.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="./assets/images/hf-15.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="./assets/images/hf-7.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Swimming</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
         </div>
         <div class="profile-preview">
-          <img src="/assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
+          <img src="./assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
           <div class="profile-info-wrapper">
             <div class="profile-name">Peter Som</div>
             <div class="profile-description">Chocolate jelly beans danish chocolate cookie liquorice liqu...</div>

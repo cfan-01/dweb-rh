@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Results - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <link rel="stylesheet" crossorigin href="./assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -64,7 +64,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script type="module" crossorigin src="./assets/index-BLL-NyY1.js"></script>
     <script>
       // Fix App-module__app link to home page
       (function() {
@@ -76,14 +76,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/index.html';
-              appLink.setAttribute('href', '/index.html');
+              appLink.href = './index.html';
+              appLink.setAttribute('href', './index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = './index.html';
               });
             }
             return true;
@@ -162,7 +162,7 @@
                   if (e.key === 'Enter' || e.keyCode === 13) {
                     e.preventDefault();
                     const currentQuery = input.value || '';
-                    window.location.href = '/results-page.html?q=' + encodeURIComponent(currentQuery);
+                    window.location.href = './results-page.html?q=' + encodeURIComponent(currentQuery);
                   }
                 });
                 input.setAttribute('data-enter-handler-added', 'true');
@@ -270,12 +270,12 @@
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (searchIconContainer) {
             // Check if avatar already exists
-            const existingAvatar = searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]');
+            const existingAvatar = searchIconContainer.querySelector('img[src="./assets/avatar/avatar.png"]');
             if (existingAvatar) return true;
             
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.src = './assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
