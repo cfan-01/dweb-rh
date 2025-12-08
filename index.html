@@ -25,6 +25,8 @@
                     img.getAttribute('data-lazy-src') ||
                     img.src || '';
           
+          const originalSrc = src;
+          
           // Remove domain if present to get just the path
           try {
             const url = new URL(src, window.location.origin);
@@ -37,6 +39,7 @@
             }
           }
           
+          // Check if it needs fixing
           if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
             const fixedSrc = basePath + src;
             // Fix all possible attributes
@@ -44,8 +47,15 @@
             if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedSrc);
             if (img.getAttribute('data-lazy-src')) img.setAttribute('data-lazy-src', fixedSrc);
             img.src = fixedSrc;
+            console.log('Fixed image path:', originalSrc, '->', fixedSrc);
             return true;
           }
+          
+          // Log images that might need fixing but don't match our pattern
+          if (src && src.includes('assets') && !src.startsWith(basePath)) {
+            console.warn('Image with assets path not fixed:', src, img);
+          }
+          
           return false;
         }
         
@@ -67,7 +77,9 @@
                   }
                 }
                 if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
+                  const oldValue = value;
                   value = basePath + path;
+                  console.log('Fixed src setter:', oldValue, '->', value);
                 }
               }
               originalSet.call(this, value);
@@ -93,12 +105,27 @@
                 }
               }
               if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
+                const oldValue = value;
                 value = basePath + path;
+                console.log('Fixed setAttribute:', name, oldValue, '->', value);
               }
             }
           }
           return originalSetAttribute.call(this, name, value);
         };
+        
+        // Intercept image error events to see what's failing
+        document.addEventListener('error', function(e) {
+          if (e.target && e.target.tagName === 'IMG') {
+            const img = e.target;
+            const src = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
+            console.error('Image failed to load:', src, img);
+            // Try to fix it one more time
+            if (src && src.includes('/assets/')) {
+              setTimeout(() => fixImageSrc(img), 0);
+            }
+          }
+        }, true);
         
         // Fix images that are already in the DOM
         function fixImagePaths() {
