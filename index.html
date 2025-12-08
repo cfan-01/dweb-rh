@@ -81,6 +81,11 @@
                   value = basePath + path;
                   console.log('Fixed src setter:', oldValue, '->', value);
                 }
+                // Also check for invalid image numbers
+                const validPath = getValidImagePath(path);
+                if (validPath) {
+                  value = validPath.startsWith('/') ? validPath : basePath + '/' + validPath;
+                }
               }
               originalSet.call(this, value);
             },
@@ -114,23 +119,82 @@
           return originalSetAttribute.call(this, name, value);
         };
         
-        // Intercept image error events to see what's failing
+        // Intercept image error events and map missing images to existing ones
+        const maxImageNumber = 21; // We only have hf-1.jpg through hf-21.jpg
+        function getValidImagePath(requestedPath) {
+          // Extract image number from path like /dweb-rh/assets/images/hf-40.jpg
+          const match = requestedPath.match(/hf-(\d+)\.(jpg|webp|png)/i);
+          if (match) {
+            const requestedNum = parseInt(match[1], 10);
+            if (requestedNum > maxImageNumber) {
+              // Map to a valid image number (use modulo to cycle through available images)
+              const validNum = ((requestedNum - 1) % maxImageNumber) + 1;
+              const extension = match[2];
+              const fixedPath = requestedPath.replace(/hf-\d+\.(jpg|webp|png)/i, `hf-${validNum}.${extension}`);
+              console.log('Mapped missing image:', requestedPath, '->', fixedPath);
+              return fixedPath;
+            }
+          }
+          return null;
+        }
+        
         document.addEventListener('error', function(e) {
           if (e.target && e.target.tagName === 'IMG') {
             const img = e.target;
-            const src = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
+            let src = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
+            
+            // Remove domain to get just path
+            try {
+              const url = new URL(src, window.location.origin);
+              src = url.pathname;
+            } catch(e) {}
+            
             console.error('Image failed to load:', src, img);
-            // Try to fix it one more time
-            if (src && src.includes('/assets/')) {
-              setTimeout(() => fixImageSrc(img), 0);
+            
+            // Try to map to a valid image
+            const validPath = getValidImagePath(src);
+            if (validPath) {
+              const fullPath = validPath.startsWith('/') ? validPath : '/dweb-rh/' + validPath;
+              img.src = fullPath;
+              if (img.getAttribute('src')) img.setAttribute('src', fullPath);
+              if (img.getAttribute('data-src')) img.setAttribute('data-src', fullPath);
+              console.log('Fixed missing image by mapping to valid image');
+            } else {
+              // Try to fix path one more time
+              if (src && src.includes('/assets/')) {
+                setTimeout(() => fixImageSrc(img), 0);
+              }
             }
           }
         }, true);
         
+        // Also proactively fix images that request numbers > 21
+        function fixImageNumber(img) {
+          if (!img) return;
+          let src = img.getAttribute('src') || img.getAttribute('data-src') || img.src || '';
+          try {
+            const url = new URL(src, window.location.origin);
+            src = url.pathname;
+          } catch(e) {}
+          
+          const validPath = getValidImagePath(src);
+          if (validPath) {
+            const fullPath = validPath.startsWith('/') ? validPath : '/dweb-rh/' + validPath;
+            img.src = fullPath;
+            if (img.getAttribute('src')) img.setAttribute('src', fullPath);
+            if (img.getAttribute('data-src')) img.setAttribute('data-src', fullPath);
+            return true;
+          }
+          return false;
+        }
+        
         // Fix images that are already in the DOM
         function fixImagePaths() {
           const images = document.querySelectorAll('img');
-          images.forEach(fixImageSrc);
+          images.forEach(img => {
+            fixImageSrc(img);
+            fixImageNumber(img); // Also check for invalid image numbers
+          });
         }
         
         // Override Image constructor to fix dynamically created images
