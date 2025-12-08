@@ -190,7 +190,16 @@
             console.error('Image failed to load:', src, img);
             
             // Try to map to a valid image
-            const fixedPath = fixPathAndImageNumber(src);
+            let fixedPath = fixPathAndImageNumber(src);
+            
+            // If it's still hf-2.jpg or hf-10.jpg and failed, try a different image
+            if (fixedPath && (fixedPath.includes('/hf-2.jpg') || fixedPath.includes('/hf-10.jpg'))) {
+              // Try using a random valid image instead
+              const randomNum = Math.floor(Math.random() * maxImageNumber) + 1;
+              fixedPath = fixedPath.replace(/hf-\d+\.jpg/i, `hf-${randomNum}.jpg`);
+              console.log('Retrying with random image:', src, '->', fixedPath);
+            }
+            
             if (fixedPath && fixedPath !== src) {
               img.src = fixedPath;
               if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
