@@ -19,34 +19,40 @@
         
         function fixImageSrc(img) {
           if (!img) return;
-          // Check both attribute and property
-          let src = img.getAttribute('src') || img.src || '';
+          // Check src, data-src, and other lazy loading attributes
+          let src = img.getAttribute('src') || 
+                    img.getAttribute('data-src') || 
+                    img.getAttribute('data-lazy-src') ||
+                    img.src || '';
+          
           // Remove domain if present to get just the path
           try {
             const url = new URL(src, window.location.origin);
             src = url.pathname;
           } catch(e) {
             // Not a full URL, use as is
+            if (src && !src.startsWith('/') && !src.startsWith('http')) {
+              // Relative path, skip
+              return false;
+            }
           }
           
           if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
             const fixedSrc = basePath + src;
-            // Use Object.defineProperty to bypass our own setter temporarily
-            const descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
-            if (descriptor && descriptor.set) {
-              descriptor.set.call(img, fixedSrc);
-            } else {
-              img.src = fixedSrc;
-            }
-            img.setAttribute('src', fixedSrc);
+            // Fix all possible attributes
+            if (img.getAttribute('src')) img.setAttribute('src', fixedSrc);
+            if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedSrc);
+            if (img.getAttribute('data-lazy-src')) img.setAttribute('data-lazy-src', fixedSrc);
+            img.src = fixedSrc;
             return true;
           }
           return false;
         }
         
-        // Override src property setter on HTMLImageElement prototype
+        // Override src property setter on HTMLImageElement prototype - more aggressive
         const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
         if (originalSrcDescriptor && originalSrcDescriptor.set) {
+          const originalSet = originalSrcDescriptor.set;
           Object.defineProperty(HTMLImageElement.prototype, 'src', {
             set: function(value) {
               if (value && typeof value === 'string') {
@@ -55,19 +61,44 @@
                   const url = new URL(value, window.location.origin);
                   path = url.pathname;
                 } catch(e) {
-                  // Not a full URL
+                  // Not a full URL, check if it's a relative path
+                  if (value.startsWith('/')) {
+                    path = value;
+                  }
                 }
-                if (path.startsWith('/assets/') && !path.startsWith(basePath)) {
+                if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
                   value = basePath + path;
                 }
               }
-              originalSrcDescriptor.set.call(this, value);
+              originalSet.call(this, value);
             },
             get: originalSrcDescriptor.get,
             configurable: true,
             enumerable: true
           });
         }
+        
+        // Also override data-src and other lazy loading attributes
+        const originalSetAttribute = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function(name, value) {
+          if (this.tagName === 'IMG' && (name === 'src' || name === 'data-src' || name === 'data-lazy-src')) {
+            if (value && typeof value === 'string') {
+              let path = value;
+              try {
+                const url = new URL(value, window.location.origin);
+                path = url.pathname;
+              } catch(e) {
+                if (value.startsWith('/')) {
+                  path = value;
+                }
+              }
+              if (path && path.startsWith('/assets/') && !path.startsWith(basePath)) {
+                value = basePath + path;
+              }
+            }
+          }
+          return originalSetAttribute.call(this, name, value);
+        };
         
         // Fix images that are already in the DOM
         function fixImagePaths() {
@@ -88,18 +119,27 @@
           return img;
         };
         
-        // Watch for new images being added
+        // Watch for new images being added - more aggressive
         const observer = new MutationObserver(function(mutations) {
           mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
               if (node.nodeType === 1) { // Element node
                 if (node.tagName === 'IMG') {
                   fixImageSrc(node);
+                  // Also check for data-src that might be converted later
+                  setTimeout(() => fixImageSrc(node), 0);
+                  setTimeout(() => fixImageSrc(node), 50);
+                  setTimeout(() => fixImageSrc(node), 100);
                 }
                 // Check child images
                 const images = node.querySelectorAll && node.querySelectorAll('img');
                 if (images) {
-                  images.forEach(fixImageSrc);
+                  images.forEach(img => {
+                    fixImageSrc(img);
+                    setTimeout(() => fixImageSrc(img), 0);
+                    setTimeout(() => fixImageSrc(img), 50);
+                    setTimeout(() => fixImageSrc(img), 100);
+                  });
                 }
               }
             });
@@ -117,20 +157,25 @@
           attributeFilter: ['src']
         });
         
-        // Also fix images on attribute changes
+        // Also fix images on attribute changes - watch for src, data-src, etc.
         const attrObserver = new MutationObserver(function(mutations) {
           mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+            const attrName = mutation.attributeName;
+            if (mutation.type === 'attributes' && 
+                (attrName === 'src' || attrName === 'data-src' || attrName === 'data-lazy-src')) {
               fixImageSrc(mutation.target);
             }
           });
         });
         
-        // Watch for src attribute changes on all images
+        // Watch for src attribute changes on all images - including data-src
         function observeAllImages() {
           const allImages = document.querySelectorAll('img');
           allImages.forEach(img => {
-            attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+            attrObserver.observe(img, { 
+              attributes: true, 
+              attributeFilter: ['src', 'data-src', 'data-lazy-src'] 
+            });
             fixImageSrc(img);
           });
         }
