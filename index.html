@@ -214,8 +214,20 @@
         function fixImagePaths() {
           const images = document.querySelectorAll('img');
           images.forEach(img => {
+            // Try multiple times with different approaches
             fixImageSrc(img);
-            fixImageNumber(img); // Also check for invalid image numbers
+            fixImageNumber(img);
+            
+            // Also check current src and fix if needed
+            const currentSrc = img.src || img.getAttribute('src') || img.getAttribute('data-src');
+            if (currentSrc) {
+              const fixed = fixPathAndImageNumber(currentSrc);
+              if (fixed && fixed !== currentSrc) {
+                img.src = fixed;
+                if (img.getAttribute('src')) img.setAttribute('src', fixed);
+                if (img.getAttribute('data-src')) img.setAttribute('data-src', fixed);
+              }
+            }
           });
         }
         
@@ -298,32 +310,63 @@
         // Periodic check to catch images that might be missed (more frequent)
         setInterval(function() {
           fixImagePaths();
-        }, 500);
+        }, 300);
         
         // Also check after delays to catch React-rendered images
+        setTimeout(fixImagePaths, 50);
         setTimeout(fixImagePaths, 100);
+        setTimeout(fixImagePaths, 200);
         setTimeout(fixImagePaths, 300);
         setTimeout(fixImagePaths, 500);
+        setTimeout(fixImagePaths, 750);
         setTimeout(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 1500);
         setTimeout(fixImagePaths, 2000);
         setTimeout(fixImagePaths, 3000);
+        setTimeout(fixImagePaths, 4000);
+        setTimeout(fixImagePaths, 5000);
         
-        // Watch for scroll events (lazy loading)
+        // Watch for scroll events (lazy loading) - more aggressive
         let scrollTimeout;
         window.addEventListener('scroll', function() {
           clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(fixImagePaths, 100);
+          // Fix immediately and also after a short delay
+          fixImagePaths();
+          scrollTimeout = setTimeout(fixImagePaths, 50);
+          setTimeout(fixImagePaths, 150);
+          setTimeout(fixImagePaths, 300);
+        }, { passive: true });
+        
+        // Also watch for resize events (might trigger lazy loading)
+        window.addEventListener('resize', function() {
+          setTimeout(fixImagePaths, 100);
         }, { passive: true });
         
         // Watch for intersection observer (common for lazy loading)
         const originalIntersectionObserver = window.IntersectionObserver;
         window.IntersectionObserver = function(callback, options) {
           const wrappedCallback = function(entries, observer) {
-            // Fix images before callback runs
+            // Fix images before and after callback runs
+            fixImagePaths();
             setTimeout(fixImagePaths, 0);
-            return callback(entries, observer);
+            setTimeout(fixImagePaths, 50);
+            setTimeout(fixImagePaths, 100);
+            const result = callback(entries, observer);
+            setTimeout(fixImagePaths, 0);
+            return result;
           };
           return new originalIntersectionObserver(wrappedCallback, options);
+        };
+        
+        // Also intercept requestAnimationFrame (React might use this)
+        const originalRAF = window.requestAnimationFrame;
+        window.requestAnimationFrame = function(callback) {
+          return originalRAF(function(time) {
+            const result = callback(time);
+            // Check images after animation frame
+            setTimeout(fixImagePaths, 0);
+            return result;
+          });
         };
       })();
       
