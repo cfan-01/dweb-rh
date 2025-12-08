@@ -31,11 +31,42 @@
           
           if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
             const fixedSrc = basePath + src;
-            img.src = fixedSrc;
+            // Use Object.defineProperty to bypass our own setter temporarily
+            const descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+            if (descriptor && descriptor.set) {
+              descriptor.set.call(img, fixedSrc);
+            } else {
+              img.src = fixedSrc;
+            }
             img.setAttribute('src', fixedSrc);
             return true;
           }
           return false;
+        }
+        
+        // Override src property setter on HTMLImageElement prototype
+        const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+        if (originalSrcDescriptor && originalSrcDescriptor.set) {
+          Object.defineProperty(HTMLImageElement.prototype, 'src', {
+            set: function(value) {
+              if (value && typeof value === 'string') {
+                let path = value;
+                try {
+                  const url = new URL(value, window.location.origin);
+                  path = url.pathname;
+                } catch(e) {
+                  // Not a full URL
+                }
+                if (path.startsWith('/assets/') && !path.startsWith(basePath)) {
+                  value = basePath + path;
+                }
+              }
+              originalSrcDescriptor.set.call(this, value);
+            },
+            get: originalSrcDescriptor.get,
+            configurable: true,
+            enumerable: true
+          });
         }
         
         // Fix images that are already in the DOM
@@ -53,20 +84,6 @@
             if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
               img.src = basePath + src;
             }
-          }
-          // Also watch for src changes after creation
-          const originalSetter = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src') || 
-                                 Object.getOwnPropertyDescriptor(Image.prototype, 'src');
-          if (originalSetter && originalSetter.set) {
-            Object.defineProperty(img, 'src', {
-              set: function(value) {
-                if (value && value.startsWith('/assets/') && !value.startsWith(basePath)) {
-                  value = basePath + value;
-                }
-                originalSetter.set.call(this, value);
-              },
-              get: originalSetter.get
-            });
           }
           return img;
         };
@@ -120,16 +137,36 @@
         
         document.addEventListener('DOMContentLoaded', observeAllImages);
         
-        // Periodic check to catch images that might be missed
+        // Periodic check to catch images that might be missed (more frequent)
         setInterval(function() {
           fixImagePaths();
-        }, 1000);
+        }, 500);
         
-        // Also check after a delay to catch React-rendered images
+        // Also check after delays to catch React-rendered images
         setTimeout(fixImagePaths, 100);
+        setTimeout(fixImagePaths, 300);
         setTimeout(fixImagePaths, 500);
         setTimeout(fixImagePaths, 1000);
         setTimeout(fixImagePaths, 2000);
+        setTimeout(fixImagePaths, 3000);
+        
+        // Watch for scroll events (lazy loading)
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(fixImagePaths, 100);
+        }, { passive: true });
+        
+        // Watch for intersection observer (common for lazy loading)
+        const originalIntersectionObserver = window.IntersectionObserver;
+        window.IntersectionObserver = function(callback, options) {
+          const wrappedCallback = function(entries, observer) {
+            // Fix images before callback runs
+            setTimeout(fixImagePaths, 0);
+            return callback(entries, observer);
+          };
+          return new originalIntersectionObserver(wrappedCallback, options);
+        };
       })();
       
       // Make boards icon clickable - wait for React app to render
