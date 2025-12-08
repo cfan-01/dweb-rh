@@ -13,6 +13,93 @@
   <body>
     <div id="root"></div>
     <script>
+      // Fix image paths for GitHub Pages
+      (function() {
+        const basePath = '/dweb-rh';
+        
+        // Fix images that are already in the DOM
+        function fixImagePaths() {
+          const images = document.querySelectorAll('img[src]');
+          images.forEach(img => {
+            const src = img.getAttribute('src');
+            if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          });
+        }
+        
+        // Override Image constructor to fix dynamically created images
+        const OriginalImage = window.Image;
+        window.Image = function(...args) {
+          const img = new OriginalImage(...args);
+          if (args.length > 0 && typeof args[0] === 'string') {
+            const src = args[0];
+            if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          }
+          return img;
+        };
+        
+        // Watch for new images being added
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) { // Element node
+                if (node.tagName === 'IMG' && node.src) {
+                  const src = node.getAttribute('src') || node.src;
+                  if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                    node.src = basePath + src;
+                  }
+                }
+                // Check child images
+                const images = node.querySelectorAll && node.querySelectorAll('img[src]');
+                if (images) {
+                  images.forEach(img => {
+                    const src = img.getAttribute('src') || img.src;
+                    if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                      img.src = basePath + src;
+                    }
+                  });
+                }
+              }
+            });
+          });
+        });
+        
+        // Fix existing images
+        fixImagePaths();
+        
+        // Watch for new images
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src']
+        });
+        
+        // Also fix images on attribute changes
+        const attrObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+              const img = mutation.target;
+              const src = img.getAttribute('src') || img.src;
+              if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                img.src = basePath + src;
+              }
+            }
+          });
+        });
+        
+        // Watch for src attribute changes on all images
+        document.addEventListener('DOMContentLoaded', function() {
+          const allImages = document.querySelectorAll('img');
+          allImages.forEach(img => {
+            attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+          });
+        });
+      })();
+      
       // Make boards icon clickable - wait for React app to render
       (function() {
         let boardsIcon = null;

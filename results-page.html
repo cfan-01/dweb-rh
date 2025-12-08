@@ -66,6 +66,85 @@
     <div id="root"></div>
     <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
+      // Fix image paths for GitHub Pages
+      (function() {
+        const basePath = '/dweb-rh';
+        
+        function fixImagePaths() {
+          const images = document.querySelectorAll('img[src]');
+          images.forEach(img => {
+            const src = img.getAttribute('src');
+            if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          });
+        }
+        
+        const OriginalImage = window.Image;
+        window.Image = function(...args) {
+          const img = new OriginalImage(...args);
+          if (args.length > 0 && typeof args[0] === 'string') {
+            const src = args[0];
+            if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          }
+          return img;
+        };
+        
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) {
+                if (node.tagName === 'IMG' && node.src) {
+                  const src = node.getAttribute('src') || node.src;
+                  if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                    node.src = basePath + src;
+                  }
+                }
+                const images = node.querySelectorAll && node.querySelectorAll('img[src]');
+                if (images) {
+                  images.forEach(img => {
+                    const src = img.getAttribute('src') || img.src;
+                    if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                      img.src = basePath + src;
+                    }
+                  });
+                }
+              }
+            });
+          });
+        });
+        
+        fixImagePaths();
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src']
+        });
+        
+        const attrObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+              const img = mutation.target;
+              const src = img.getAttribute('src') || img.src;
+              if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+                img.src = basePath + src;
+              }
+            }
+          });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+          const allImages = document.querySelectorAll('img');
+          allImages.forEach(img => {
+            attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+          });
+        });
+      })();
+      
+    <script>
       // Fix App-module__app link to home page
       (function() {
         let attempts = 0;
