@@ -1,0 +1,114 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Pinterest</title>
+      <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      // Make boards icon clickable - wait for React app to render
+      (function() {
+        let boardsIcon = null;
+        let attempts = 0;
+        const maxAttempts = 50; // Try for 5 seconds
+        
+        function findBoardsIcon() {
+          // Look for nav element
+          const nav = document.querySelector('[class*="GlobalNav"]') || 
+                     document.querySelector('nav') ||
+                     document.querySelector('[class*="globalNav"]');
+          
+          if (!nav) return null;
+          
+          // Get all clickable elements in nav
+          const clickables = nav.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+          
+          for (let el of clickables) {
+            // Check text content
+            const text = (el.textContent || el.innerText || '').trim();
+            const ariaLabel = (el.getAttribute('aria-label') || '').toLowerCase();
+            const title = (el.getAttribute('title') || '').toLowerCase();
+            
+            // Check if this is the boards icon
+            if (text === 'Boards' || ariaLabel.includes('boards') || title.includes('boards')) {
+              return el;
+            }
+            
+            // Check parent element
+            const parent = el.parentElement;
+            if (parent) {
+              const parentText = (parent.textContent || parent.innerText || '').trim();
+              if (parentText === 'Boards') {
+                return parent;
+              }
+            }
+          }
+          
+          // Alternative: look for icon by position (4th icon in leading section)
+          const leading = nav.querySelector('[class*="leading"]') || nav.querySelector('[class*="Leading"]');
+          if (leading) {
+            const icons = leading.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+            // Boards is typically the 4th icon (index 3: Pinterest, Home, Explore, Boards)
+            if (icons.length >= 4) {
+              return icons[3];
+            }
+          }
+          
+          return null;
+        }
+        
+        function attachClickHandler() {
+          if (boardsIcon) return; // Already attached
+          
+          boardsIcon = findBoardsIcon();
+          
+          if (boardsIcon) {
+            boardsIcon.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/boards.html';
+              return false;
+            });
+            boardsIcon.style.cursor = 'pointer';
+            console.log('Boards icon click handler attached');
+            return true;
+          }
+          
+          return false;
+        }
+        
+        // Try immediately
+        if (!attachClickHandler()) {
+          // Use MutationObserver to watch for DOM changes
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (attachClickHandler() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Also try on intervals as fallback
+          const interval = setInterval(function() {
+            attempts++;
+            if (attachClickHandler() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+    </script>
+  </body>
+</html>
+  

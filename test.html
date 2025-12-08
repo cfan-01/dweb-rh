@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test - Check if assets load</title>
+</head>
+<body>
+    <h1>Asset Test</h1>
+    <p>If you see images below, assets are loading correctly:</p>
+    <img src="/assets/images/hf-1.jpg" alt="Test 1" style="max-width:200px;">
+    <img src="/assets/images/hf-2.webp" alt="Test 2" style="max-width:200px;">
+    <p>JS file size: <span id="js-size"></span></p>
+    <script>
+        fetch('/assets/index-BLL-NyY1.js')
+            .then(r => r.blob())
+            .then(b => document.getElementById('js-size').textContent = (b.size/1024).toFixed(0) + ' KB');
+    </script>
+</body>
+</html>

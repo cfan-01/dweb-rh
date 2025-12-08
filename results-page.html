@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Results - Pinterest</title>
+    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--color-background);
+        font-family: var(--font-family-pin-sans);
+        display: flex;
+        min-height: 100vh;
+      }
+      .app-container {
+        display: flex;
+        width: 100%;
+        min-height: 100vh;
+      }
+      .App-module__main {
+        display: none !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__closeup[data-closeup-context-visible="true"] .SearchBar-module__searchIconContainer {
+        width: 48px !important;
+        height: 48px !important;
+        transform: scale(1) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      .SearchBar-module__searchInput {
+        margin-left: 12px !important;
+        pointer-events: auto !important;
+        user-select: auto !important;
+        cursor: text !important;
+      }
+      .SearchBar-module__searchInput[readonly],
+      .SearchBar-module__searchInput[disabled] {
+        pointer-events: auto !important;
+        user-select: auto !important;
+        cursor: text !important;
+      }
+      .IconButton-module__iconButton[aria-current="page"],
+      .IconButton-module__iconButton[aria-selected="true"],
+      .IconButton-module__iconButton.active,
+      .IconButton-module__iconButton[data-active="true"] {
+        background-color: #000000 !important;
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+      }
+      .IconButton-module__iconButton[aria-current="page"] svg,
+      .IconButton-module__iconButton[aria-current="page"] svg path,
+      .IconButton-module__iconButton[aria-selected="true"] svg,
+      .IconButton-module__iconButton[aria-selected="true"] svg path,
+      .IconButton-module__iconButton.active svg,
+      .IconButton-module__iconButton.active svg path,
+      .IconButton-module__iconButton[data-active="true"] svg,
+      .IconButton-module__iconButton[data-active="true"] svg path {
+        fill: #ffffff !important;
+        color: #ffffff !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script>
+      // Fix App-module__app link to home page
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        function fixAppLink() {
+          const appLink = document.querySelector('.App-module__app');
+          if (appLink) {
+            // If it's already an anchor tag, set href
+            if (appLink.tagName === 'A') {
+              appLink.href = '/index.html';
+              appLink.setAttribute('href', '/index.html');
+            } else {
+              // If it's a button or div, make it clickable
+              appLink.style.cursor = 'pointer';
+              appLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/index.html';
+              });
+            }
+            return true;
+          }
+          return false;
+        }
+        
+        if (!fixAppLink()) {
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (fixAppLink() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          const interval = setInterval(function() {
+            attempts++;
+            if (fixAppLink() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
+      // Persist expanded search bar with typed text and closeup state
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('q') || '';
+        let searchBar = null;
+        let input = null;
+        let isInitialized = false;
+        
+        function maintainSearchBarState() {
+          searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (searchBar) {
+            // Always maintain expanded state
+            if (!searchBar.classList.contains('SearchBar-module__expanded')) {
+              searchBar.classList.add('SearchBar-module__expanded');
+            }
+            
+            // Maintain closeup state if there's a query
+            if (searchQuery) {
+              if (!searchBar.classList.contains('SearchBar-module__closeup')) {
+                searchBar.classList.add('SearchBar-module__closeup');
+              }
+              if (searchBar.getAttribute('data-closeup-context-visible') !== 'true') {
+                searchBar.setAttribute('data-closeup-context-visible', 'true');
+              }
+            }
+            
+            // Set input value
+            input = searchBar.querySelector('input');
+            if (input) {
+              if (input.value !== searchQuery) {
+                input.value = searchQuery;
+              }
+              
+              // Ensure input is editable - remove all restrictions
+              input.readOnly = false;
+              input.removeAttribute('readonly');
+              input.removeAttribute('disabled');
+              input.disabled = false;
+              input.style.pointerEvents = 'auto';
+              input.style.userSelect = 'auto';
+              input.style.cursor = 'text';
+              input.setAttribute('contenteditable', 'true');
+              
+              // Add margin-left for spacing from avatar
+              input.style.marginLeft = '12px';
+              
+              // Add Enter key handler
+              if (!input.hasAttribute('data-enter-handler-added')) {
+                input.addEventListener('keydown', function(e) {
+                  if (e.key === 'Enter' || e.keyCode === 13) {
+                    e.preventDefault();
+                    const currentQuery = input.value || '';
+                    window.location.href = '/results-page.html?q=' + encodeURIComponent(currentQuery);
+                  }
+                });
+                input.setAttribute('data-enter-handler-added', 'true');
+              }
+              
+              // Update closeup state when input changes
+              if (!input.hasAttribute('data-input-handler-added')) {
+                input.addEventListener('input', function() {
+                  if (input.value) {
+                    if (!searchBar.classList.contains('SearchBar-module__closeup')) {
+                      searchBar.classList.add('SearchBar-module__closeup');
+                    }
+                    searchBar.setAttribute('data-closeup-context-visible', 'true');
+                  } else {
+                    if (searchBar.classList.contains('SearchBar-module__closeup')) {
+                      searchBar.classList.remove('SearchBar-module__closeup');
+                    }
+                    searchBar.removeAttribute('data-closeup-context-visible');
+                  }
+                });
+                input.setAttribute('data-input-handler-added', 'true');
+              }
+              
+              if (!isInitialized) {
+                input.focus();
+                isInitialized = true;
+              }
+            }
+          }
+        }
+        
+        // Continuously maintain state to override React's changes
+        function startMaintainingState() {
+          maintainSearchBarState();
+          
+          // Watch for class/attribute changes and re-apply
+          const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+              if (mutation.type === 'attributes' && mutation.target === searchBar) {
+                if (mutation.attributeName === 'class') {
+                  maintainSearchBarState();
+                } else if (mutation.attributeName === 'data-closeup-context-visible') {
+                  maintainSearchBarState();
+                }
+              }
+            });
+            maintainSearchBarState();
+          });
+          
+          // Observe the search bar for changes
+          if (searchBar) {
+            observer.observe(searchBar, {
+              attributes: true,
+              attributeFilter: ['class', 'data-closeup-context-visible'],
+              childList: true,
+              subtree: true
+            });
+          }
+          
+          // Also observe body for when search bar is added/removed
+          const bodyObserver = new MutationObserver(function() {
+            maintainSearchBarState();
+          });
+          bodyObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Continuously check and maintain state
+          setInterval(function() {
+            maintainSearchBarState();
+            // Also ensure input remains editable
+            const input = searchBar ? searchBar.querySelector('input') : null;
+            if (input) {
+              input.readOnly = false;
+              input.removeAttribute('readonly');
+              input.removeAttribute('disabled');
+              input.disabled = false;
+              input.style.pointerEvents = 'auto';
+              input.style.userSelect = 'auto';
+              input.style.cursor = 'text';
+              input.style.marginLeft = '12px';
+            }
+          }, 100);
+        }
+        
+        // Wait for React to render, then start maintaining state
+        let attempts = 0;
+        const maxAttempts = 100;
+        const checkInterval = setInterval(function() {
+          attempts++;
+          if (document.querySelector('.SearchBar-module__searchBar') || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            startMaintainingState();
+          }
+        }, 100);
+      })();
+      
+      // Replace SearchBar-module__searchIconContainer with boards-avatar copy (same as boards.html)
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function replaceSearchIcon() {
+          const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
+          if (searchIconContainer) {
+            // Check if avatar already exists
+            const existingAvatar = searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]');
+            if (existingAvatar) return true;
+            
+            // Create avatar image matching boards-avatar styling
+            const avatarImg = document.createElement('img');
+            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.alt = 'Avatar';
+            avatarImg.style.width = '48px';
+            avatarImg.style.height = '48px';
+            avatarImg.style.minWidth = '48px';
+            avatarImg.style.maxWidth = '48px';
+            avatarImg.style.borderRadius = '50%';
+            avatarImg.style.objectFit = 'cover';
+            avatarImg.style.display = 'block';
+            avatarImg.style.visibility = 'visible';
+            avatarImg.style.opacity = '1';
+            avatarImg.style.flexShrink = '0';
+            
+            // Replace the container's content with the avatar
+            searchIconContainer.innerHTML = '';
+            searchIconContainer.appendChild(avatarImg);
+            
+            // Ensure container maintains proper sizing and visibility (override closeup state)
+            searchIconContainer.style.width = '48px';
+            searchIconContainer.style.height = '48px';
+            searchIconContainer.style.minWidth = '48px';
+            searchIconContainer.style.maxWidth = '48px';
+            searchIconContainer.style.display = 'flex';
+            searchIconContainer.style.alignItems = 'center';
+            searchIconContainer.style.justifyContent = 'center';
+            searchIconContainer.style.visibility = 'visible';
+            searchIconContainer.style.opacity = '1';
+            searchIconContainer.style.overflow = 'visible';
+            searchIconContainer.style.transform = 'scale(1)';
+            return true;
+          }
+          return false;
+        }
+        
+        // Continuously check and replace to override React's changes
+        function startReplacing() {
+          replaceSearchIcon();
+          
+          const observer = new MutationObserver(function() {
+            replaceSearchIcon();
+          });
+          observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+          
+          setInterval(replaceSearchIcon, 100);
+        }
+        
+        if (!replaceSearchIcon()) {
+          const checkInterval = setInterval(function() {
+            attempts++;
+            if (replaceSearchIcon() || attempts >= maxAttempts) {
+              clearInterval(checkInterval);
+              startReplacing();
+            }
+          }, 100);
+        } else {
+          startReplacing();
+        }
+      })();
+    </script>
+    <div class="app-container">
+    </div>
+  </body>
+</html>
+
