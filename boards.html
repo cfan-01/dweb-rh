@@ -31,11 +31,24 @@
         /* Ensure content doesn't exceed container width */
         max-width: 100%;
         box-sizing: border-box;
+        /* Force strict vertical scrolling */
+        direction: ltr;
       }
       /* Ensure all child elements respect container width */
       .boards-main > * {
         max-width: 100%;
         box-sizing: border-box;
+      }
+      /* Prevent any horizontal transforms or shifts */
+      body, html {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+      /* Ensure app-container doesn't cause horizontal overflow */
+      .app-container {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
       }
       /* Ensure SearchBar transforms don't cause layout shifts */
       .SearchBar-module__searchBar,
