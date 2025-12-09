@@ -866,10 +866,10 @@
           }
           
           if (isHidden) {
-            hStack.style.transform = 'translateY(0) !important';
-            hStack.style.opacity = '1 !important';
-            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out !important';
-            hStack.style.pointerEvents = 'auto !important';
+            hStack.style.setProperty('transform', 'translateY(0)', 'important');
+            hStack.style.setProperty('opacity', '1', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'auto', 'important');
             isHidden = false;
             console.log('SearchBar shown');
           }
@@ -884,10 +884,10 @@
           
           if (!isHidden) {
             // Move down (reverse of reveal animation)
-            hStack.style.transform = 'translateY(100%) !important';
-            hStack.style.opacity = '0 !important';
-            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out !important';
-            hStack.style.pointerEvents = 'none !important';
+            hStack.style.setProperty('transform', 'translateY(100%)', 'important');
+            hStack.style.setProperty('opacity', '0', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'none', 'important');
             isHidden = true;
             console.log('SearchBar hidden');
           }
@@ -908,6 +908,7 @@
           }
           
           const currentScrollTop = boardsMain.scrollTop;
+          console.log('Scroll event:', { currentScrollTop, lastScrollTop, isHidden });
           
           // Clear scroll stop timeout
           clearTimeout(scrollStopTimeout);
@@ -917,10 +918,12 @@
           scrollTimeout = setTimeout(() => {
             // Scroll down - hide
             if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              console.log('Scrolling down, hiding SearchBar');
               hideSearchBar();
             }
             // Scroll up - show
             else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              console.log('Scrolling up or at top, showing SearchBar');
               showSearchBar();
             }
             
@@ -928,6 +931,7 @@
             
             // Show after 3 seconds of no scrolling
             scrollStopTimeout = setTimeout(() => {
+              console.log('3 seconds of no scrolling, showing SearchBar');
               showSearchBar();
             }, 3000);
           }, 10);
@@ -943,7 +947,15 @@
             boardsMain.addEventListener('scroll', handleScroll, { passive: true });
             isInitialized = true;
             console.log('Scroll listener initialized, initial scrollTop:', lastScrollTop);
+            console.log('SearchBar element found:', hStack);
+            console.log('SearchBar current styles:', {
+              transform: window.getComputedStyle(hStack).transform,
+              opacity: window.getComputedStyle(hStack).opacity
+            });
             return true;
+          } else {
+            if (!boardsMain) console.log('boards-main not found yet');
+            if (!hStack) console.log('SearchBar not found yet');
           }
           return false;
         }
