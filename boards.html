@@ -843,6 +843,50 @@
         setInterval(fixGlobalNavAvatar, 1000);
       })();
       
+      // Hide SearchBar on scroll down (same as home page)
+      (function() {
+        let lastScrollY = window.scrollY || window.pageYOffset;
+        let isHidden = false;
+        
+        function handleScroll() {
+          const currentScrollY = window.scrollY || window.pageYOffset;
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          
+          if (!hStack) return;
+          
+          // Scroll down - hide
+          if (currentScrollY > lastScrollY && currentScrollY > 50) {
+            if (!isHidden) {
+              hStack.style.transform = 'translateY(-100%)';
+              hStack.style.opacity = '0';
+              hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+              hStack.style.pointerEvents = 'none';
+              isHidden = true;
+            }
+          }
+          // Scroll up - show
+          else if (currentScrollY < lastScrollY || currentScrollY <= 50) {
+            if (isHidden) {
+              hStack.style.transform = 'translateY(0)';
+              hStack.style.opacity = '1';
+              hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+              hStack.style.pointerEvents = 'auto';
+              isHidden = false;
+            }
+          }
+          
+          lastScrollY = currentScrollY;
+        }
+        
+        // Listen to scroll on the boards-main container (since that's what scrolls)
+        const boardsMain = document.querySelector('.boards-main');
+        if (boardsMain) {
+          boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+        }
+        // Also listen to window scroll as fallback
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      })();
+      
       // Navigate to results-page.html on Enter key in search bar
       (function() {
         let attempts = 0;
