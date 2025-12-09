@@ -849,39 +849,63 @@
         let isHidden = false;
         let scrollTimeout;
         let scrollStopTimeout;
+        let isInitialized = false;
+        
+        function getSearchBar() {
+          // Try multiple selectors to find the SearchBar
+          return document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]') ||
+                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack');
+        }
         
         function showSearchBar() {
-          const hStack = document.querySelector('.SearchBar-module__hStack');
-          if (!hStack) return;
+          const hStack = getSearchBar();
+          if (!hStack) {
+            console.log('SearchBar not found for show');
+            return;
+          }
           
           if (isHidden) {
-            hStack.style.transform = 'translateY(0)';
-            hStack.style.opacity = '1';
-            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-            hStack.style.pointerEvents = 'auto';
+            hStack.style.transform = 'translateY(0) !important';
+            hStack.style.opacity = '1 !important';
+            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out !important';
+            hStack.style.pointerEvents = 'auto !important';
             isHidden = false;
+            console.log('SearchBar shown');
           }
         }
         
         function hideSearchBar() {
-          const hStack = document.querySelector('.SearchBar-module__hStack');
-          if (!hStack) return;
+          const hStack = getSearchBar();
+          if (!hStack) {
+            console.log('SearchBar not found for hide');
+            return;
+          }
           
           if (!isHidden) {
             // Move down (reverse of reveal animation)
-            hStack.style.transform = 'translateY(100%)';
-            hStack.style.opacity = '0';
-            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-            hStack.style.pointerEvents = 'none';
+            hStack.style.transform = 'translateY(100%) !important';
+            hStack.style.opacity = '0 !important';
+            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out !important';
+            hStack.style.pointerEvents = 'none !important';
             isHidden = true;
+            console.log('SearchBar hidden');
           }
         }
         
         function handleScroll() {
           const boardsMain = document.querySelector('.boards-main');
-          const hStack = document.querySelector('.SearchBar-module__hStack');
+          const hStack = getSearchBar();
           
-          if (!boardsMain || !hStack) return;
+          if (!boardsMain) {
+            console.log('boards-main not found');
+            return;
+          }
+          
+          if (!hStack) {
+            console.log('SearchBar not found in scroll handler');
+            return;
+          }
           
           const currentScrollTop = boardsMain.scrollTop;
           
@@ -909,12 +933,16 @@
           }, 10);
         }
         
-        // Wait for boards-main to be available
+        // Wait for boards-main and SearchBar to be available
         function initScrollListener() {
           const boardsMain = document.querySelector('.boards-main');
-          if (boardsMain) {
+          const hStack = getSearchBar();
+          
+          if (boardsMain && hStack && !isInitialized) {
             lastScrollTop = boardsMain.scrollTop;
             boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+            isInitialized = true;
+            console.log('Scroll listener initialized, initial scrollTop:', lastScrollTop);
             return true;
           }
           return false;
@@ -931,13 +959,43 @@
           observer.observe(document.body, { childList: true, subtree: true });
           
           // Also try on intervals as fallback
+          let attempts = 0;
+          const maxAttempts = 100;
           const interval = setInterval(function() {
-            if (initScrollListener()) {
+            attempts++;
+            if (initScrollListener() || attempts >= maxAttempts) {
               clearInterval(interval);
               observer.disconnect();
             }
           }, 100);
         }
+        
+        // Also monitor for React re-renders that might reset styles
+        const styleObserver = new MutationObserver(function() {
+          const hStack = getSearchBar();
+          if (hStack && isInitialized) {
+            // Re-apply hidden state if needed
+            if (isHidden) {
+              const currentTransform = window.getComputedStyle(hStack).transform;
+              if (currentTransform === 'none' || currentTransform === 'matrix(1, 0, 0, 1, 0, 0)') {
+                hideSearchBar();
+              }
+            }
+          }
+        });
+        
+        // Start monitoring after a delay to let React render
+        setTimeout(() => {
+          const hStack = getSearchBar();
+          if (hStack) {
+            styleObserver.observe(hStack, { 
+              attributes: true, 
+              attributeFilter: ['style', 'class'],
+              childList: false,
+              subtree: false
+            });
+          }
+        }, 1000);
       })();
       
       // Navigate to results-page.html on Enter key in search bar
