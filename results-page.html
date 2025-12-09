@@ -515,11 +515,21 @@
           const globalNav = document.querySelector('.GlobalNav-module__globalNav');
           const imageResult = document.querySelector('.image-result');
           
-          if (globalNav && imageResult) {
-            const globalNavHeight = globalNav.offsetHeight || globalNav.getBoundingClientRect().height;
-            const topPosition = globalNavHeight + 16; // 16px below GlobalNav
-            imageResult.style.top = topPosition + 'px';
+          if (!imageResult) {
+            console.log('image-result not found');
+            return;
           }
+          
+          if (!globalNav) {
+            console.log('GlobalNav not found, positioning at 16px from top');
+            imageResult.style.top = '16px';
+            return;
+          }
+          
+          const globalNavHeight = globalNav.offsetHeight || globalNav.getBoundingClientRect().height;
+          const topPosition = globalNavHeight + 16; // 16px below GlobalNav
+          imageResult.style.top = topPosition + 'px';
+          console.log('Positioned image-result at top:', topPosition, 'px (GlobalNav height:', globalNavHeight, 'px)');
         }
         
         // Try immediately
@@ -529,6 +539,7 @@
         setTimeout(positionImageResult, 100);
         setTimeout(positionImageResult, 500);
         setTimeout(positionImageResult, 1000);
+        setTimeout(positionImageResult, 2000);
         
         // Watch for GlobalNav changes
         const observer = new MutationObserver(function() {
