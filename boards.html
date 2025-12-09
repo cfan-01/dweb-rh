@@ -26,6 +26,12 @@
         overflow-x: hidden;
         position: relative;
       }
+      /* Ensure SearchBar transforms don't cause layout shifts */
+      .SearchBar-module__searchBar,
+      .SearchBar-module__hStack {
+        transform-origin: center top !important;
+        will-change: transform, opacity !important;
+      }
       .boards-title {
         position: absolute;
         top: 28px;
@@ -868,10 +874,13 @@
           }
           
           if (isHidden) {
-            hStack.style.setProperty('transform', 'translateY(0)', 'important');
+            // Ensure transform only affects Y axis and doesn't shift layout
+            hStack.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
             hStack.style.setProperty('opacity', '1', 'important');
             hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
             hStack.style.setProperty('pointer-events', 'auto', 'important');
+            hStack.style.setProperty('transform-origin', 'center top', 'important');
+            hStack.style.setProperty('will-change', 'transform, opacity', 'important');
             isHidden = false;
             console.log('SearchBar shown');
           }
@@ -885,11 +894,13 @@
           }
           
           if (!isHidden) {
-            // Move down (reverse of reveal animation)
-            hStack.style.setProperty('transform', 'translateY(100%)', 'important');
+            // Move down (reverse of reveal animation) - use translate3d to ensure only Y movement
+            hStack.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
             hStack.style.setProperty('opacity', '0', 'important');
             hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
             hStack.style.setProperty('pointer-events', 'none', 'important');
+            hStack.style.setProperty('transform-origin', 'center top', 'important');
+            hStack.style.setProperty('will-change', 'transform, opacity', 'important');
             isHidden = true;
             console.log('SearchBar hidden');
           }
