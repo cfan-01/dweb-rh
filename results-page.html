@@ -200,7 +200,28 @@
       // Persist expanded search bar with typed text and closeup state
       (function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const searchQuery = urlParams.get('q') || '';
+        // Get query from URL first, then fall back to sessionStorage
+        let searchQuery = urlParams.get('q') || '';
+        try {
+          const savedQuery = sessionStorage.getItem('searchQuery');
+          if (savedQuery && savedQuery.trim()) {
+            searchQuery = savedQuery;
+          }
+        } catch(e) {
+          console.log('Could not read search state from sessionStorage:', e);
+        }
+        
+        // Get expanded state from sessionStorage
+        let shouldBeExpanded = true; // Default to expanded
+        try {
+          const savedExpanded = sessionStorage.getItem('searchBarExpanded');
+          if (savedExpanded !== null) {
+            shouldBeExpanded = savedExpanded === 'true';
+          }
+        } catch(e) {
+          console.log('Could not read expanded state from sessionStorage:', e);
+        }
+        
         let searchBar = null;
         let input = null;
         let isInitialized = false;
