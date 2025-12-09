@@ -843,11 +843,39 @@
         setInterval(fixGlobalNavAvatar, 1000);
       })();
       
-      // Hide SearchBar on scroll down (same as home page)
+      // Hide SearchBar on scroll down (same as home page reveal animation)
       (function() {
         let lastScrollTop = 0;
         let isHidden = false;
         let scrollTimeout;
+        let scrollStopTimeout;
+        
+        function showSearchBar() {
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          if (!hStack) return;
+          
+          if (isHidden) {
+            hStack.style.transform = 'translateY(0)';
+            hStack.style.opacity = '1';
+            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+            hStack.style.pointerEvents = 'auto';
+            isHidden = false;
+          }
+        }
+        
+        function hideSearchBar() {
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          if (!hStack) return;
+          
+          if (!isHidden) {
+            // Move down (reverse of reveal animation)
+            hStack.style.transform = 'translateY(100%)';
+            hStack.style.opacity = '0';
+            hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+            hStack.style.pointerEvents = 'none';
+            isHidden = true;
+          }
+        }
         
         function handleScroll() {
           const boardsMain = document.querySelector('.boards-main');
@@ -857,31 +885,27 @@
           
           const currentScrollTop = boardsMain.scrollTop;
           
+          // Clear scroll stop timeout
+          clearTimeout(scrollStopTimeout);
+          
           // Clear timeout to debounce
           clearTimeout(scrollTimeout);
           scrollTimeout = setTimeout(() => {
             // Scroll down - hide
             if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
-              if (!isHidden) {
-                hStack.style.transform = 'translateY(-100%)';
-                hStack.style.opacity = '0';
-                hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-                hStack.style.pointerEvents = 'none';
-                isHidden = true;
-              }
+              hideSearchBar();
             }
             // Scroll up - show
             else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
-              if (isHidden) {
-                hStack.style.transform = 'translateY(0)';
-                hStack.style.opacity = '1';
-                hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-                hStack.style.pointerEvents = 'auto';
-                isHidden = false;
-              }
+              showSearchBar();
             }
             
             lastScrollTop = currentScrollTop;
+            
+            // Show after 3 seconds of no scrolling
+            scrollStopTimeout = setTimeout(() => {
+              showSearchBar();
+            }, 3000);
           }, 10);
         }
         
