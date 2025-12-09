@@ -901,13 +901,14 @@
           }
           
           if (isHidden) {
-            // Ensure transform only affects Y axis and doesn't shift layout
-            hStack.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
+            // Remove transform completely to restore original positioning
+            hStack.style.removeProperty('transform');
             hStack.style.setProperty('opacity', '1', 'important');
             hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
             hStack.style.setProperty('pointer-events', 'auto', 'important');
-            hStack.style.setProperty('transform-origin', 'center top', 'important');
-            hStack.style.setProperty('will-change', 'transform, opacity', 'important');
+            // Don't override transform-origin, let it use original CSS
+            hStack.style.removeProperty('transform-origin');
+            hStack.style.removeProperty('will-change');
             isHidden = false;
             console.log('SearchBar shown');
           }
@@ -921,13 +922,32 @@
           }
           
           if (!isHidden) {
+            // Get the current transform to preserve any existing transforms
+            const currentTransform = window.getComputedStyle(hStack).transform;
+            let baseTransform = '';
+            
+            // If there's an existing transform, we need to combine it
+            if (currentTransform && currentTransform !== 'none' && currentTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+              // Extract the matrix values to preserve X translation
+              const matrixMatch = currentTransform.match(/matrix\(([^)]+)\)/);
+              if (matrixMatch) {
+                const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
+                // values[4] is translateX, values[5] is translateY
+                // We want to preserve translateX but change translateY
+                baseTransform = `translate3d(${values[4] || 0}px, 100%, 0)`;
+              } else {
+                baseTransform = 'translate3d(0, 100%, 0)';
+              }
+            } else {
+              // No existing transform, just move down
+              baseTransform = 'translate3d(0, 100%, 0)';
+            }
+            
             // Move down (reverse of reveal animation) - use translate3d to ensure only Y movement
-            hStack.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
+            hStack.style.setProperty('transform', baseTransform, 'important');
             hStack.style.setProperty('opacity', '0', 'important');
             hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
             hStack.style.setProperty('pointer-events', 'none', 'important');
-            hStack.style.setProperty('transform-origin', 'center top', 'important');
-            hStack.style.setProperty('will-change', 'transform, opacity', 'important');
             isHidden = true;
             console.log('SearchBar hidden');
           }
