@@ -229,6 +229,11 @@
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           if (searchBar) {
+            console.log('maintainSearchBarState: SearchBar found, applying state', {
+              searchQuery: searchQuery,
+              shouldBeExpanded: shouldBeExpanded,
+              hasExpandedClass: searchBar.classList.contains('SearchBar-module__expanded')
+            });
             // Maintain expanded state from sessionStorage
             if (shouldBeExpanded) {
               if (!searchBar.classList.contains('SearchBar-module__expanded')) {
@@ -367,24 +372,35 @@
           }, 100);
         }
         
+        // Log the persisted state immediately for debugging
+        console.log('Restoring SearchBar state:', {
+          searchQuery: searchQuery,
+          shouldBeExpanded: shouldBeExpanded,
+          savedQuery: sessionStorage.getItem('searchQuery'),
+          savedExpanded: sessionStorage.getItem('searchBarExpanded')
+        });
+        
         // Wait for React to render, then start maintaining state
         let attempts = 0;
-        const maxAttempts = 100;
+        const maxAttempts = 200; // Increased attempts
         const checkInterval = setInterval(function() {
           attempts++;
           const searchBar = document.querySelector('.SearchBar-module__searchBar');
           if (searchBar || attempts >= maxAttempts) {
             clearInterval(checkInterval);
-            // Log the persisted state for debugging
-            console.log('Restoring SearchBar state:', {
-              searchQuery: searchQuery,
-              shouldBeExpanded: shouldBeExpanded,
-              savedQuery: sessionStorage.getItem('searchQuery'),
-              savedExpanded: sessionStorage.getItem('searchBarExpanded')
-            });
+            console.log('Starting to maintain SearchBar state, attempts:', attempts, 'found:', !!searchBar);
             startMaintainingState();
           }
         }, 100);
+        
+        // Also try immediately
+        setTimeout(function() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (searchBar) {
+            console.log('SearchBar found immediately, starting state maintenance');
+            startMaintainingState();
+          }
+        }, 0);
       })();
       
       // Replace SearchBar-module__searchIconContainer with boards-avatar copy (same as boards.html)
