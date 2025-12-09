@@ -845,46 +845,75 @@
       
       // Hide SearchBar on scroll down (same as home page)
       (function() {
-        let lastScrollY = window.scrollY || window.pageYOffset;
+        let lastScrollTop = 0;
         let isHidden = false;
+        let scrollTimeout;
         
         function handleScroll() {
-          const currentScrollY = window.scrollY || window.pageYOffset;
+          const boardsMain = document.querySelector('.boards-main');
           const hStack = document.querySelector('.SearchBar-module__hStack');
           
-          if (!hStack) return;
+          if (!boardsMain || !hStack) return;
           
-          // Scroll down - hide
-          if (currentScrollY > lastScrollY && currentScrollY > 50) {
-            if (!isHidden) {
-              hStack.style.transform = 'translateY(-100%)';
-              hStack.style.opacity = '0';
-              hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-              hStack.style.pointerEvents = 'none';
-              isHidden = true;
-            }
-          }
-          // Scroll up - show
-          else if (currentScrollY < lastScrollY || currentScrollY <= 50) {
-            if (isHidden) {
-              hStack.style.transform = 'translateY(0)';
-              hStack.style.opacity = '1';
-              hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-              hStack.style.pointerEvents = 'auto';
-              isHidden = false;
-            }
-          }
+          const currentScrollTop = boardsMain.scrollTop;
           
-          lastScrollY = currentScrollY;
+          // Clear timeout to debounce
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            // Scroll down - hide
+            if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              if (!isHidden) {
+                hStack.style.transform = 'translateY(-100%)';
+                hStack.style.opacity = '0';
+                hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                hStack.style.pointerEvents = 'none';
+                isHidden = true;
+              }
+            }
+            // Scroll up - show
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              if (isHidden) {
+                hStack.style.transform = 'translateY(0)';
+                hStack.style.opacity = '1';
+                hStack.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                hStack.style.pointerEvents = 'auto';
+                isHidden = false;
+              }
+            }
+            
+            lastScrollTop = currentScrollTop;
+          }, 10);
         }
         
-        // Listen to scroll on the boards-main container (since that's what scrolls)
-        const boardsMain = document.querySelector('.boards-main');
-        if (boardsMain) {
-          boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+        // Wait for boards-main to be available
+        function initScrollListener() {
+          const boardsMain = document.querySelector('.boards-main');
+          if (boardsMain) {
+            lastScrollTop = boardsMain.scrollTop;
+            boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+            return true;
+          }
+          return false;
         }
-        // Also listen to window scroll as fallback
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // Try immediately
+        if (!initScrollListener()) {
+          // Use MutationObserver to wait for DOM
+          const observer = new MutationObserver(function() {
+            if (initScrollListener()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          // Also try on intervals as fallback
+          const interval = setInterval(function() {
+            if (initScrollListener()) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
       })();
       
       // Navigate to results-page.html on Enter key in search bar
