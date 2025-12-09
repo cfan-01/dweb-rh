@@ -199,6 +199,8 @@
       
       // Persist expanded search bar with typed text and closeup state
       (function() {
+        console.log('SearchBar persistence script started');
+        
         const urlParams = new URLSearchParams(window.location.search);
         // Get query from URL first, then fall back to sessionStorage
         let searchQuery = urlParams.get('q') || '';
@@ -221,6 +223,14 @@
         } catch(e) {
           console.log('Could not read expanded state from sessionStorage:', e);
         }
+        
+        // Log the persisted state immediately for debugging
+        console.log('Restoring SearchBar state:', {
+          searchQuery: searchQuery,
+          shouldBeExpanded: shouldBeExpanded,
+          savedQuery: sessionStorage.getItem('searchQuery'),
+          savedExpanded: sessionStorage.getItem('searchBarExpanded')
+        });
         
         let searchBar = null;
         let input = null;
@@ -371,14 +381,6 @@
             }
           }, 100);
         }
-        
-        // Log the persisted state immediately for debugging
-        console.log('Restoring SearchBar state:', {
-          searchQuery: searchQuery,
-          shouldBeExpanded: shouldBeExpanded,
-          savedQuery: sessionStorage.getItem('searchQuery'),
-          savedExpanded: sessionStorage.getItem('searchBarExpanded')
-        });
         
         // Wait for React to render, then start maintaining state
         let attempts = 0;
