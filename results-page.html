@@ -253,9 +253,13 @@
             // Set input value
             input = searchBar.querySelector('input');
             if (input) {
+              // Always set the value from sessionStorage/URL, even if it's the same
+              // This ensures it persists even if React resets it
               if (input.value !== searchQuery) {
                 input.value = searchQuery;
               }
+              // Force set the value attribute as well
+              input.setAttribute('value', searchQuery);
               
               // Ensure input is editable - remove all restrictions
               input.readOnly = false;
@@ -368,8 +372,16 @@
         const maxAttempts = 100;
         const checkInterval = setInterval(function() {
           attempts++;
-          if (document.querySelector('.SearchBar-module__searchBar') || attempts >= maxAttempts) {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (searchBar || attempts >= maxAttempts) {
             clearInterval(checkInterval);
+            // Log the persisted state for debugging
+            console.log('Restoring SearchBar state:', {
+              searchQuery: searchQuery,
+              shouldBeExpanded: shouldBeExpanded,
+              savedQuery: sessionStorage.getItem('searchQuery'),
+              savedExpanded: sessionStorage.getItem('searchBarExpanded')
+            });
             startMaintainingState();
           }
         }, 100);

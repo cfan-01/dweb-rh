@@ -1120,6 +1120,7 @@
           try {
             sessionStorage.setItem('searchQuery', searchQuery);
             sessionStorage.setItem('searchBarExpanded', isExpanded ? 'true' : 'false');
+            console.log('Saved search state:', { searchQuery, isExpanded });
           } catch(e) {
             console.log('Could not save search state:', e);
           }
