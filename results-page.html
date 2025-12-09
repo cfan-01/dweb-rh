@@ -18,6 +18,35 @@
         display: flex;
         width: 100%;
         min-height: 100vh;
+        position: relative;
+      }
+      /* Image result styling */
+      .image-result {
+        position: absolute;
+        left: 0;
+        width: 270px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+      .image-result img {
+        width: 270px;
+        height: 403px;
+        object-fit: cover;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .image-result-title {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 20px;
+        color: #000000;
+        max-height: 60px; /* 3 lines max: 20px * 3 */
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        word-wrap: break-word;
       }
       .App-module__main {
         display: none !important;
@@ -476,8 +505,43 @@
           startReplacing();
         }
       })();
+      
+      // Position image result 16px below GlobalNav
+      (function() {
+        function positionImageResult() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          const imageResult = document.querySelector('.image-result');
+          
+          if (globalNav && imageResult) {
+            const globalNavHeight = globalNav.offsetHeight || globalNav.getBoundingClientRect().height;
+            const topPosition = globalNavHeight + 16; // 16px below GlobalNav
+            imageResult.style.top = topPosition + 'px';
+          }
+        }
+        
+        // Try immediately
+        positionImageResult();
+        
+        // Also try after a delay to wait for React to render
+        setTimeout(positionImageResult, 100);
+        setTimeout(positionImageResult, 500);
+        setTimeout(positionImageResult, 1000);
+        
+        // Watch for GlobalNav changes
+        const observer = new MutationObserver(function() {
+          positionImageResult();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Also check on resize
+        window.addEventListener('resize', positionImageResult);
+      })();
     </script>
     <div class="app-container">
+      <div class="image-result">
+        <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin image">
+        <div class="image-result-title">Pin title</div>
+      </div>
     </div>
   </body>
 </html>
