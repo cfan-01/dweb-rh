@@ -853,9 +853,11 @@
         
         function getSearchBar() {
           // Try multiple selectors to find the SearchBar
-          return document.querySelector('.SearchBar-module__hStack') ||
+          return document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('.SearchBar-module__hStack') ||
                  document.querySelector('[class*="SearchBar"][class*="hStack"]') ||
-                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack');
+                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar-module__searchBar"]');
         }
         
         function showSearchBar() {
@@ -893,22 +895,28 @@
           }
         }
         
-        function handleScroll() {
+        function handleScroll(e) {
           const boardsMain = document.querySelector('.boards-main');
           const hStack = getSearchBar();
-          
-          if (!boardsMain) {
-            console.log('boards-main not found');
-            return;
-          }
           
           if (!hStack) {
             console.log('SearchBar not found in scroll handler');
             return;
           }
           
-          const currentScrollTop = boardsMain.scrollTop;
-          console.log('Scroll event:', { currentScrollTop, lastScrollTop, isHidden });
+          // Get scroll position from multiple sources
+          const boardsScrollTop = boardsMain ? boardsMain.scrollTop : 0;
+          const windowScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollTop = boardsScrollTop || windowScrollY;
+          
+          console.log('Scroll event fired:', { 
+            currentScrollTop, 
+            lastScrollTop, 
+            isHidden,
+            boardsScrollTop,
+            windowScrollY,
+            eventTarget: e ? e.target : 'unknown'
+          });
           
           // Clear scroll stop timeout
           clearTimeout(scrollStopTimeout);
@@ -942,20 +950,54 @@
           const boardsMain = document.querySelector('.boards-main');
           const hStack = getSearchBar();
           
-          if (boardsMain && hStack && !isInitialized) {
-            lastScrollTop = boardsMain.scrollTop;
+          if (!boardsMain) {
+            console.log('boards-main not found yet');
+            return false;
+          }
+          
+          if (!hStack) {
+            console.log('SearchBar not found yet');
+            return false;
+          }
+          
+          if (!isInitialized) {
+            // Check what's actually scrolling
+            console.log('boards-main scrollHeight:', boardsMain.scrollHeight, 'clientHeight:', boardsMain.clientHeight);
+            console.log('boards-main overflow:', window.getComputedStyle(boardsMain).overflowY);
+            
+            // Try to find the actual scrolling container
+            let scrollContainer = boardsMain;
+            const body = document.body;
+            const html = document.documentElement;
+            
+            // Check if body/html is scrolling instead
+            if (body.scrollHeight > body.clientHeight || html.scrollHeight > html.clientHeight) {
+              console.log('Body or HTML might be scrolling instead');
+            }
+            
+            lastScrollTop = boardsMain.scrollTop || window.scrollY || window.pageYOffset || 0;
+            
+            // Add scroll listener to boards-main
             boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+            
+            // Also add to window as fallback
+            window.addEventListener('scroll', function() {
+              const scrollY = window.scrollY || window.pageYOffset;
+              console.log('Window scroll event:', scrollY);
+              // Use window scroll if boards-main isn't scrolling
+              if (boardsMain.scrollTop === 0 && scrollY > 0) {
+                handleScroll();
+              }
+            }, { passive: true });
+            
             isInitialized = true;
             console.log('Scroll listener initialized, initial scrollTop:', lastScrollTop);
-            console.log('SearchBar element found:', hStack);
+            console.log('SearchBar element found:', hStack, hStack.className);
             console.log('SearchBar current styles:', {
               transform: window.getComputedStyle(hStack).transform,
               opacity: window.getComputedStyle(hStack).opacity
             });
             return true;
-          } else {
-            if (!boardsMain) console.log('boards-main not found yet');
-            if (!hStack) console.log('SearchBar not found yet');
           }
           return false;
         }
