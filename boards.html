@@ -162,6 +162,14 @@
         background-color: #F6F6F3;
         border-color: #85857F;
       }
+      /* Sticky profile header */
+      .profile-header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        z-index: 100;
+        width: 100%;
+      }
       .MasonryGrid-module__gridContainer {
         margin-left: 32px;
         margin-right: 0;
@@ -998,21 +1006,32 @@
     </script>
     <div class="app-container">
       <main class="boards-main">
-        <h1 class="boards-title">Your saved ideas</h1>
-        <div class="boards-tabs">
-          <button class="boards-tab active" data-tab="pins">Pins</button>
-          <button class="boards-tab" data-tab="boards">Boards</button>
-          <button class="boards-tab" data-tab="collages">Collages</button>
-        </div>
-        <div class="filter-controls">
-          <div class="filter-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 16.2499C6.695 16.2499 6.04167 15.5966 6.04167 14.7916C6.04167 13.9866 6.695 13.3333 7.5 13.3333C8.305 13.3333 8.95833 13.9866 8.95833 14.7916C8.95833 15.5966 8.305 16.2499 7.5 16.2499ZM18.5417 13.3333H11.6075C11.0042 11.6383 9.4025 10.4166 7.5 10.4166C5.5975 10.4166 3.99583 11.6383 3.3925 13.3333H1.45833C0.653333 13.3333 0 13.9866 0 14.7916C0 15.5966 0.653333 16.2499 1.45833 16.2499H3.3925C3.99583 17.9449 5.5975 19.1666 7.5 19.1666C9.4025 19.1666 11.0042 17.9449 11.6075 16.2499H18.5417C19.3467 16.2499 20 15.5966 20 14.7916C20 13.9866 19.3467 13.3333 18.5417 13.3333ZM12.5 3.74992C13.305 3.74992 13.9583 4.40325 13.9583 5.20825C13.9583 6.01325 13.305 6.66658 12.5 6.66658C11.695 6.66658 11.0417 6.01325 11.0417 5.20825C11.0417 4.40325 11.695 3.74992 12.5 3.74992ZM1.45833 6.66658H8.3925C8.99583 8.36158 10.5975 9.58325 12.5 9.58325C14.4025 9.58325 16.0042 8.36158 16.6075 6.66658H18.5417C19.3467 6.66658 20 6.01325 20 5.20825C20 4.40325 19.3467 3.74992 18.5417 3.74992H16.6075C16.0042 2.05492 14.4025 0.833252 12.5 0.833252C10.5975 0.833252 8.99583 2.05492 8.3925 3.74992H1.45833C0.653333 3.74992 0 4.40325 0 5.20825C0 6.01325 0.653333 6.66658 1.45833 6.66658Z" fill="#111111"/>
-            </svg>
+        <div class="profile-header">
+          <h1 class="boards-title">Your saved ideas</h1>
+          <div class="boards-tabs">
+            <button class="boards-tab active" data-tab="pins">Pins</button>
+            <button class="boards-tab" data-tab="boards">Boards</button>
+            <button class="boards-tab" data-tab="collages">Collages</button>
           </div>
-          <button class="group-button">Group</button>
-          <button class="secret-button">Secret</button>
-          <button class="archived-button">Archived</button>
+          <div class="filter-controls">
+            <div class="filter-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 16.2499C6.695 16.2499 6.04167 15.5966 6.04167 14.7916C6.04167 13.9866 6.695 13.3333 7.5 13.3333C8.305 13.3333 8.95833 13.9866 8.95833 14.7916C8.95833 15.5966 8.305 16.2499 7.5 16.2499ZM18.5417 13.3333H11.6075C11.0042 11.6383 9.4025 10.4166 7.5 10.4166C5.5975 10.4166 3.99583 11.6383 3.3925 13.3333H1.45833C0.653333 13.3333 0 13.9866 0 14.7916C0 15.5966 0.653333 16.2499 1.45833 16.2499H3.3925C3.99583 17.9449 5.5975 19.1666 7.5 19.1666C9.4025 19.1666 11.0042 17.9449 11.6075 16.2499H18.5417C19.3467 16.2499 20 15.5966 20 14.7916C20 13.9866 19.3467 13.3333 18.5417 13.3333ZM12.5 3.74992C13.305 3.74992 13.9583 4.40325 13.9583 5.20825C13.9583 6.01325 13.305 6.66658 12.5 6.66658C11.695 6.66658 11.0417 6.01325 11.0417 5.20825C11.0417 4.40325 11.695 3.74992 12.5 3.74992ZM1.45833 6.66658H8.3925C8.99583 8.36158 10.5975 9.58325 12.5 9.58325C14.4025 9.58325 16.0042 8.36158 16.6075 6.66658H18.5417C19.3467 6.66658 20 6.01325 20 5.20825C20 4.40325 19.3467 3.74992 18.5417 3.74992H16.6075C16.0042 2.05492 14.4025 0.833252 12.5 0.833252C10.5975 0.833252 8.99583 2.05492 8.3925 3.74992H1.45833C0.653333 3.74992 0 4.40325 0 5.20825C0 6.01325 0.653333 6.66658 1.45833 6.66658Z" fill="#111111"/>
+              </svg>
+            </div>
+            <button class="group-button">Group</button>
+            <button class="secret-button">Secret</button>
+            <button class="archived-button">Archived</button>
+          </div>
+          <div class="profile-preview">
+            <img src="/dweb-rh/assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
+            <div class="profile-info-wrapper">
+              <div class="profile-name">Peter Som</div>
+              <div class="profile-description">Chocolate jelly beans danish chocolate cookie liquorice liqu...</div>
+              <div class="profile-stats">177 followers · 16k following</div>
+            </div>
+            <button class="view-profile-button">View profile</button>
+          </div>
         </div>
         <div class="MasonryGrid-module__gridContainer packery-container">
           <div class="board-rep">
@@ -1180,15 +1199,6 @@
             <div class="board-title">Haus</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
-        </div>
-        <div class="profile-preview">
-          <img src="/dweb-rh/assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
-          <div class="profile-info-wrapper">
-            <div class="profile-name">Peter Som</div>
-            <div class="profile-description">Chocolate jelly beans danish chocolate cookie liquorice liqu...</div>
-            <div class="profile-stats">177 followers · 16k following</div>
-          </div>
-          <button class="view-profile-button">View profile</button>
         </div>
       </main>
     </div>
