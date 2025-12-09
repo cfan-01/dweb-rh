@@ -25,6 +25,17 @@
         overflow-y: auto;
         overflow-x: hidden;
         position: relative;
+        /* Prevent horizontal scrolling and diagonal movement */
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        /* Ensure content doesn't exceed container width */
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      /* Ensure all child elements respect container width */
+      .boards-main > * {
+        max-width: 100%;
+        box-sizing: border-box;
       }
       /* Ensure SearchBar transforms don't cause layout shifts */
       .SearchBar-module__searchBar,
