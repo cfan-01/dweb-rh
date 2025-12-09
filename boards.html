@@ -776,6 +776,64 @@
         }
       })();
       
+      // Fix avatar image in GlobalNav AvatarButton
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function fixGlobalNavAvatar() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          if (!globalNav) return false;
+          
+          const avatarButton = globalNav.querySelector('.AvatarButton-module__avatarButton');
+          if (!avatarButton) return false;
+          
+          // Find the image inside the avatar button
+          let avatarImg = avatarButton.querySelector('img');
+          
+          // If no image exists, create one
+          if (!avatarImg) {
+            avatarImg = document.createElement('img');
+            avatarButton.appendChild(avatarImg);
+          }
+          
+          // Set the image source and make it visible
+          avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
+          avatarImg.alt = 'Avatar';
+          avatarImg.style.display = 'block';
+          avatarImg.style.visibility = 'visible';
+          avatarImg.style.opacity = '1';
+          avatarImg.style.width = '28px';
+          avatarImg.style.height = '28px';
+          avatarImg.style.borderRadius = '50%';
+          avatarImg.style.objectFit = 'cover';
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!fixGlobalNavAvatar()) {
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          const interval = setInterval(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+        
+        // Also run periodically to catch React re-renders
+        setInterval(fixGlobalNavAvatar, 1000);
+      })();
+      
       // Navigate to results-page.html on Enter key in search bar
       (function() {
         let attempts = 0;
