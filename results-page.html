@@ -208,9 +208,15 @@
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           if (searchBar) {
-            // Always maintain expanded state
-            if (!searchBar.classList.contains('SearchBar-module__expanded')) {
-              searchBar.classList.add('SearchBar-module__expanded');
+            // Maintain expanded state from sessionStorage
+            if (shouldBeExpanded) {
+              if (!searchBar.classList.contains('SearchBar-module__expanded')) {
+                searchBar.classList.add('SearchBar-module__expanded');
+              }
+            } else {
+              if (searchBar.classList.contains('SearchBar-module__expanded')) {
+                searchBar.classList.remove('SearchBar-module__expanded');
+              }
             }
             
             // Maintain closeup state if there's a query

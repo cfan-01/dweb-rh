@@ -1115,6 +1115,16 @@
         let attempts = 0;
         const maxAttempts = 50;
         
+        // Save search state to sessionStorage before navigation
+        function saveSearchState(searchQuery, isExpanded) {
+          try {
+            sessionStorage.setItem('searchQuery', searchQuery);
+            sessionStorage.setItem('searchBarExpanded', isExpanded ? 'true' : 'false');
+          } catch(e) {
+            console.log('Could not save search state:', e);
+          }
+        }
+        
         function addSearchEnterHandler() {
           const searchBar = document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded');
           if (searchBar) {
@@ -1124,6 +1134,8 @@
                 if (e.key === 'Enter' || e.keyCode === 13) {
                   e.preventDefault();
                   const searchQuery = input.value || '';
+                  const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
+                  saveSearchState(searchQuery, isExpanded);
                   window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(searchQuery);
                 }
               });
@@ -1146,6 +1158,7 @@
                   if (isExpanded) {
                     e.preventDefault();
                     const searchQuery = input.value || '';
+                    saveSearchState(searchQuery, isExpanded);
                     window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(searchQuery);
                   }
                 }
