@@ -607,10 +607,11 @@
             }
             
             function layoutGrid() {
-              // Calculate available width: window width - GlobalNav width - 16px gap - 16px right margin
-              const globalNav = document.querySelector('.GlobalNav-module__globalNav');
-              const globalNavWidth = globalNav ? globalNav.offsetWidth : 80;
-              const availableWidth = window.innerWidth - globalNavWidth - 16 - 16; // GlobalNav + left gap + right margin
+              // Calculate available width: use actual container width minus right margin
+              const container = gridContainer.closest('.MasonryGrid-module__container');
+              const containerWidth = container ? container.offsetWidth : window.innerWidth;
+              // Account for right margin (16px) on gridContainer
+              const availableWidth = containerWidth - 16;
               const columnCount = getColumnCount();
               const gutter = 16;
               const columnWidth = calculateColumnWidth(availableWidth, columnCount, gutter);
@@ -631,8 +632,8 @@
                 let itemWidth = columnWidth;
                 let itemHeight = 0;
                 
-                // Calculate height based on image aspect ratio
-                if (img.naturalHeight && img.naturalWidth) {
+                // Calculate height based on image aspect ratio - wait for image to load
+                if (img.complete && img.naturalHeight && img.naturalWidth && img.naturalWidth > 0) {
                   const aspectRatio = img.naturalHeight / img.naturalWidth;
                   itemHeight = itemWidth * aspectRatio;
                 } else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
@@ -686,15 +687,39 @@
             
             // Watch for image load to recalculate heights
             const images = gridContainer.querySelectorAll('img');
-            images.forEach(img => {
-              if (img.complete) {
-                setTimeout(layoutGrid, 100);
-              } else {
-                img.addEventListener('load', () => {
-                  setTimeout(layoutGrid, 100);
-                });
-              }
-            });
+            let loadedCount = 0;
+            const totalImages = images.length;
+            
+            if (totalImages === 0) {
+              layoutGrid();
+            } else {
+              images.forEach(img => {
+                if (img.complete && img.naturalWidth > 0) {
+                  loadedCount++;
+                  if (loadedCount === totalImages) {
+                    setTimeout(layoutGrid, 100);
+                  }
+                } else {
+                  img.addEventListener('load', () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                      setTimeout(layoutGrid, 100);
+                    }
+                  });
+                  img.addEventListener('error', () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                      setTimeout(layoutGrid, 100);
+                    }
+                  });
+                }
+              });
+              
+              // Fallback: layout after a timeout if images don't load
+              setTimeout(() => {
+                layoutGrid();
+              }, 1000);
+            }
           }
           
           // Initialize masonry grid
