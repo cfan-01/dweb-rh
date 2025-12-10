@@ -23,7 +23,8 @@
       /* Image result styling */
       .image-result {
         position: absolute;
-        left: 0;
+        left: 16px;
+        top: 16px;
         width: 270px;
         padding-left: 8px;
         padding-right: 8px;
@@ -35,6 +36,7 @@
         object-fit: cover;
         display: block;
         margin-bottom: 8px;
+        border-radius: 16px;
         visibility: visible !important;
         opacity: 1 !important;
       }
@@ -98,6 +100,39 @@
     <div id="root"></div>
     <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
+      // Position image result 16px from top of page
+      (function() {
+        function positionImageResult() {
+          const imageResult = document.querySelector('.image-result');
+          
+          if (!imageResult) {
+            console.log('image-result not found');
+            return;
+          }
+          
+          // Always position at 16px from top and left
+          imageResult.style.top = '16px';
+          imageResult.style.left = '16px';
+        }
+        
+        // Try immediately
+        positionImageResult();
+        
+        // Also try after a delay to wait for React to render
+        setTimeout(positionImageResult, 100);
+        setTimeout(positionImageResult, 500);
+        setTimeout(positionImageResult, 1000);
+        
+        // Watch for DOM changes
+        const observer = new MutationObserver(function() {
+          positionImageResult();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Also check on resize
+        window.addEventListener('resize', positionImageResult);
+      })();
+      
       // Fix image paths for GitHub Pages
       (function() {
         const basePath = '/dweb-rh';
@@ -509,47 +544,6 @@
         }
       })();
       
-      // Position image result 16px below GlobalNav
-      (function() {
-        function positionImageResult() {
-          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
-          const imageResult = document.querySelector('.image-result');
-          
-          if (!imageResult) {
-            console.log('image-result not found');
-            return;
-          }
-          
-          if (!globalNav) {
-            console.log('GlobalNav not found, positioning at 16px from top');
-            imageResult.style.top = '16px';
-            return;
-          }
-          
-          const globalNavHeight = globalNav.offsetHeight || globalNav.getBoundingClientRect().height;
-          const topPosition = globalNavHeight + 16; // 16px below GlobalNav
-          imageResult.style.top = topPosition + 'px';
-          console.log('Positioned image-result at top:', topPosition, 'px (GlobalNav height:', globalNavHeight, 'px)');
-        }
-        
-        // Try immediately
-        positionImageResult();
-        
-        // Also try after a delay to wait for React to render
-        setTimeout(positionImageResult, 100);
-        setTimeout(positionImageResult, 500);
-        setTimeout(positionImageResult, 1000);
-        setTimeout(positionImageResult, 2000);
-        
-        // Watch for GlobalNav changes
-        const observer = new MutationObserver(function() {
-          positionImageResult();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        // Also check on resize
-        window.addEventListener('resize', positionImageResult);
-      })();
     </script>
     <div class="app-container">
       <div class="image-result">
