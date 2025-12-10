@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Results - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -18,40 +18,6 @@
         display: flex;
         width: 100%;
         min-height: 100vh;
-        position: relative;
-      }
-      /* Image result styling */
-      .image-result {
-        position: absolute;
-        left: 16px;
-        top: 16px;
-        width: 270px;
-        padding-left: 8px;
-        padding-right: 8px;
-        z-index: 10;
-      }
-      .image-result img {
-        width: 270px;
-        height: 403px;
-        object-fit: cover;
-        display: block;
-        margin-bottom: 8px;
-        border-radius: 16px;
-        visibility: visible !important;
-        opacity: 1 !important;
-      }
-      .image-result-title {
-        font-family: "Pin Sans", var(--font-family-pin-sans);
-        font-weight: bold;
-        font-size: 14px;
-        line-height: 20px;
-        color: #000000;
-        max-height: 60px; /* 3 lines max: 20px * 3 */
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        word-wrap: break-word;
       }
       .App-module__main {
         display: none !important;
@@ -98,127 +64,8 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
+    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
     <script>
-      // Position image result 16px from top of page
-      (function() {
-        function positionImageResult() {
-          const imageResult = document.querySelector('.image-result');
-          
-          if (!imageResult) {
-            console.log('image-result not found');
-            return;
-          }
-          
-          // Always position at 16px from top and left
-          imageResult.style.top = '16px';
-          imageResult.style.left = '16px';
-        }
-        
-        // Try immediately
-        positionImageResult();
-        
-        // Also try after a delay to wait for React to render
-        setTimeout(positionImageResult, 100);
-        setTimeout(positionImageResult, 500);
-        setTimeout(positionImageResult, 1000);
-        
-        // Watch for DOM changes
-        const observer = new MutationObserver(function() {
-          positionImageResult();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        // Also check on resize
-        window.addEventListener('resize', positionImageResult);
-      })();
-      
-      // Fix image paths for GitHub Pages
-      (function() {
-        const basePath = '/dweb-rh';
-        
-        function fixImageSrc(img) {
-          if (!img) return;
-          let src = img.getAttribute('src') || img.src || '';
-          try {
-            const url = new URL(src, window.location.origin);
-            src = url.pathname;
-          } catch(e) {}
-          
-          if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
-            const fixedSrc = basePath + src;
-            img.src = fixedSrc;
-            img.setAttribute('src', fixedSrc);
-            return true;
-          }
-          return false;
-        }
-        
-        function fixImagePaths() {
-          const images = document.querySelectorAll('img');
-          images.forEach(fixImageSrc);
-        }
-        
-        const OriginalImage = window.Image;
-        window.Image = function(...args) {
-          const img = new OriginalImage(...args);
-          if (args.length > 0 && typeof args[0] === 'string') {
-            const src = args[0];
-            if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
-              img.src = basePath + src;
-            }
-          }
-          return img;
-        };
-        
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            mutation.addedNodes.forEach(function(node) {
-              if (node.nodeType === 1) {
-                if (node.tagName === 'IMG') {
-                  fixImageSrc(node);
-                }
-                const images = node.querySelectorAll && node.querySelectorAll('img');
-                if (images) {
-                  images.forEach(fixImageSrc);
-                }
-              }
-            });
-          });
-        });
-        
-        fixImagePaths();
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['src']
-        });
-        
-        const attrObserver = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
-              fixImageSrc(mutation.target);
-            }
-          });
-        });
-        
-        function observeAllImages() {
-          const allImages = document.querySelectorAll('img');
-          allImages.forEach(img => {
-            attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
-            fixImageSrc(img);
-          });
-        }
-        
-        document.addEventListener('DOMContentLoaded', observeAllImages);
-        setInterval(fixImagePaths, 1000);
-        setTimeout(fixImagePaths, 100);
-        setTimeout(fixImagePaths, 500);
-        setTimeout(fixImagePaths, 1000);
-        setTimeout(fixImagePaths, 2000);
-      })();
-      
       // Fix App-module__app link to home page
       (function() {
         let attempts = 0;
@@ -229,14 +76,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/dweb-rh/index.html';
-              appLink.setAttribute('href', '/dweb-rh/index.html');
+              appLink.href = '/index.html';
+              appLink.setAttribute('href', '/index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/dweb-rh/index.html';
+                window.location.href = '/index.html';
               });
             }
             return true;
@@ -265,39 +112,8 @@
       
       // Persist expanded search bar with typed text and closeup state
       (function() {
-        console.log('SearchBar persistence script started');
-        
         const urlParams = new URLSearchParams(window.location.search);
-        // Get query from URL first, then fall back to sessionStorage
-        let searchQuery = urlParams.get('q') || '';
-        try {
-          const savedQuery = sessionStorage.getItem('searchQuery');
-          if (savedQuery && savedQuery.trim()) {
-            searchQuery = savedQuery;
-          }
-        } catch(e) {
-          console.log('Could not read search state from sessionStorage:', e);
-        }
-        
-        // Get expanded state from sessionStorage
-        let shouldBeExpanded = true; // Default to expanded
-        try {
-          const savedExpanded = sessionStorage.getItem('searchBarExpanded');
-          if (savedExpanded !== null) {
-            shouldBeExpanded = savedExpanded === 'true';
-          }
-        } catch(e) {
-          console.log('Could not read expanded state from sessionStorage:', e);
-        }
-        
-        // Log the persisted state immediately for debugging
-        console.log('Restoring SearchBar state:', {
-          searchQuery: searchQuery,
-          shouldBeExpanded: shouldBeExpanded,
-          savedQuery: sessionStorage.getItem('searchQuery'),
-          savedExpanded: sessionStorage.getItem('searchBarExpanded')
-        });
-        
+        const searchQuery = urlParams.get('q') || '';
         let searchBar = null;
         let input = null;
         let isInitialized = false;
@@ -305,20 +121,9 @@
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           if (searchBar) {
-            console.log('maintainSearchBarState: SearchBar found, applying state', {
-              searchQuery: searchQuery,
-              shouldBeExpanded: shouldBeExpanded,
-              hasExpandedClass: searchBar.classList.contains('SearchBar-module__expanded')
-            });
-            // Maintain expanded state from sessionStorage
-            if (shouldBeExpanded) {
-              if (!searchBar.classList.contains('SearchBar-module__expanded')) {
-                searchBar.classList.add('SearchBar-module__expanded');
-              }
-            } else {
-              if (searchBar.classList.contains('SearchBar-module__expanded')) {
-                searchBar.classList.remove('SearchBar-module__expanded');
-              }
+            // Always maintain expanded state
+            if (!searchBar.classList.contains('SearchBar-module__expanded')) {
+              searchBar.classList.add('SearchBar-module__expanded');
             }
             
             // Maintain closeup state if there's a query
@@ -334,13 +139,9 @@
             // Set input value
             input = searchBar.querySelector('input');
             if (input) {
-              // Always set the value from sessionStorage/URL, even if it's the same
-              // This ensures it persists even if React resets it
               if (input.value !== searchQuery) {
                 input.value = searchQuery;
               }
-              // Force set the value attribute as well
-              input.setAttribute('value', searchQuery);
               
               // Ensure input is editable - remove all restrictions
               input.readOnly = false;
@@ -361,7 +162,7 @@
                   if (e.key === 'Enter' || e.keyCode === 13) {
                     e.preventDefault();
                     const currentQuery = input.value || '';
-                    window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(currentQuery);
+                    window.location.href = '/results-page.html?q=' + encodeURIComponent(currentQuery);
                   }
                 });
                 input.setAttribute('data-enter-handler-added', 'true');
@@ -450,25 +251,14 @@
         
         // Wait for React to render, then start maintaining state
         let attempts = 0;
-        const maxAttempts = 200; // Increased attempts
+        const maxAttempts = 100;
         const checkInterval = setInterval(function() {
           attempts++;
-          const searchBar = document.querySelector('.SearchBar-module__searchBar');
-          if (searchBar || attempts >= maxAttempts) {
+          if (document.querySelector('.SearchBar-module__searchBar') || attempts >= maxAttempts) {
             clearInterval(checkInterval);
-            console.log('Starting to maintain SearchBar state, attempts:', attempts, 'found:', !!searchBar);
             startMaintainingState();
           }
         }, 100);
-        
-        // Also try immediately
-        setTimeout(function() {
-          const searchBar = document.querySelector('.SearchBar-module__searchBar');
-          if (searchBar) {
-            console.log('SearchBar found immediately, starting state maintenance');
-            startMaintainingState();
-          }
-        }, 0);
       })();
       
       // Replace SearchBar-module__searchIconContainer with boards-avatar copy (same as boards.html)
@@ -480,12 +270,12 @@
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (searchIconContainer) {
             // Check if avatar already exists
-            const existingAvatar = searchIconContainer.querySelector('img[src="/dweb-rh/assets/avatar/avatar.png"]');
+            const existingAvatar = searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]');
             if (existingAvatar) return true;
             
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
+            avatarImg.src = '/assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
@@ -543,14 +333,303 @@
           startReplacing();
         }
       })();
-      
     </script>
     <div class="app-container">
-      <div class="image-result">
-        <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin image">
-        <div class="image-result-title">Pin title</div>
+      <div class="MasonryGrid-module__container">
+        <div class="MasonryGrid-module__gridContainer packery-container">
+          <div class="MasonryGrid-module__gridItem">
+            <div class="image-result Pin-module__pin Pin-module__ratio2_3">
+              <img src="/assets/images/hf-14.jpg" alt="Image result" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="image-result Pin-module__pin Pin-module__ratio2_3">
+              <img src="/assets/images/hf-4.jpg" alt="Image result" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="image-result Pin-module__pin Pin-module__ratio2_3">
+              <img src="/assets/images/hf-7.jpg" alt="Image result" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="image-result Pin-module__pin Pin-module__ratio2_3">
+              <img src="/assets/images/hf-2.jpg" alt="Image result" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="image-result Pin-module__pin Pin-module__ratio2_3">
+              <img src="/assets/images/hf-1.jpg" alt="Image result" class="Pin-module__pinImage" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <script>
+      // Find image-result and add it to MasonryGrid, then initialize masonry layout
+      (function() {
+        let imageResult = null;
+        let gridContainer = null;
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function findAndMoveImageResult() {
+          // Find image-result element - try multiple selectors
+          if (!imageResult) {
+            // Try exact matches first
+            imageResult = document.querySelector('#image-result') || 
+                         document.querySelector('.image-result') ||
+                         document.querySelector('[id="image-result"]') ||
+                         document.querySelector('[class="image-result"]');
+            
+            // Try partial matches
+            if (!imageResult) {
+              imageResult = document.querySelector('[id*="image-result"]') || 
+                           document.querySelector('[class*="image-result"]') ||
+                           document.querySelector('[id*="imageResult"]') ||
+                           document.querySelector('[class*="imageResult"]');
+            }
+            
+            // Also try to find it by searching all elements
+            if (!imageResult) {
+              const allElements = document.querySelectorAll('*');
+              for (let el of allElements) {
+                const id = el.id ? el.id.toLowerCase() : '';
+                const className = el.className ? (typeof el.className === 'string' ? el.className.toLowerCase() : Array.from(el.className).join(' ').toLowerCase()) : '';
+                if ((id.includes('image') && id.includes('result')) || 
+                    (className.includes('image') && className.includes('result'))) {
+                  imageResult = el;
+                  break;
+                }
+              }
+            }
+          }
+          
+          // Find grid container
+          if (!gridContainer) {
+            gridContainer = document.querySelector('.MasonryGrid-module__gridContainer.packery-container');
+          }
+          
+          // If both found and image-result is not already in the grid, move it
+          if (imageResult && gridContainer && !gridContainer.contains(imageResult)) {
+            // Create a grid item wrapper if needed
+            let gridItem = imageResult.closest('.MasonryGrid-module__gridItem');
+            if (!gridItem) {
+              gridItem = document.createElement('div');
+              gridItem.className = 'MasonryGrid-module__gridItem';
+              // Insert before image-result
+              if (imageResult.parentNode) {
+                imageResult.parentNode.insertBefore(gridItem, imageResult);
+              }
+              gridItem.appendChild(imageResult);
+            }
+            
+            // Move to grid container as first child
+            gridContainer.insertBefore(gridItem, gridContainer.firstChild);
+            return true;
+          }
+          
+          return false;
+        }
+        
+        // Simple masonry grid implementation for image pins
+        function initMasonryGrid() {
+          const gridContainer = document.querySelector('.MasonryGrid-module__gridContainer.packery-container');
+          if (!gridContainer) return;
+          
+          // Responsive breakpoints (same as boards.html)
+          const breakpoints = [
+            { min: 1372, cols: 5 },
+            { min: 1115, cols: 4 },
+            { min: 860, cols: 3 },
+            { min: 500, cols: 2 }
+          ];
+          
+          function getColumnCount() {
+            const width = window.innerWidth;
+            for (const bp of breakpoints) {
+              if (width >= bp.min) {
+                return bp.cols;
+              }
+            }
+            return 1;
+          }
+          
+          function calculateColumnWidth(containerWidth, columnCount, gutter) {
+            const totalGutters = gutter * (columnCount - 1);
+            return (containerWidth - totalGutters) / columnCount;
+          }
+          
+          function layoutGrid() {
+            const windowWidth = window.innerWidth;
+            // Match index.html styling - no left/right margins for container
+            const containerWidth = windowWidth;
+            const columnCount = getColumnCount();
+            const gutter = 16;
+            const columnWidth = calculateColumnWidth(containerWidth, columnCount, gutter);
+            
+            const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
+            const columnHeights = Array(columnCount).fill(0);
+            
+            gridItems.forEach((item) => {
+              // Get the actual content (pin or image-result)
+              const pin = item.querySelector('.Pin-module__pin, [class*="Pin-module"], img, [id*="image-result"], [class*="image-result"]') || item.firstElementChild;
+              if (!pin) return;
+              
+              // Get natural dimensions
+              let itemWidth = columnWidth;
+              let itemHeight = 0;
+              
+              // Check if this is image-result to preserve its dimensions
+              const isImageResult = pin.id && pin.id.includes('image-result') || 
+                                   pin.className && (typeof pin.className === 'string' ? pin.className.includes('image-result') : Array.from(pin.className).some(c => c.includes('image-result')));
+              
+              // Try to get natural height from image or computed style
+              if (pin.tagName === 'IMG') {
+                const img = pin;
+                if (img.naturalHeight && img.naturalWidth) {
+                  const aspectRatio = img.naturalHeight / img.naturalWidth;
+                  itemHeight = itemWidth * aspectRatio;
+                } else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
+                  const aspectRatio = img.offsetHeight / img.offsetWidth;
+                  itemHeight = itemWidth * aspectRatio;
+                } else {
+                  // Default aspect ratio for pins (2:3)
+                  itemHeight = itemWidth * 1.5;
+                }
+              } else {
+                // For other elements, try to get computed height or use aspect ratio
+                if (isImageResult && pin.offsetHeight && pin.offsetWidth && pin.offsetWidth > 0) {
+                  // For image-result, preserve its aspect ratio
+                  const aspectRatio = pin.offsetHeight / pin.offsetWidth;
+                  itemHeight = itemWidth * aspectRatio;
+                } else {
+                  const aspectRatioAttr = pin.getAttribute('data-aspect-ratio') || 
+                                         (pin.classList.contains('Pin-module__ratio2_3') ? 1.5 :
+                                          pin.classList.contains('Pin-module__ratio1_1') ? 1 :
+                                          pin.classList.contains('Pin-module__ratio3_4') ? 1.333 : 1.5);
+                  
+                  if (pin.offsetHeight && pin.offsetWidth && pin.offsetWidth > 0) {
+                    const currentAspectRatio = pin.offsetHeight / pin.offsetWidth;
+                    itemHeight = itemWidth * currentAspectRatio;
+                  } else {
+                    itemHeight = itemWidth * parseFloat(aspectRatioAttr);
+                  }
+                }
+              }
+              
+              // Set item width and position (only on wrapper, not on image-result itself)
+              item.style.width = columnWidth + 'px';
+              item.style.position = 'absolute';
+              
+              // Set pin width if it exists (preserve other styles)
+              if (pin) {
+                // Only set width if not already set or if it's a standard pin
+                const isImageResult = pin.id && pin.id.includes('image-result') || 
+                                     pin.className && (typeof pin.className === 'string' ? pin.className.includes('image-result') : Array.from(pin.className).some(c => c.includes('image-result')));
+                
+                if (!isImageResult) {
+                  // For standard pins, set width to fit column
+                  pin.style.width = '100%';
+                  if (pin.tagName === 'IMG') {
+                    pin.style.height = 'auto';
+                  }
+                } else {
+                  // For image-result, preserve its styling but ensure it fits within wrapper
+                  const currentWidth = pin.style.width || window.getComputedStyle(pin).width;
+                  if (!currentWidth || currentWidth === 'auto' || parseFloat(currentWidth) > columnWidth) {
+                    pin.style.maxWidth = '100%';
+                  }
+                }
+              }
+              
+              // Find shortest column
+              const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+              
+              // Position item
+              const x = shortestColumn * (columnWidth + gutter);
+              const y = columnHeights[shortestColumn];
+              
+              item.style.left = x + 'px';
+              item.style.top = y + 'px';
+              
+              // Update column height (add item height + gutter)
+              columnHeights[shortestColumn] += itemHeight + gutter;
+            });
+            
+            // Set container height
+            const maxHeight = Math.max(...columnHeights, 0);
+            gridContainer.style.height = maxHeight + 'px';
+          }
+          
+          // Wait for items to be added, then layout
+          function checkAndLayout() {
+            const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
+            if (gridItems.length > 0) {
+              // Wait a bit for images to load
+              setTimeout(() => {
+                layoutGrid();
+              }, 100);
+            }
+          }
+          
+          // Initialize on load
+          checkAndLayout();
+          
+          // Reinitialize on resize with debounce
+          let resizeTimeout;
+          window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+              layoutGrid();
+            }, 250);
+          });
+          
+          // Watch for new items being added
+          const observer = new MutationObserver(() => {
+            checkAndLayout();
+          });
+          observer.observe(gridContainer, {
+            childList: true,
+            subtree: true
+          });
+        }
+        
+        // Try to find and move image-result, then initialize grid
+        function setupMasonryGrid() {
+          if (findAndMoveImageResult() || attempts < maxAttempts) {
+            attempts++;
+            // Initialize masonry grid
+            setTimeout(() => {
+              initMasonryGrid();
+            }, 100);
+            
+            // Continue trying to find image-result if not found yet
+            if (!imageResult && attempts < maxAttempts) {
+              setTimeout(setupMasonryGrid, 100);
+            }
+          }
+        }
+        
+        // Start setup
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setupMasonryGrid);
+        } else {
+          setupMasonryGrid();
+        }
+        
+        // Also watch for DOM changes to catch React-rendered content
+        const bodyObserver = new MutationObserver(() => {
+          if (!imageResult || !gridContainer || !gridContainer.contains(imageResult)) {
+            findAndMoveImageResult();
+            setTimeout(initMasonryGrid, 100);
+          }
+        });
+        bodyObserver.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      })();
+    </script>
   </body>
 </html>
-

@@ -10,7 +10,7 @@
     <img src="./assets/images/hf-2.webp" alt="Test 2" style="max-width:200px;">
     <p>JS file size: <span id="js-size"></span></p>
     <script>
-        fetch('./assets/index-BLL-NyY1.js')
+        fetch('/assets/index-BLL-NyY1.js')
             .then(r => r.blob())
             .then(b => document.getElementById('js-size').textContent = (b.size/1024).toFixed(0) + ' KB');
     </script>
