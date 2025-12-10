@@ -19,7 +19,7 @@
         width: 100%;
         min-height: 100vh;
         /* Add margin to account for fixed GlobalNav + 16px gap */
-        margin-left: calc(var(--global-nav-width, 80px) + 16px);
+        margin-left: calc(var(--global-nav-width, 80px) + 16px) !important;
       }
       .App-module__main {
         display: none !important;
@@ -61,6 +61,9 @@
       .IconButton-module__iconButton[data-active="true"] svg path {
         fill: #ffffff !important;
         color: #ffffff !important;
+      }
+      .MasonryGrid-module__container {
+        margin-left: calc(var(--global-nav-width, 80px) + 16px) !important;
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
@@ -411,20 +414,37 @@
         function setGlobalNavWidth() {
           const globalNav = document.querySelector('.GlobalNav-module__globalNav');
           const appContainer = document.querySelector('.app-container');
-          if (globalNav && appContainer) {
+          const masonryContainer = document.querySelector('.MasonryGrid-module__container');
+          
+          if (globalNav) {
             const width = globalNav.offsetWidth || 80;
             const marginValue = width + 16; // GlobalNav width + 16px gap
             document.documentElement.style.setProperty('--global-nav-width', width + 'px');
-            // Also directly set margin to ensure it's applied
-            appContainer.style.marginLeft = marginValue + 'px';
+            
+            // Apply margin to app-container
+            if (appContainer) {
+              appContainer.style.marginLeft = marginValue + 'px';
+            }
+            
+            // Also apply to masonry container as backup
+            if (masonryContainer) {
+              masonryContainer.style.marginLeft = marginValue + 'px';
+            }
           }
         }
-        setGlobalNavWidth();
+        
+        // Run immediately and also wait for DOM
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setGlobalNavWidth);
+        } else {
+          setGlobalNavWidth();
+        }
+        
         const observer = new MutationObserver(setGlobalNavWidth);
         observer.observe(document.body, { childList: true, subtree: true });
         window.addEventListener('resize', setGlobalNavWidth);
-        // Also check periodically
-        setInterval(setGlobalNavWidth, 500);
+        // Also check periodically to catch React re-renders
+        setInterval(setGlobalNavWidth, 100);
       })();
     </script>
     <div class="app-container">
