@@ -33,6 +33,8 @@
         box-sizing: border-box;
         /* Force strict vertical scrolling */
         direction: ltr;
+        /* Add margin to account for fixed GlobalNav + 16px gap */
+        margin-left: calc(var(--global-nav-width, 80px) + 16px);
       }
       /* Ensure all child elements respect container width */
       .boards-main > * {
@@ -440,7 +442,7 @@
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
-        z-index: 100 !important;
+        z-index: 200 !important;
       }
     </style>
   </head>
@@ -881,6 +883,27 @@
         
         // Also run periodically to catch React re-renders
         setInterval(fixGlobalNavAvatar, 1000);
+      })();
+      
+      // Set GlobalNav width as CSS variable and apply margin to boards-main
+      (function() {
+        function setGlobalNavWidth() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          const boardsMain = document.querySelector('.boards-main');
+          if (globalNav && boardsMain) {
+            const width = globalNav.offsetWidth || 80;
+            const marginValue = width + 16; // GlobalNav width + 16px gap
+            document.documentElement.style.setProperty('--global-nav-width', width + 'px');
+            // Also directly set margin to ensure it's applied
+            boardsMain.style.marginLeft = marginValue + 'px';
+          }
+        }
+        setGlobalNavWidth();
+        const observer = new MutationObserver(setGlobalNavWidth);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('resize', setGlobalNavWidth);
+        // Also check periodically
+        setInterval(setGlobalNavWidth, 500);
       })();
       
       // Hide SearchBar on scroll down (same as home page reveal animation)
