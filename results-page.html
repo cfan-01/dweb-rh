@@ -93,14 +93,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/index.html';
-              appLink.setAttribute('href', '/index.html');
+              appLink.href = '/dweb-rh/index.html';
+              appLink.setAttribute('href', '/dweb-rh/index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = '/dweb-rh/index.html';
               });
             }
             return true;
@@ -407,6 +407,110 @@
         
         // Also run periodically to catch React re-renders
         setInterval(fixGlobalNavAvatar, 1000);
+      })();
+      
+      // Fix navigation links in GlobalNav
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function findNavIcon(iconName) {
+          const nav = document.querySelector('.GlobalNav-module__globalNav') || 
+                     document.querySelector('[class*="GlobalNav"]');
+          if (!nav) return null;
+          
+          const clickables = nav.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+          
+          for (let el of clickables) {
+            const text = (el.textContent || el.innerText || '').trim();
+            const ariaLabel = (el.getAttribute('aria-label') || '').toLowerCase();
+            const title = (el.getAttribute('title') || '').toLowerCase();
+            
+            if (text === iconName || ariaLabel.includes(iconName.toLowerCase()) || title.includes(iconName.toLowerCase())) {
+              return el;
+            }
+            
+            const parent = el.parentElement;
+            if (parent) {
+              const parentText = (parent.textContent || parent.innerText || '').trim();
+              if (parentText === iconName) {
+                return parent;
+              }
+            }
+          }
+          
+          // Alternative: look by position in leading section
+          const leading = nav.querySelector('[class*="leading"]') || nav.querySelector('[class*="Leading"]');
+          if (leading) {
+            const icons = leading.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+            // Home is typically 2nd icon (index 1), Boards is 4th (index 3)
+            if (iconName === 'Home' && icons.length >= 2) {
+              return icons[1];
+            } else if (iconName === 'Boards' && icons.length >= 4) {
+              return icons[3];
+            }
+          }
+          
+          return null;
+        }
+        
+        function attachNavHandlers() {
+          // Fix Home icon
+          const homeIcon = findNavIcon('Home');
+          if (homeIcon && !homeIcon.hasAttribute('data-nav-handler-attached')) {
+            homeIcon.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/dweb-rh/index.html';
+              return false;
+            });
+            homeIcon.style.cursor = 'pointer';
+            homeIcon.setAttribute('data-nav-handler-attached', 'true');
+          }
+          
+          // Fix Boards icon
+          const boardsIcon = findNavIcon('Boards');
+          if (boardsIcon && !boardsIcon.hasAttribute('data-nav-handler-attached')) {
+            boardsIcon.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/dweb-rh/boards.html';
+              return false;
+            });
+            boardsIcon.style.cursor = 'pointer';
+            boardsIcon.setAttribute('data-nav-handler-attached', 'true');
+          }
+        }
+        
+        // Try immediately
+        attachNavHandlers();
+        
+        // Use MutationObserver to watch for DOM changes
+        const observer = new MutationObserver(function() {
+          attempts++;
+          attachNavHandlers();
+          if (attempts >= maxAttempts) {
+            observer.disconnect();
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        // Also try on intervals as fallback
+        const interval = setInterval(function() {
+          attempts++;
+          attachNavHandlers();
+          if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            observer.disconnect();
+          }
+        }, 100);
+        
+        // Keep checking periodically to catch React re-renders
+        setInterval(attachNavHandlers, 1000);
       })();
       
       // Set GlobalNav width as CSS variable and apply margin to app-container
