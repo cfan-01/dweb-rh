@@ -18,6 +18,8 @@
         display: flex;
         width: 100%;
         min-height: 100vh;
+        /* Add margin to account for fixed GlobalNav + 16px gap */
+        margin-left: calc(var(--global-nav-width, 80px) + 16px);
       }
       .App-module__main {
         display: none !important;
@@ -62,7 +64,7 @@
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
-        margin-left: 16px !important;
+        margin-left: 0 !important;
         margin-right: 16px !important;
       }
       .GlobalNav-module__globalNav {
@@ -403,6 +405,27 @@
         // Also run periodically to catch React re-renders
         setInterval(fixGlobalNavAvatar, 1000);
       })();
+      
+      // Set GlobalNav width as CSS variable and apply margin to app-container
+      (function() {
+        function setGlobalNavWidth() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          const appContainer = document.querySelector('.app-container');
+          if (globalNav && appContainer) {
+            const width = globalNav.offsetWidth || 80;
+            const marginValue = width + 16; // GlobalNav width + 16px gap
+            document.documentElement.style.setProperty('--global-nav-width', width + 'px');
+            // Also directly set margin to ensure it's applied
+            appContainer.style.marginLeft = marginValue + 'px';
+          }
+        }
+        setGlobalNavWidth();
+        const observer = new MutationObserver(setGlobalNavWidth);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('resize', setGlobalNavWidth);
+        // Also check periodically
+        setInterval(setGlobalNavWidth, 500);
+      })();
     </script>
     <div class="app-container">
       <div class="MasonryGrid-module__container">
@@ -467,9 +490,9 @@
             }
             
             function layoutGrid() {
-              // Account for margins: 16px left + 16px right = 32px total
+              // Account for right margin: 16px right only (left margin handled by app-container)
               const container = gridContainer.closest('.MasonryGrid-module__container');
-              const containerWidth = container ? (container.offsetWidth - 32) : (window.innerWidth - 32);
+              const containerWidth = container ? (container.offsetWidth - 16) : (window.innerWidth - 16);
               const columnCount = getColumnCount();
               const gutter = 16;
               const columnWidth = calculateColumnWidth(containerWidth, columnCount, gutter);
