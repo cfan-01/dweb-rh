@@ -62,13 +62,11 @@
         fill: #ffffff !important;
         color: #ffffff !important;
       }
-      .MasonryGrid-module__container {
-        margin-left: calc(var(--global-nav-width, 80px) + 16px) !important;
-      }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
         margin-left: 0 !important;
         margin-right: 16px !important;
+        position: relative !important;
       }
       .GlobalNav-module__globalNav {
         position: fixed !important;
@@ -525,14 +523,9 @@
             const marginValue = width + 16; // GlobalNav width + 16px gap
             document.documentElement.style.setProperty('--global-nav-width', width + 'px');
             
-            // Apply margin to app-container
+            // Apply margin to app-container only
             if (appContainer) {
               appContainer.style.marginLeft = marginValue + 'px';
-            }
-            
-            // Also apply to masonry container as backup
-            if (masonryContainer) {
-              masonryContainer.style.marginLeft = marginValue + 'px';
             }
           }
         }
@@ -614,12 +607,13 @@
             }
             
             function layoutGrid() {
-              // Account for right margin: 16px right only (left margin handled by app-container)
-              const container = gridContainer.closest('.MasonryGrid-module__container');
-              const containerWidth = container ? (container.offsetWidth - 16) : (window.innerWidth - 16);
+              // Calculate available width: window width - GlobalNav width - 16px gap - 16px right margin
+              const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+              const globalNavWidth = globalNav ? globalNav.offsetWidth : 80;
+              const availableWidth = window.innerWidth - globalNavWidth - 16 - 16; // GlobalNav + left gap + right margin
               const columnCount = getColumnCount();
               const gutter = 16;
-              const columnWidth = calculateColumnWidth(containerWidth, columnCount, gutter);
+              const columnWidth = calculateColumnWidth(availableWidth, columnCount, gutter);
               
               const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
               // Limit to 5 images
