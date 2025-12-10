@@ -780,20 +780,30 @@
                 item.style.position = 'absolute';
                 pin.style.width = '100%';
                 
-                // Calculate height based on image aspect ratio
+                // Calculate height based on image aspect ratio - prefer actual rendered dimensions
                 let itemHeight = 0;
+                
+                // First try to use natural dimensions if image is loaded
                 if (img.complete && img.naturalHeight && img.naturalWidth && img.naturalWidth > 0) {
                   const aspectRatio = img.naturalHeight / img.naturalWidth;
                   itemHeight = columnWidth * aspectRatio;
-                } else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
+                } 
+                // Then try offset dimensions (actual rendered size)
+                else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
                   const aspectRatio = img.offsetHeight / img.offsetWidth;
                   itemHeight = columnWidth * aspectRatio;
-                } else {
-                  // Default aspect ratio for pins (2:3)
+                } 
+                // Fallback to CSS aspect ratio or default
+                else {
                   const aspectRatio = pin.classList.contains('Pin-module__ratio2_3') ? 1.5 :
                                      pin.classList.contains('Pin-module__ratio1_1') ? 1 :
                                      pin.classList.contains('Pin-module__ratio3_4') ? 1.333 : 1.5;
                   itemHeight = columnWidth * aspectRatio;
+                }
+                
+                // Ensure minimum height
+                if (itemHeight < 100) {
+                  itemHeight = columnWidth * 1.5; // Default 2:3 ratio
                 }
                 
                 itemHeights[index] = itemHeight;
@@ -803,7 +813,23 @@
               itemsToLayout.forEach((item, index) => {
                 if (itemHeights[index] === 0) return;
                 
-                const itemHeight = itemHeights[index];
+                let itemHeight = itemHeights[index];
+                
+                // Get actual rendered height if available (more accurate)
+                const pin = item.querySelector('.Pin-module__pin');
+                const img = pin ? pin.querySelector('img') : null;
+                
+                // If image is fully loaded, recalculate height from actual dimensions
+                if (img && img.complete && img.naturalHeight > 0 && img.naturalWidth > 0) {
+                  const aspectRatio = img.naturalHeight / img.naturalWidth;
+                  itemHeight = columnWidth * aspectRatio;
+                } else if (img && img.offsetHeight > 0 && img.offsetWidth > 0 && img.offsetWidth === columnWidth) {
+                  // Use actual rendered height if width matches
+                  itemHeight = img.offsetHeight;
+                } else if (pin && pin.offsetHeight > 0) {
+                  // Use pin's actual height as fallback
+                  itemHeight = pin.offsetHeight;
+                }
                 
                 // Find shortest column
                 const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
@@ -822,6 +848,43 @@
               // Set container height
               const maxHeight = Math.max(...columnHeights, 0);
               gridContainer.style.height = maxHeight + 'px';
+              
+              // Final pass: verify and fix any overlapping by checking actual rendered heights
+              setTimeout(() => {
+                let needsRelayout = false;
+                itemsToLayout.forEach((item, index) => {
+                  const pin = item.querySelector('.Pin-module__pin');
+                  const img = pin ? pin.querySelector('img') : null;
+                  
+                  if (img && img.complete && img.offsetHeight > 0) {
+                    const actualHeight = img.offsetHeight;
+                    const expectedHeight = itemHeights[index];
+                    
+                    // If actual height differs significantly, we need to relayout
+                    if (Math.abs(actualHeight - expectedHeight) > 10) {
+                      itemHeights[index] = actualHeight;
+                      needsRelayout = true;
+                    }
+                  }
+                });
+                
+                if (needsRelayout) {
+                  // Recalculate positions with accurate heights
+                  const newColumnHeights = Array(columnCount).fill(0);
+                  itemsToLayout.forEach((item, index) => {
+                    if (itemHeights[index] === 0) return;
+                    const itemHeight = itemHeights[index];
+                    const shortestColumn = newColumnHeights.indexOf(Math.min(...newColumnHeights));
+                    const x = shortestColumn * (columnWidth + gutter);
+                    const y = newColumnHeights[shortestColumn];
+                    item.style.left = x + 'px';
+                    item.style.top = y + 'px';
+                    newColumnHeights[shortestColumn] += itemHeight + gutter;
+                  });
+                  const newMaxHeight = Math.max(...newColumnHeights, 0);
+                  gridContainer.style.height = newMaxHeight + 'px';
+                }
+              }, 300);
             }
             
             // Wait for images to load before initial layout
@@ -838,10 +901,14 @@
               function checkAndLayout() {
                 loadedCount++;
                 if (loadedCount === totalImages) {
-                  // Wait a bit more for browser to calculate dimensions
+                  // Wait longer for browser to calculate dimensions and render
                   setTimeout(() => {
                     layoutGrid();
-                  }, 150);
+                    // Re-layout again after a short delay to ensure accurate heights
+                    setTimeout(() => {
+                      layoutGrid();
+                    }, 200);
+                  }, 200);
                 }
               }
               
