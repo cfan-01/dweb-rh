@@ -692,12 +692,12 @@
             </div>
           </div>
           <div class="MasonryGrid-module__gridItem">
-            <div class="Pin-module__pin Pin-module__ratio2_3">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
               <img src="/dweb-rh/assets/images/hf-16.jpg" alt="Pin" class="Pin-module__pinImage" />
             </div>
           </div>
           <div class="MasonryGrid-module__gridItem">
-            <div class="Pin-module__pin Pin-module__ratio2_3">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
               <img src="/dweb-rh/assets/images/hf-21.jpg" alt="Pin" class="Pin-module__pinImage" />
             </div>
           </div>
@@ -707,7 +707,7 @@
             </div>
           </div>
           <div class="MasonryGrid-module__gridItem">
-            <div class="Pin-module__pin Pin-module__ratio2_3">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
               <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Pin" class="Pin-module__pinImage" />
             </div>
           </div>
@@ -780,10 +780,14 @@
                 item.style.position = 'absolute';
                 pin.style.width = '100%';
                 
+                // Override CSS aspect-ratio to use natural image dimensions (varying aspect ratios)
+                pin.style.aspectRatio = 'unset';
+                pin.style.height = 'auto';
+                
                 // Calculate height based on image aspect ratio - prefer actual rendered dimensions
                 let itemHeight = 0;
                 
-                // First try to use natural dimensions if image is loaded
+                // First try to use natural dimensions if image is loaded (this gives varying aspect ratios)
                 if (img.complete && img.naturalHeight && img.naturalWidth && img.naturalWidth > 0) {
                   const aspectRatio = img.naturalHeight / img.naturalWidth;
                   itemHeight = columnWidth * aspectRatio;
@@ -795,9 +799,10 @@
                 } 
                 // Fallback to CSS aspect ratio or default
                 else {
-                  const aspectRatio = pin.classList.contains('Pin-module__ratio2_3') ? 1.5 :
-                                     pin.classList.contains('Pin-module__ratio1_1') ? 1 :
-                                     pin.classList.contains('Pin-module__ratio3_4') ? 1.333 : 1.5;
+                  let aspectRatio = 1.5; // Default 2:3
+                  if (pin.classList.contains('Pin-module__ratio2_3')) aspectRatio = 1.5; // 2:3
+                  else if (pin.classList.contains('Pin-module__ratio1_1')) aspectRatio = 1; // 1:1
+                  else if (pin.classList.contains('Pin-module__ratio3_4')) aspectRatio = 1.333; // 3:4
                   itemHeight = columnWidth * aspectRatio;
                 }
                 
