@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Results - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -64,7 +64,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
       // Fix App-module__app link to home page
       (function() {
@@ -270,12 +270,12 @@
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (searchIconContainer) {
             // Check if avatar already exists
-            const existingAvatar = searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]');
+            const existingAvatar = searchIconContainer.querySelector('img[src="/dweb-rh/assets/avatar/avatar.png"]');
             if (existingAvatar) return true;
             
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
