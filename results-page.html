@@ -621,38 +621,50 @@
               const itemsToLayout = Array.from(gridItems).slice(0, 5);
               const columnHeights = Array(columnCount).fill(0);
               
-              itemsToLayout.forEach((item) => {
+              // First pass: set widths and calculate heights
+              const itemHeights = [];
+              itemsToLayout.forEach((item, index) => {
                 const pin = item.querySelector('.Pin-module__pin');
-                if (!pin) return;
+                if (!pin) {
+                  itemHeights[index] = 0;
+                  return;
+                }
                 
                 const img = pin.querySelector('img');
-                if (!img) return;
+                if (!img) {
+                  itemHeights[index] = 0;
+                  return;
+                }
                 
-                // Get natural dimensions
-                let itemWidth = columnWidth;
+                // Set item width first
+                item.style.width = columnWidth + 'px';
+                item.style.position = 'absolute';
+                pin.style.width = '100%';
+                
+                // Calculate height based on image aspect ratio
                 let itemHeight = 0;
-                
-                // Calculate height based on image aspect ratio - wait for image to load
                 if (img.complete && img.naturalHeight && img.naturalWidth && img.naturalWidth > 0) {
                   const aspectRatio = img.naturalHeight / img.naturalWidth;
-                  itemHeight = itemWidth * aspectRatio;
+                  itemHeight = columnWidth * aspectRatio;
                 } else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
                   const aspectRatio = img.offsetHeight / img.offsetWidth;
-                  itemHeight = itemWidth * aspectRatio;
+                  itemHeight = columnWidth * aspectRatio;
                 } else {
                   // Default aspect ratio for pins (2:3)
                   const aspectRatio = pin.classList.contains('Pin-module__ratio2_3') ? 1.5 :
                                      pin.classList.contains('Pin-module__ratio1_1') ? 1 :
                                      pin.classList.contains('Pin-module__ratio3_4') ? 1.333 : 1.5;
-                  itemHeight = itemWidth * aspectRatio;
+                  itemHeight = columnWidth * aspectRatio;
                 }
                 
-                // Set item width and position
-                item.style.width = columnWidth + 'px';
-                item.style.position = 'absolute';
+                itemHeights[index] = itemHeight;
+              });
+              
+              // Second pass: position items
+              itemsToLayout.forEach((item, index) => {
+                if (itemHeights[index] === 0) return;
                 
-                // Set pin width
-                pin.style.width = '100%';
+                const itemHeight = itemHeights[index];
                 
                 // Find shortest column
                 const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
@@ -673,8 +685,44 @@
               gridContainer.style.height = maxHeight + 'px';
             }
             
-            // Initialize on load
-            layoutGrid();
+            // Wait for images to load before initial layout
+            function waitForImagesAndLayout() {
+              const images = gridContainer.querySelectorAll('img');
+              let loadedCount = 0;
+              const totalImages = images.length;
+              
+              if (totalImages === 0) {
+                layoutGrid();
+                return;
+              }
+              
+              function checkAndLayout() {
+                loadedCount++;
+                if (loadedCount === totalImages) {
+                  // Wait a bit more for browser to calculate dimensions
+                  setTimeout(() => {
+                    layoutGrid();
+                  }, 150);
+                }
+              }
+              
+              images.forEach(img => {
+                if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  checkAndLayout();
+                } else {
+                  img.addEventListener('load', checkAndLayout, { once: true });
+                  img.addEventListener('error', checkAndLayout, { once: true });
+                }
+              });
+              
+              // Fallback: layout after a timeout if images don't load
+              setTimeout(() => {
+                layoutGrid();
+              }, 2000);
+            }
+            
+            // Initialize after images load
+            waitForImagesAndLayout();
             
             // Reinitialize on resize with debounce
             let resizeTimeout;
@@ -685,41 +733,24 @@
               }, 250);
             });
             
-            // Watch for image load to recalculate heights
-            const images = gridContainer.querySelectorAll('img');
-            let loadedCount = 0;
-            const totalImages = images.length;
-            
-            if (totalImages === 0) {
-              layoutGrid();
-            } else {
+            // Watch for new images being added
+            const imageObserver = new MutationObserver(() => {
+              const images = gridContainer.querySelectorAll('img');
               images.forEach(img => {
-                if (img.complete && img.naturalWidth > 0) {
-                  loadedCount++;
-                  if (loadedCount === totalImages) {
-                    setTimeout(layoutGrid, 100);
+                if (!img.hasAttribute('data-layout-watched')) {
+                  img.setAttribute('data-layout-watched', 'true');
+                  if (!img.complete) {
+                    img.addEventListener('load', () => {
+                      setTimeout(layoutGrid, 100);
+                    }, { once: true });
                   }
-                } else {
-                  img.addEventListener('load', () => {
-                    loadedCount++;
-                    if (loadedCount === totalImages) {
-                      setTimeout(layoutGrid, 100);
-                    }
-                  });
-                  img.addEventListener('error', () => {
-                    loadedCount++;
-                    if (loadedCount === totalImages) {
-                      setTimeout(layoutGrid, 100);
-                    }
-                  });
                 }
               });
-              
-              // Fallback: layout after a timeout if images don't load
-              setTimeout(() => {
-                layoutGrid();
-              }, 1000);
-            }
+            });
+            imageObserver.observe(gridContainer, {
+              childList: true,
+              subtree: true
+            });
           }
           
           // Initialize masonry grid
