@@ -297,28 +297,40 @@
         let input = null;
         let isInitialized = false;
         
+        // Global flag to track if SearchBar should be collapsed
+        window.searchBarCollapsed = false;
+        
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          
           if (searchBar) {
-            // Always maintain expanded state
-            if (!searchBar.classList.contains('SearchBar-module__expanded')) {
-              searchBar.classList.add('SearchBar-module__expanded');
+            // Only maintain expanded state if not collapsed
+            if (!window.searchBarCollapsed) {
+              if (!searchBar.classList.contains('SearchBar-module__expanded')) {
+                searchBar.classList.add('SearchBar-module__expanded');
+              }
+              
+              // Maintain closeup state if there's a query
+              if (searchQuery) {
+                if (!searchBar.classList.contains('SearchBar-module__closeup')) {
+                  searchBar.classList.add('SearchBar-module__closeup');
+                }
+                if (searchBar.getAttribute('data-closeup-context-visible') !== 'true') {
+                  searchBar.setAttribute('data-closeup-context-visible', 'true');
+                }
+              }
+            } else {
+              // When collapsed, set data-expanded="false" on hStack
+              if (hStack) {
+                hStack.setAttribute('data-expanded', 'false');
+              }
             }
             
-            // Maintain closeup state if there's a query
-            if (searchQuery) {
-              if (!searchBar.classList.contains('SearchBar-module__closeup')) {
-                searchBar.classList.add('SearchBar-module__closeup');
-              }
-              if (searchBar.getAttribute('data-closeup-context-visible') !== 'true') {
-                searchBar.setAttribute('data-closeup-context-visible', 'true');
-              }
-            }
-            
-            // Set input value
+            // Always set input value to persist search query
             input = searchBar.querySelector('input');
             if (input) {
-              if (input.value !== searchQuery) {
+              if (input.value !== searchQuery && searchQuery) {
                 input.value = searchQuery;
               }
               
@@ -373,22 +385,35 @@
           }
         }
         
-        // Continuously maintain state to override React's changes
+        // Continuously maintain state to override React's changes (but allow collapse on scroll)
         function startMaintainingState() {
-          maintainSearchBarState();
+          if (!window.searchBarCollapsed) {
+            maintainSearchBarState();
+          } else {
+            // When collapsed, only maintain the search query value
+            if (input && input.value !== searchQuery) {
+              input.value = searchQuery;
+            }
+          }
           
           // Watch for class/attribute changes and re-apply
           const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.target === searchBar) {
                 if (mutation.attributeName === 'class') {
-                  maintainSearchBarState();
+                  if (!window.searchBarCollapsed) {
+                    maintainSearchBarState();
+                  }
                 } else if (mutation.attributeName === 'data-closeup-context-visible') {
-                  maintainSearchBarState();
+                  if (!window.searchBarCollapsed) {
+                    maintainSearchBarState();
+                  }
                 }
               }
             });
-            maintainSearchBarState();
+            if (!window.searchBarCollapsed) {
+              maintainSearchBarState();
+            }
           });
           
           // Observe the search bar for changes
@@ -403,7 +428,9 @@
           
           // Also observe body for when search bar is added/removed
           const bodyObserver = new MutationObserver(function() {
-            maintainSearchBarState();
+            if (!window.searchBarCollapsed) {
+              maintainSearchBarState();
+            }
           });
           bodyObserver.observe(document.body, {
             childList: true,
@@ -412,10 +439,16 @@
           
           // Continuously check and maintain state
           setInterval(function() {
-            maintainSearchBarState();
-            // Also ensure input remains editable
+            if (!window.searchBarCollapsed) {
+              maintainSearchBarState();
+            }
+            // Always ensure input remains editable and has the query
             const input = searchBar ? searchBar.querySelector('input') : null;
             if (input) {
+              // Persist search query
+              if (input.value !== searchQuery && searchQuery) {
+                input.value = searchQuery;
+              }
               input.readOnly = false;
               input.removeAttribute('readonly');
               input.removeAttribute('disabled');
@@ -706,6 +739,187 @@
         window.addEventListener('resize', setGlobalNavWidth);
         // Also check periodically to catch React re-renders
         setInterval(setGlobalNavWidth, 100);
+      })();
+      
+      // Hide SearchBar on scroll down and collapse hStack (same as boards.html)
+      (function() {
+        let lastScrollTop = 0;
+        let isHidden = false;
+        let scrollTimeout;
+        let scrollStopTimeout;
+        let isInitialized = false;
+        
+        function getSearchBar() {
+          return document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]') ||
+                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack');
+        }
+        
+        function getHStack() {
+          return document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]');
+        }
+        
+        function showSearchBar() {
+          const hStack = getHStack();
+          if (!hStack) return;
+          
+          if (isHidden) {
+            // Remove transform to restore original positioning
+            hStack.style.removeProperty('transform');
+            hStack.style.setProperty('opacity', '1', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'auto', 'important');
+            hStack.style.removeProperty('transform-origin');
+            hStack.style.removeProperty('will-change');
+            
+            // Set data-expanded="true" on hStack
+            hStack.setAttribute('data-expanded', 'true');
+            
+            // Clear collapsed flag
+            window.searchBarCollapsed = false;
+            
+            isHidden = false;
+          }
+        }
+        
+        function hideSearchBar() {
+          const hStack = getHStack();
+          const searchBar = getSearchBar();
+          if (!hStack) return;
+          
+          if (!isHidden) {
+            // Get the current transform to preserve any existing transforms
+            const currentTransform = window.getComputedStyle(hStack).transform;
+            let baseTransform = '';
+            
+            // If there's an existing transform, we need to combine it
+            if (currentTransform && currentTransform !== 'none' && currentTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+              const matrixMatch = currentTransform.match(/matrix\(([^)]+)\)/);
+              if (matrixMatch) {
+                const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
+                baseTransform = `translate3d(${values[4] || 0}px, 100%, 0)`;
+              } else {
+                baseTransform = 'translate3d(0, 100%, 0)';
+              }
+            } else {
+              baseTransform = 'translate3d(0, 100%, 0)';
+            }
+            
+            // Move down (hide animation)
+            hStack.style.setProperty('transform', baseTransform, 'important');
+            hStack.style.setProperty('opacity', '0', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'none', 'important');
+            
+            // Set data-expanded="false" on hStack
+            hStack.setAttribute('data-expanded', 'false');
+            
+            // Set collapsed flag
+            window.searchBarCollapsed = true;
+            
+            isHidden = true;
+          }
+        }
+        
+        function handleScroll(e) {
+          const hStack = getHStack();
+          if (!hStack) return;
+          
+          // Get scroll position
+          const windowScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollTop = windowScrollY;
+          
+          // Clear scroll stop timeout
+          clearTimeout(scrollStopTimeout);
+          
+          // Clear timeout to debounce
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            // Scroll down - hide
+            if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              hideSearchBar();
+            }
+            // Scroll up - show
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              showSearchBar();
+            }
+            
+            lastScrollTop = currentScrollTop;
+            
+            // Show after 1 second of no scrolling
+            scrollStopTimeout = setTimeout(() => {
+              showSearchBar();
+            }, 1000);
+          }, 10);
+        }
+        
+        // Initialize scroll listener
+        function initScrollListener() {
+          const hStack = getHStack();
+          if (!hStack) return false;
+          
+          if (!isInitialized) {
+            lastScrollTop = window.scrollY || window.pageYOffset || 0;
+            
+            // Add scroll listener to window
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            
+            isInitialized = true;
+            return true;
+          }
+          return false;
+        }
+        
+        // Try immediately
+        if (!initScrollListener()) {
+          // Use MutationObserver to wait for DOM
+          const observer = new MutationObserver(function() {
+            if (initScrollListener()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          // Also try on intervals as fallback
+          let attempts = 0;
+          const maxAttempts = 100;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initScrollListener() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+        
+        // Monitor for React re-renders that might reset styles
+        const styleObserver = new MutationObserver(function() {
+          const hStack = getHStack();
+          if (hStack && isInitialized) {
+            // Re-apply hidden state if needed
+            if (isHidden) {
+              const currentTransform = window.getComputedStyle(hStack).transform;
+              if (currentTransform === 'none' || currentTransform === 'matrix(1, 0, 0, 1, 0, 0)') {
+                hideSearchBar();
+              }
+            }
+          }
+        });
+        
+        // Start monitoring after a delay to let React render
+        setTimeout(() => {
+          const hStack = getHStack();
+          if (hStack) {
+            styleObserver.observe(hStack, {
+              attributes: true,
+              attributeFilter: ['style', 'class'],
+              childList: true,
+              subtree: true
+            });
+          }
+        }, 1000);
       })();
     </script>
     <div class="app-container">
