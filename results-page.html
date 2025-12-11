@@ -482,7 +482,11 @@
             // Always persist search query first, regardless of collapsed state
             persistSearchQuery();
             
-            if (!window.searchBarCollapsed) {
+            // Check if past first row - if so, always maintain closeup state
+            const pastFirstRow = window.isPastFirstRowOfSecondaryGrid && window.isPastFirstRowOfSecondaryGrid();
+            if (pastFirstRow) {
+              maintainSearchBarState(); // This will apply closeup styling
+            } else if (!window.searchBarCollapsed) {
               maintainSearchBarState();
             }
           }, 100);
@@ -868,13 +872,29 @@
           const firstRowItemCount = Math.min(columnCount, gridItems.length);
           
           // Find the bottom of the tallest item in the first row
+          // Use offsetTop + offsetHeight for more accurate positioning
           let maxBottom = 0;
           for (let i = 0; i < firstRowItemCount; i++) {
             const item = gridItems[i];
-            const rect = item.getBoundingClientRect();
-            const itemBottom = rect.bottom + window.scrollY;
-            if (itemBottom > maxBottom) {
-              maxBottom = itemBottom;
+            if (item.offsetParent) {
+              // Get absolute position relative to document
+              let top = item.offsetTop;
+              let parent = item.offsetParent;
+              while (parent && parent !== document.body) {
+                top += parent.offsetTop;
+                parent = parent.offsetParent;
+              }
+              const itemBottom = top + item.offsetHeight;
+              if (itemBottom > maxBottom) {
+                maxBottom = itemBottom;
+              }
+            } else {
+              // Fallback to getBoundingClientRect
+              const rect = item.getBoundingClientRect();
+              const itemBottom = rect.bottom + (window.scrollY || window.pageYOffset || 0);
+              if (itemBottom > maxBottom) {
+                maxBottom = itemBottom;
+              }
             }
           }
           
@@ -886,18 +906,29 @@
           const newFirstRowBottom = calculateFirstRowBottom();
           const wasPastFirstRow = isPastFirstRow;
           
-          // Update first row bottom on resize
-          if (firstRowBottom === 0 || Math.abs(firstRowBottom - newFirstRowBottom) > 50) {
-            firstRowBottom = newFirstRowBottom;
+          // Always update first row bottom if it's valid
+          if (newFirstRowBottom > 0) {
+            // Update if it's the first calculation or if it changed significantly
+            if (firstRowBottom === 0 || Math.abs(firstRowBottom - newFirstRowBottom) > 50) {
+              firstRowBottom = newFirstRowBottom;
+            }
           }
           
-          isPastFirstRow = scrollY > firstRowBottom;
+          // Check if scrolled past first row (with small threshold for accuracy)
+          isPastFirstRow = scrollY > (firstRowBottom - 10);
           
           // Trigger update if state changed
           if (wasPastFirstRow !== isPastFirstRow) {
             window.dispatchEvent(new CustomEvent('firstRowScrollStateChanged', { 
               detail: { isPastFirstRow } 
             }));
+            // Also trigger immediate styling update
+            if (isPastFirstRow) {
+              setTimeout(() => {
+                const event = new CustomEvent('applyCloseupStyling');
+                window.dispatchEvent(event);
+              }, 10);
+            }
           }
           
           return isPastFirstRow;
@@ -908,11 +939,29 @@
           return isPastFirstRow;
         };
         
-        // Initial calculation
-        setTimeout(() => {
+        // Initial calculation - try multiple times to catch layout
+        function initializeFirstRowDetection() {
           firstRowBottom = calculateFirstRowBottom();
-          checkIfPastFirstRow();
-        }, 1000);
+          if (firstRowBottom === 0) {
+            // Try again after a delay if grid not ready
+            setTimeout(initializeFirstRowDetection, 500);
+          } else {
+            checkIfPastFirstRow();
+          }
+        }
+        
+        // Start detection after DOM and layout are ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeFirstRowDetection, 500);
+          });
+        } else {
+          setTimeout(initializeFirstRowDetection, 500);
+        }
+        
+        // Also try after masonry grid layout completes
+        setTimeout(initializeFirstRowDetection, 1500);
+        setTimeout(initializeFirstRowDetection, 2500);
         
         // Recalculate on resize
         let resizeTimeout;
@@ -924,21 +973,72 @@
           }, 250);
         });
         
-        // Check on scroll
+        // Check on scroll - more frequent
         let scrollCheckTimeout;
         window.addEventListener('scroll', () => {
           clearTimeout(scrollCheckTimeout);
-          scrollCheckTimeout = setTimeout(checkIfPastFirstRow, 10);
+          scrollCheckTimeout = setTimeout(checkIfPastFirstRow, 5);
         }, { passive: true });
         
         // Also check periodically to catch layout changes
         setInterval(() => {
           const newBottom = calculateFirstRowBottom();
-          if (newBottom > 0 && Math.abs(firstRowBottom - newBottom) > 10) {
-            firstRowBottom = newBottom;
-            checkIfPastFirstRow();
+          if (newBottom > 0) {
+            if (firstRowBottom === 0 || Math.abs(firstRowBottom - newBottom) > 10) {
+              firstRowBottom = newBottom;
+              checkIfPastFirstRow();
+            } else {
+              // Still check scroll position even if bottom hasn't changed
+              checkIfPastFirstRow();
+            }
           }
-        }, 500);
+        }, 200);
+        
+        // Use IntersectionObserver on first row items for more accurate detection
+        function setupIntersectionObserver() {
+          const secondaryGrid = document.querySelector('.MasonryGrid-module__gridContainer[data-grid="related-pins"]');
+          if (!secondaryGrid) return;
+          
+          const gridItems = secondaryGrid.querySelectorAll('.MasonryGrid-module__gridItem');
+          if (gridItems.length === 0) return;
+          
+          const columnCount = getColumnCount();
+          const firstRowItemCount = Math.min(columnCount, gridItems.length);
+          
+          // Observe the last item in the first row
+          if (firstRowItemCount > 0) {
+            const lastFirstRowItem = gridItems[firstRowItemCount - 1];
+            if (lastFirstRowItem) {
+              const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                  // When the last item of first row is not intersecting (scrolled past), we're past first row
+                  const pastFirstRow = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+                  if (pastFirstRow !== isPastFirstRow) {
+                    isPastFirstRow = pastFirstRow;
+                    window.dispatchEvent(new CustomEvent('firstRowScrollStateChanged', { 
+                      detail: { isPastFirstRow } 
+                    }));
+                    if (isPastFirstRow) {
+                      setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('applyCloseupStyling'));
+                      }, 10);
+                    }
+                  }
+                });
+              }, {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0
+              });
+              
+              observer.observe(lastFirstRowItem);
+            }
+          }
+        }
+        
+        // Setup intersection observer after grid layout
+        setTimeout(setupIntersectionObserver, 2000);
+        setTimeout(setupIntersectionObserver, 3000);
       })();
       
       // Hide SearchBar on scroll down and collapse hStack (same as boards.html)
@@ -1071,37 +1171,28 @@
           const hStack = getHStack();
           if (!searchBar) return;
           
-          // Ensure search query persists (call the persist function from the other scope)
-          // The persistSearchQuery function is in a different scope, so we'll rely on maintainSearchBarState
-          // which already calls persistSearchQuery and checks for past first row
-          
-          // Ensure searchbar is visible
+          // Force remove any hide transforms
           searchBar.style.removeProperty('transform');
           searchBar.style.setProperty('opacity', '1', 'important');
           searchBar.style.setProperty('pointer-events', 'auto', 'important');
+          searchBar.style.setProperty('visibility', 'visible', 'important');
           
-          // Apply expanded and closeup classes
-          if (!searchBar.classList.contains('SearchBar-module__expanded')) {
-            searchBar.classList.add('SearchBar-module__expanded');
-          }
-          if (!searchBar.classList.contains('SearchBar-module__closeup')) {
-            searchBar.classList.add('SearchBar-module__closeup');
-          }
-          if (searchBar.getAttribute('data-closeup-context-visible') !== 'true') {
-            searchBar.setAttribute('data-closeup-context-visible', 'true');
-          }
+          // Force apply expanded and closeup classes (use add, don't check)
+          searchBar.classList.add('SearchBar-module__expanded');
+          searchBar.classList.add('SearchBar-module__closeup');
+          searchBar.setAttribute('data-closeup-context-visible', 'true');
           
           // Set data-expanded="true" on hStack
           if (hStack) {
             hStack.setAttribute('data-expanded', 'true');
+            hStack.style.removeProperty('transform');
+            hStack.style.setProperty('opacity', '1', 'important');
+            hStack.style.setProperty('pointer-events', 'auto', 'important');
           }
           
           // Clear collapsed flag
           window.searchBarCollapsed = false;
           isHidden = false;
-          
-          // Ensure search query is persisted by triggering maintainSearchBarState
-          // This will be handled by the existing state maintenance system
         }
         
         // Listen for first row scroll state changes
@@ -1109,6 +1200,11 @@
           if (e.detail.isPastFirstRow) {
             applyCloseupStyling();
           }
+        });
+        
+        // Also listen for direct styling application event
+        window.addEventListener('applyCloseupStyling', function() {
+          applyCloseupStyling();
         });
         
         // Initialize scroll listener
@@ -1151,18 +1247,35 @@
         }
         
         // Monitor for React re-renders that might reset styles
-        const styleObserver = new MutationObserver(function() {
+        const styleObserver = new MutationObserver(function(mutations) {
           const searchBar = getSearchBar();
           if (searchBar && isInitialized) {
             // Check if past first row - if so, apply closeup styling
             const pastFirstRow = window.isPastFirstRowOfSecondaryGrid && window.isPastFirstRowOfSecondaryGrid();
             if (pastFirstRow) {
-              applyCloseupStyling();
+              // Check if classes were removed by React
+              const hasExpanded = searchBar.classList.contains('SearchBar-module__expanded');
+              const hasCloseup = searchBar.classList.contains('SearchBar-module__closeup');
+              
+              if (!hasExpanded || !hasCloseup) {
+                applyCloseupStyling();
+              }
+              
+              // Also check if transform/opacity were reset
+              const transform = window.getComputedStyle(searchBar).transform;
+              const opacity = window.getComputedStyle(searchBar).opacity;
+              if (transform && transform !== 'none' && transform.includes('translate3d') && transform.includes('100%')) {
+                applyCloseupStyling();
+              }
+              if (opacity === '0' || opacity === '0px') {
+                applyCloseupStyling();
+              }
+              
               return;
             }
             
-            // Re-apply hidden state if needed
-            if (isHidden) {
+            // Re-apply hidden state if needed (only if not past first row)
+            if (isHidden && !pastFirstRow) {
               const currentTransform = window.getComputedStyle(searchBar).transform;
               if (currentTransform === 'none' || currentTransform === 'matrix(1, 0, 0, 1, 0, 0)') {
                 hideSearchBar();
@@ -1177,7 +1290,7 @@
           if (searchBar) {
             styleObserver.observe(searchBar, {
               attributes: true,
-              attributeFilter: ['style', 'class'],
+              attributeFilter: ['style', 'class', 'data-closeup-context-visible'],
               childList: true,
               subtree: true
             });
@@ -1189,8 +1302,12 @@
           const pastFirstRow = window.isPastFirstRowOfSecondaryGrid && window.isPastFirstRowOfSecondaryGrid();
           if (pastFirstRow) {
             applyCloseupStyling();
+            // Also trigger maintainSearchBarState to ensure query persists
+            if (window.maintainSearchBarState) {
+              window.maintainSearchBarState();
+            }
           }
-        }, 500);
+        }, 200);
       })();
       
       // Ensure IconButton styling is applied (same as index.html)
