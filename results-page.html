@@ -1130,6 +1130,12 @@
             buttonRow.style.setProperty('display', 'none', 'important');
           }
           
+          // Hide SearchHelperCards when reference styling is active
+          const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+          helperCards.forEach(card => {
+            card.style.setProperty('display', 'none', 'important');
+          });
+          
           // Add X icon if it doesn't exist
           if (!xIconButton) {
             xIconButton = document.createElement('button');
@@ -1200,6 +1206,12 @@
           if (buttonRow) {
             buttonRow.style.removeProperty('display');
           }
+          
+          // Restore SearchHelperCards
+          const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+          helperCards.forEach(card => {
+            card.style.removeProperty('display');
+          });
           
           // Hide X icon
           if (xIconButton) {
@@ -1319,6 +1331,15 @@
                 }
               }
               
+              // Ensure SearchHelperCards remain hidden
+              const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+              helperCards.forEach(card => {
+                const currentDisplay = window.getComputedStyle(card).display;
+                if (currentDisplay !== 'none') {
+                  card.style.setProperty('display', 'none', 'important');
+                }
+              });
+              
               // Ensure search query persists
               const input = getSearchInput();
               if (input) {
@@ -1350,6 +1371,56 @@
             applyReferenceStyling();
           }
         }, 500);
+      })();
+      
+      // Hide SearchHelperCards when searchBar has expanded and closeup classes
+      (function() {
+        function hideHelperCards() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded.SearchBar-module__closeup');
+          if (searchBar) {
+            const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+            helperCards.forEach(card => {
+              card.style.setProperty('display', 'none', 'important');
+            });
+          } else {
+            // Restore helper cards if searchBar doesn't have those classes
+            const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+            helperCards.forEach(card => {
+              card.style.removeProperty('display');
+            });
+          }
+        }
+        
+        // Check initially and on changes
+        function initHelperCardHiding() {
+          hideHelperCards();
+          
+          // Use MutationObserver to watch for class changes on searchBar
+          const observer = new MutationObserver(function() {
+            hideHelperCards();
+          });
+          
+          // Find and observe searchBar
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (searchBar) {
+            observer.observe(searchBar, {
+              attributes: true,
+              attributeFilter: ['class']
+            });
+          }
+          
+          // Also check periodically as fallback
+          setInterval(hideHelperCards, 500);
+        }
+        
+        // Initialize after DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initHelperCardHiding, 1000);
+          });
+        } else {
+          setTimeout(initHelperCardHiding, 1000);
+        }
       })();
       
       // Ensure IconButton styling is applied (same as index.html)
