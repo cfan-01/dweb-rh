@@ -1081,13 +1081,93 @@
         <div class="results-divider"></div>
         <div class="related-pins-heading">More ideas</div>
       </div>
+      <div class="MasonryGrid-module__container">
+        <div class="MasonryGrid-module__gridContainer packery-container" data-grid="related-pins">
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio3_4">
+                <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio1_1">
+                <img src="/dweb-rh/assets/images/hf-6.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio3_4">
+                <img src="/dweb-rh/assets/images/hf-10.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-11.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio1_1">
+                <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio3_4">
+                <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-15.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio1_1">
+                <img src="/dweb-rh/assets/images/hf-16.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio3_4">
+                <img src="/dweb-rh/assets/images/hf-17.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-18.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio1_1">
+                <img src="/dweb-rh/assets/images/hf-19.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio3_4">
+                <img src="/dweb-rh/assets/images/hf-20.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+            <div class="MasonryGrid-module__gridItem">
+              <div class="Pin-module__pin Pin-module__ratio2_3">
+                <img src="/dweb-rh/assets/images/hf-21.jpg" alt="Pin" class="Pin-module__pinImage" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script>
       // Masonry grid implementation (same as index.html)
       (function() {
         document.addEventListener('DOMContentLoaded', function() {
-          function initMasonryGrid() {
-            const gridContainer = document.querySelector('.MasonryGrid-module__gridContainer.packery-container');
+          function initMasonryGrid(containerSelector, maxItems) {
+            const gridContainer = document.querySelector(containerSelector);
             if (!gridContainer) return;
             
             // Responsive breakpoints
@@ -1124,8 +1204,8 @@
               const columnWidth = calculateColumnWidth(availableWidth, columnCount, gutter);
               
               const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
-              // Limit to 5 images
-              const itemsToLayout = Array.from(gridItems).slice(0, 5);
+              // Limit items based on maxItems parameter (or use all if not specified)
+              const itemsToLayout = maxItems ? Array.from(gridItems).slice(0, maxItems) : Array.from(gridItems);
               const columnHeights = Array(columnCount).fill(0);
               
               // First pass: set widths and calculate heights
@@ -1332,8 +1412,11 @@
             });
           }
           
-          // Initialize masonry grid
-          initMasonryGrid();
+          // Initialize both masonry grids
+          // First grid: 5 images (existing, in first container, no data-grid attribute)
+          initMasonryGrid('.MasonryGrid-module__container:first-of-type .MasonryGrid-module__gridContainer.packery-container', 5);
+          // Second grid: 15 images (related pins, has data-grid="related-pins")
+          initMasonryGrid('.MasonryGrid-module__gridContainer[data-grid="related-pins"]', 15);
         });
       })();
     </script>
