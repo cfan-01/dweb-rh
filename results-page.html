@@ -1118,6 +1118,18 @@
             hStack.setAttribute('data-expanded', 'true');
           }
           
+          // Hide avatar image (SearchBar-module__searchIconContainer) when reference styling is active
+          const searchIconContainer = searchBar.querySelector('.SearchBar-module__searchIconContainer');
+          if (searchIconContainer) {
+            searchIconContainer.style.setProperty('display', 'none', 'important');
+          }
+          
+          // Hide buttonRow when reference styling is active
+          const buttonRow = searchBar.querySelector('.SearchBar-module__buttonRow');
+          if (buttonRow) {
+            buttonRow.style.setProperty('display', 'none', 'important');
+          }
+          
           // Add X icon if it doesn't exist
           if (!xIconButton) {
             xIconButton = document.createElement('button');
@@ -1176,6 +1188,18 @@
           searchBar.style.removeProperty('align-items');
           searchBar.style.removeProperty('padding');
           searchBar.style.removeProperty('box-sizing');
+          
+          // Restore avatar image (SearchBar-module__searchIconContainer)
+          const searchIconContainer = searchBar.querySelector('.SearchBar-module__searchIconContainer');
+          if (searchIconContainer) {
+            searchIconContainer.style.removeProperty('display');
+          }
+          
+          // Restore buttonRow
+          const buttonRow = searchBar.querySelector('.SearchBar-module__buttonRow');
+          if (buttonRow) {
+            buttonRow.style.removeProperty('display');
+          }
           
           // Hide X icon
           if (xIconButton) {
@@ -1276,6 +1300,23 @@
               if (!xIconButton || !searchBar.contains(xIconButton)) {
                 xIconButton = null;
                 applyReferenceStyling();
+              }
+              
+              // Ensure avatar and buttonRow remain hidden
+              const searchIconContainer = searchBar.querySelector('.SearchBar-module__searchIconContainer');
+              if (searchIconContainer) {
+                const currentDisplay = window.getComputedStyle(searchIconContainer).display;
+                if (currentDisplay !== 'none') {
+                  searchIconContainer.style.setProperty('display', 'none', 'important');
+                }
+              }
+              
+              const buttonRow = searchBar.querySelector('.SearchBar-module__buttonRow');
+              if (buttonRow) {
+                const currentDisplay = window.getComputedStyle(buttonRow).display;
+                if (currentDisplay !== 'none') {
+                  buttonRow.style.setProperty('display', 'none', 'important');
+                }
               }
               
               // Ensure search query persists
