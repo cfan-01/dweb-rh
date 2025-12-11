@@ -746,14 +746,12 @@
         let lastScrollTop = 0;
         let isHidden = false;
         let scrollTimeout;
-        let scrollStopTimeout;
         let isInitialized = false;
         
         function getSearchBar() {
-          return document.querySelector('.SearchBar-module__searchBar') ||
-                 document.querySelector('.SearchBar-module__hStack') ||
-                 document.querySelector('[class*="SearchBar"][class*="hStack"]') ||
-                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack');
+          return document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded') ||
+                 document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('[class*="SearchBar-module__searchBar"]');
         }
         
         function getHStack() {
@@ -762,20 +760,23 @@
         }
         
         function showSearchBar() {
+          const searchBar = getSearchBar();
           const hStack = getHStack();
-          if (!hStack) return;
+          if (!searchBar) return;
           
           if (isHidden) {
-            // Remove transform to restore original positioning
-            hStack.style.removeProperty('transform');
-            hStack.style.setProperty('opacity', '1', 'important');
-            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-            hStack.style.setProperty('pointer-events', 'auto', 'important');
-            hStack.style.removeProperty('transform-origin');
-            hStack.style.removeProperty('will-change');
+            // Remove transform from searchBar to restore original positioning
+            searchBar.style.removeProperty('transform');
+            searchBar.style.setProperty('opacity', '1', 'important');
+            searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            searchBar.style.setProperty('pointer-events', 'auto', 'important');
+            searchBar.style.removeProperty('transform-origin');
+            searchBar.style.removeProperty('will-change');
             
             // Set data-expanded="true" on hStack
-            hStack.setAttribute('data-expanded', 'true');
+            if (hStack) {
+              hStack.setAttribute('data-expanded', 'true');
+            }
             
             // Clear collapsed flag
             window.searchBarCollapsed = false;
@@ -785,13 +786,13 @@
         }
         
         function hideSearchBar() {
-          const hStack = getHStack();
           const searchBar = getSearchBar();
-          if (!hStack) return;
+          const hStack = getHStack();
+          if (!searchBar) return;
           
           if (!isHidden) {
             // Get the current transform to preserve any existing transforms
-            const currentTransform = window.getComputedStyle(hStack).transform;
+            const currentTransform = window.getComputedStyle(searchBar).transform;
             let baseTransform = '';
             
             // If there's an existing transform, we need to combine it
@@ -807,14 +808,16 @@
               baseTransform = 'translate3d(0, 100%, 0)';
             }
             
-            // Move down (hide animation)
-            hStack.style.setProperty('transform', baseTransform, 'important');
-            hStack.style.setProperty('opacity', '0', 'important');
-            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-            hStack.style.setProperty('pointer-events', 'none', 'important');
+            // Move down (hide animation) on the entire searchBar
+            searchBar.style.setProperty('transform', baseTransform, 'important');
+            searchBar.style.setProperty('opacity', '0', 'important');
+            searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            searchBar.style.setProperty('pointer-events', 'none', 'important');
             
             // Set data-expanded="false" on hStack
-            hStack.setAttribute('data-expanded', 'false');
+            if (hStack) {
+              hStack.setAttribute('data-expanded', 'false');
+            }
             
             // Set collapsed flag
             window.searchBarCollapsed = true;
@@ -824,15 +827,12 @@
         }
         
         function handleScroll(e) {
-          const hStack = getHStack();
-          if (!hStack) return;
+          const searchBar = getSearchBar();
+          if (!searchBar) return;
           
           // Get scroll position
           const windowScrollY = window.scrollY || window.pageYOffset || 0;
           const currentScrollTop = windowScrollY;
-          
-          // Clear scroll stop timeout
-          clearTimeout(scrollStopTimeout);
           
           // Clear timeout to debounce
           clearTimeout(scrollTimeout);
@@ -847,18 +847,13 @@
             }
             
             lastScrollTop = currentScrollTop;
-            
-            // Show after 1 second of no scrolling
-            scrollStopTimeout = setTimeout(() => {
-              showSearchBar();
-            }, 1000);
           }, 10);
         }
         
         // Initialize scroll listener
         function initScrollListener() {
-          const hStack = getHStack();
-          if (!hStack) return false;
+          const searchBar = getSearchBar();
+          if (!searchBar) return false;
           
           if (!isInitialized) {
             lastScrollTop = window.scrollY || window.pageYOffset || 0;
@@ -896,11 +891,11 @@
         
         // Monitor for React re-renders that might reset styles
         const styleObserver = new MutationObserver(function() {
-          const hStack = getHStack();
-          if (hStack && isInitialized) {
+          const searchBar = getSearchBar();
+          if (searchBar && isInitialized) {
             // Re-apply hidden state if needed
             if (isHidden) {
-              const currentTransform = window.getComputedStyle(hStack).transform;
+              const currentTransform = window.getComputedStyle(searchBar).transform;
               if (currentTransform === 'none' || currentTransform === 'matrix(1, 0, 0, 1, 0, 0)') {
                 hideSearchBar();
               }
@@ -910,9 +905,9 @@
         
         // Start monitoring after a delay to let React render
         setTimeout(() => {
-          const hStack = getHStack();
-          if (hStack) {
-            styleObserver.observe(hStack, {
+          const searchBar = getSearchBar();
+          if (searchBar) {
+            styleObserver.observe(searchBar, {
               attributes: true,
               attributeFilter: ['style', 'class'],
               childList: true,
@@ -920,6 +915,61 @@
             });
           }
         }, 1000);
+      })();
+      
+      // Ensure IconButton styling is applied (same as index.html)
+      (function() {
+        function applyIconButtonStyles() {
+          const iconButtons = document.querySelectorAll('.IconButton-module__iconButton');
+          
+          iconButtons.forEach(button => {
+            // Check if button should be active (has aria-current, aria-selected, active class, or data-active)
+            const isActive = button.getAttribute('aria-current') === 'page' ||
+                           button.getAttribute('aria-selected') === 'true' ||
+                           button.classList.contains('active') ||
+                           button.getAttribute('data-active') === 'true';
+            
+            if (isActive) {
+              // Ensure active styling is applied
+              button.style.backgroundColor = '#000000';
+              button.style.borderRadius = '8px';
+              button.style.padding = '8px 12px';
+              
+              // Make icon white
+              const svg = button.querySelector('svg');
+              if (svg) {
+                svg.style.fill = '#ffffff';
+                svg.style.color = '#ffffff';
+                const paths = svg.querySelectorAll('path');
+                paths.forEach(path => {
+                  path.style.fill = '#ffffff';
+                });
+              }
+            }
+          });
+        }
+        
+        // Try immediately
+        applyIconButtonStyles();
+        
+        // Try after delays to wait for React to render
+        setTimeout(applyIconButtonStyles, 500);
+        setTimeout(applyIconButtonStyles, 1000);
+        setTimeout(applyIconButtonStyles, 2000);
+        
+        // Watch for DOM changes
+        const observer = new MutationObserver(() => {
+          applyIconButtonStyles();
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class', 'aria-current', 'aria-selected', 'data-active']
+        });
+        
+        // Also check periodically
+        setInterval(applyIconButtonStyles, 1000);
       })();
     </script>
     <div class="app-container">
