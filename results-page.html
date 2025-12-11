@@ -1060,8 +1060,7 @@
           const input = getSearchInput();
           if (!searchBar) return;
           
-          // Apply styling to searchBar
-          searchBar.style.setProperty('width', '518px', 'important');
+          // Apply styling to searchBar (width is responsive, matches normal searchBar behavior)
           searchBar.style.setProperty('height', '80px', 'important');
           searchBar.style.setProperty('background-color', '#FFFFFF', 'important');
           searchBar.style.setProperty('border-radius', '16px', 'important');
@@ -1349,8 +1348,9 @@
             const searchBar = getSearchBar();
             if (searchBar) {
               // Re-apply reference styling if React removed it
-              const currentWidth = window.getComputedStyle(searchBar).width;
-              if (currentWidth !== '518px') {
+              const currentBgColor = window.getComputedStyle(searchBar).backgroundColor;
+              const isWhiteBg = currentBgColor === "rgb(255, 255, 255)" || currentBgColor === "#ffffff" || currentBgColor === "#FFFFFF";
+              if (!isWhiteBg) {
                 applyReferenceStyling();
               }
               
@@ -1389,13 +1389,36 @@
               // Ensure SearchRedirectChips carousel remains positioned 4px above
               const carousel = document.querySelector('.SearchRedirectChips-module__carousel');
               if (carousel) {
-                const currentMarginBottom = window.getComputedStyle(carousel).marginBottom;
-                if (currentMarginBottom !== '4px') {
-                  carousel.style.setProperty('margin-bottom', '4px', 'important');
-                  carousel.style.setProperty('display', 'block', 'important');
-                  carousel.style.setProperty('visibility', 'visible', 'important');
-                  carousel.style.setProperty('opacity', '1', 'important');
+                // Check DOM order to determine which element should have the margin
+                const searchBarParent = searchBar.parentElement;
+                let shouldUseSearchBarMarginTop = false;
+                
+                if (searchBarParent && searchBarParent.contains(carousel)) {
+                  const searchBarIndex = Array.from(searchBarParent.children).indexOf(searchBar);
+                  const carouselIndex = Array.from(searchBarParent.children).indexOf(carousel);
+                  shouldUseSearchBarMarginTop = (carouselIndex > searchBarIndex);
                 }
+                
+                if (shouldUseSearchBarMarginTop) {
+                  // Carousel is after searchBar, check and restore searchBar margin-top
+                  const currentMarginTop = window.getComputedStyle(searchBar).marginTop;
+                  if (currentMarginTop !== "4px") {
+                    searchBar.style.setProperty("margin-top", "4px", "important");
+                    carousel.style.removeProperty("margin-bottom");
+                  }
+                } else {
+                  // Carousel is before searchBar, check and restore carousel margin-bottom
+                  const currentMarginBottom = window.getComputedStyle(carousel).marginBottom;
+                  if (currentMarginBottom !== "4px") {
+                    carousel.style.setProperty("margin-bottom", "4px", "important");
+                    searchBar.style.removeProperty("margin-top");
+                  }
+                }
+                
+                // Ensure carousel is visible
+                carousel.style.setProperty("display", "block", "important");
+                carousel.style.setProperty("visibility", "visible", "important");
+                carousel.style.setProperty("opacity", "1", "important");
               }
               
               // Ensure search query persists
