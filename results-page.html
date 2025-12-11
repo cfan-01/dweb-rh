@@ -1217,7 +1217,10 @@
           if (!searchBar) return;
           
           // Remove inline styles to restore original styling
+          // Remove all width-related properties to ensure natural CSS sizing (same as index.html)
           searchBar.style.removeProperty('width');
+          searchBar.style.removeProperty('max-width');
+          searchBar.style.removeProperty('min-width');
           searchBar.style.removeProperty('height');
           searchBar.style.removeProperty('background-color');
           searchBar.style.removeProperty('border-radius');
