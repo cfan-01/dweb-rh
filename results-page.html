@@ -907,6 +907,19 @@
           const searchBar = getSearchBar();
           if (!searchBar) return;
           
+          // Check if we're in second grid area - if so, skip normal hide/show behavior
+          const secondGrid = document.querySelector('.MasonryGrid-module__gridContainer[data-grid="related-pins"]');
+          if (secondGrid) {
+            const rect = secondGrid.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            const isInSecondGrid = rect.top < viewportHeight && rect.bottom > 0;
+            
+            if (isInSecondGrid && window.isInSecondGridArea) {
+              // Skip normal scroll behavior when in second grid area
+              return;
+            }
+          }
+          
           // Get scroll position
           const windowScrollY = window.scrollY || window.pageYOffset || 0;
           const currentScrollTop = windowScrollY;
@@ -992,6 +1005,310 @@
             });
           }
         }, 1000);
+      })();
+      
+      // Scroll stop detection and reference styling for second masonry grid
+      (function() {
+        let isInSecondGridArea = false;
+        let isReferenceStylingActive = false;
+        let scrollStopTimeout;
+        let secondGridScrollTimeout;
+        let xIconButton = null;
+        
+        function getSecondGrid() {
+          return document.querySelector('.MasonryGrid-module__gridContainer[data-grid="related-pins"]');
+        }
+        
+        function getSearchBar() {
+          return document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded') ||
+                 document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('[class*="SearchBar-module__searchBar"]');
+        }
+        
+        function getSearchInput() {
+          const searchBar = getSearchBar();
+          if (!searchBar) return null;
+          return searchBar.querySelector('input') || searchBar.querySelector('[type="text"]');
+        }
+        
+        function getSearchQuery() {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get('q') || '';
+        }
+        
+        // Check if second grid is in viewport
+        function isSecondGridInViewport() {
+          const secondGrid = getSecondGrid();
+          if (!secondGrid) return false;
+          
+          const rect = secondGrid.getBoundingClientRect();
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+          const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+          
+          // Check if grid is visible in viewport (at least partially)
+          return (
+            rect.top < viewportHeight &&
+            rect.bottom > 0 &&
+            rect.left < viewportWidth &&
+            rect.right > 0
+          );
+        }
+        
+        // Apply reference styling to searchBar
+        function applyReferenceStyling() {
+          const searchBar = getSearchBar();
+          const input = getSearchInput();
+          if (!searchBar) return;
+          
+          // Apply styling to searchBar
+          searchBar.style.setProperty('width', '518px', 'important');
+          searchBar.style.setProperty('height', '80px', 'important');
+          searchBar.style.setProperty('background-color', '#FFFFFF', 'important');
+          searchBar.style.setProperty('border-radius', '16px', 'important');
+          searchBar.style.setProperty('box-shadow', '0 2px 8px rgba(0, 0, 0, 0.1)', 'important');
+          searchBar.style.setProperty('position', 'relative', 'important');
+          searchBar.style.setProperty('display', 'flex', 'important');
+          searchBar.style.setProperty('align-items', 'center', 'important');
+          searchBar.style.setProperty('padding', '0 16px', 'important');
+          searchBar.style.setProperty('box-sizing', 'border-box', 'important');
+          
+          // Remove hide transforms
+          searchBar.style.removeProperty('transform');
+          searchBar.style.setProperty('opacity', '1', 'important');
+          searchBar.style.setProperty('pointer-events', 'auto', 'important');
+          searchBar.style.setProperty('visibility', 'visible', 'important');
+          
+          // Apply font styling to input
+          if (input) {
+            input.style.setProperty('font-family', '"Pin Sans", var(--font-family-pin-sans), sans-serif', 'important');
+            input.style.setProperty('font-weight', '400', 'important');
+            input.style.setProperty('font-size', '16px', 'important');
+            input.style.setProperty('color', '#111111', 'important');
+            input.style.setProperty('border', 'none', 'important');
+            input.style.setProperty('outline', 'none', 'important');
+            input.style.setProperty('background', 'transparent', 'important');
+            input.style.setProperty('flex', '1', 'important');
+            input.style.setProperty('padding', '0', 'important');
+            input.style.setProperty('margin', '0', 'important');
+            input.style.setProperty('width', 'auto', 'important');
+            input.style.setProperty('min-width', '0', 'important');
+            
+            // Ensure search query is visible and persists
+            const searchQuery = getSearchQuery();
+            if (searchQuery) {
+              input.value = searchQuery;
+            }
+            
+            // Also ensure input is visible and editable
+            input.style.setProperty('opacity', '1', 'important');
+            input.style.setProperty('visibility', 'visible', 'important');
+            input.readOnly = false;
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+            input.disabled = false;
+          }
+          
+          // Also check hStack for proper layout
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          if (hStack) {
+            hStack.style.setProperty('display', 'flex', 'important');
+            hStack.style.setProperty('align-items', 'center', 'important');
+            hStack.style.setProperty('width', '100%', 'important');
+            hStack.style.setProperty('height', '100%', 'important');
+            hStack.setAttribute('data-expanded', 'true');
+          }
+          
+          // Add X icon if it doesn't exist
+          if (!xIconButton) {
+            xIconButton = document.createElement('button');
+            xIconButton.innerHTML = '×';
+            xIconButton.style.setProperty('width', '24px', 'important');
+            xIconButton.style.setProperty('height', '24px', 'important');
+            xIconButton.style.setProperty('border', 'none', 'important');
+            xIconButton.style.setProperty('background', 'transparent', 'important');
+            xIconButton.style.setProperty('cursor', 'pointer', 'important');
+            xIconButton.style.setProperty('font-size', '24px', 'important');
+            xIconButton.style.setProperty('line-height', '24px', 'important');
+            xIconButton.style.setProperty('color', '#111111', 'important');
+            xIconButton.style.setProperty('padding', '0', 'important');
+            xIconButton.style.setProperty('margin-left', '12px', 'important');
+            xIconButton.style.setProperty('display', 'flex', 'important');
+            xIconButton.style.setProperty('align-items', 'center', 'important');
+            xIconButton.style.setProperty('justify-content', 'center', 'important');
+            xIconButton.setAttribute('aria-label', 'Clear search');
+            
+            // Add click handler to clear search
+            xIconButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              const input = getSearchInput();
+              if (input) {
+                input.value = '';
+                input.focus();
+              }
+              // Optionally navigate to results page without query
+              // window.location.href = '/dweb-rh/results-page.html';
+            });
+            
+            searchBar.appendChild(xIconButton);
+          } else {
+            // Ensure X icon is visible
+            xIconButton.style.setProperty('display', 'flex', 'important');
+          }
+          
+          isReferenceStylingActive = true;
+          window.searchBarCollapsed = false;
+        }
+        
+        // Remove reference styling
+        function removeReferenceStyling() {
+          const searchBar = getSearchBar();
+          if (!searchBar) return;
+          
+          // Remove inline styles to restore original styling
+          searchBar.style.removeProperty('width');
+          searchBar.style.removeProperty('height');
+          searchBar.style.removeProperty('background-color');
+          searchBar.style.removeProperty('border-radius');
+          searchBar.style.removeProperty('box-shadow');
+          searchBar.style.removeProperty('position');
+          searchBar.style.removeProperty('display');
+          searchBar.style.removeProperty('align-items');
+          searchBar.style.removeProperty('padding');
+          searchBar.style.removeProperty('box-sizing');
+          
+          // Hide X icon
+          if (xIconButton) {
+            xIconButton.style.setProperty('display', 'none', 'important');
+          }
+          
+          isReferenceStylingActive = false;
+        }
+        
+        // Handle scroll stop detection
+        function handleScrollStop() {
+          if (isSecondGridInViewport()) {
+            isInSecondGridArea = true;
+            // Show searchBar with reference styling when scroll stops
+            applyReferenceStyling();
+          } else {
+            isInSecondGridArea = false;
+            // Remove reference styling when outside second grid
+            if (isReferenceStylingActive) {
+              removeReferenceStyling();
+            }
+          }
+        }
+        
+        // Override scroll handler to check second grid area
+        function handleScrollWithSecondGrid(e) {
+          const searchBar = getSearchBar();
+          if (!searchBar) return;
+          
+          // Check if we're in second grid area
+          if (isSecondGridInViewport()) {
+            isInSecondGridArea = true;
+            window.isInSecondGridArea = true; // Expose globally for other handlers
+            // Clear any existing scroll timeout from normal handler
+            clearTimeout(scrollStopTimeout);
+            
+            // Detect scroll stop (300ms after last scroll event)
+            scrollStopTimeout = setTimeout(() => {
+              handleScrollStop();
+            }, 300);
+            
+            // Don't proceed with normal hide/show behavior
+            return;
+          } else {
+            isInSecondGridArea = false;
+            window.isInSecondGridArea = false; // Expose globally
+            // Remove reference styling if active
+            if (isReferenceStylingActive) {
+              removeReferenceStyling();
+            }
+            // Allow normal scroll behavior to proceed
+          }
+        }
+        
+        // Initialize scroll stop detection
+        function initScrollStopDetection() {
+          const secondGrid = getSecondGrid();
+          if (!secondGrid) return false;
+          
+          // Add scroll listener for second grid detection
+          window.addEventListener('scroll', handleScrollWithSecondGrid, { passive: true });
+          
+          // Initial check
+          setTimeout(() => {
+            if (isSecondGridInViewport()) {
+              handleScrollStop();
+            }
+          }, 500);
+          
+          return true;
+        }
+        
+        // Try to initialize
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initScrollStopDetection, 1000);
+          });
+        } else {
+          setTimeout(initScrollStopDetection, 1000);
+        }
+        
+        // Also try after masonry grid layout completes
+        setTimeout(initScrollStopDetection, 2000);
+        setTimeout(initScrollStopDetection, 3000);
+        
+        // Use MutationObserver to maintain styling
+        const referenceStyleObserver = new MutationObserver(function() {
+          if (isInSecondGridArea && isReferenceStylingActive) {
+            const searchBar = getSearchBar();
+            if (searchBar) {
+              // Re-apply reference styling if React removed it
+              const currentWidth = window.getComputedStyle(searchBar).width;
+              if (currentWidth !== '518px') {
+                applyReferenceStyling();
+              }
+              
+              // Ensure X icon is still present
+              if (!xIconButton || !searchBar.contains(xIconButton)) {
+                xIconButton = null;
+                applyReferenceStyling();
+              }
+              
+              // Ensure search query persists
+              const input = getSearchInput();
+              if (input) {
+                const searchQuery = getSearchQuery();
+                if (searchQuery && input.value !== searchQuery) {
+                  input.value = searchQuery;
+                }
+              }
+            }
+          }
+        });
+        
+        // Start monitoring searchBar
+        setTimeout(() => {
+          const searchBar = getSearchBar();
+          if (searchBar) {
+            referenceStyleObserver.observe(searchBar, {
+              attributes: true,
+              attributeFilter: ['style', 'class'],
+              childList: true,
+              subtree: true
+            });
+          }
+        }, 1500);
+        
+        // Periodically check and maintain state
+        setInterval(() => {
+          if (isInSecondGridArea && isReferenceStylingActive) {
+            applyReferenceStyling();
+          }
+        }, 500);
       })();
       
       // Ensure IconButton styling is applied (same as index.html)
