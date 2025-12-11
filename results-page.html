@@ -741,6 +741,104 @@
         setInterval(setGlobalNavWidth, 100);
       })();
       
+      // Auto-collapse SearchBar after 2 seconds (same style/position as boards.html)
+      (function() {
+        let collapseTimeout;
+        let hasCollapsed = false;
+        
+        function getSearchBar() {
+          return document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded') ||
+                 document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('[class*="SearchBar-module__searchBar"]');
+        }
+        
+        function getHStack() {
+          return document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]');
+        }
+        
+        function collapseSearchBar() {
+          if (hasCollapsed) return;
+          
+          const hStack = getHStack();
+          
+          if (!hStack) return;
+          
+          // Get the current transform to preserve any existing transforms (same as boards.html)
+          const currentTransform = window.getComputedStyle(hStack).transform;
+          let baseTransform = '';
+          
+          // If there's an existing transform, we need to combine it
+          if (currentTransform && currentTransform !== 'none' && currentTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+            const matrixMatch = currentTransform.match(/matrix\(([^)]+)\)/);
+            if (matrixMatch) {
+              const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
+              // values[4] is translateX, values[5] is translateY
+              // We want to preserve translateX but change translateY
+              baseTransform = `translate3d(${values[4] || 0}px, 100%, 0)`;
+            } else {
+              baseTransform = 'translate3d(0, 100%, 0)';
+            }
+          } else {
+            // No existing transform, just move down
+            baseTransform = 'translate3d(0, 100%, 0)';
+          }
+          
+          // Apply collapse styling to hStack (same as boards.html)
+          hStack.style.setProperty('transform', baseTransform, 'important');
+          hStack.style.setProperty('opacity', '0', 'important');
+          hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+          hStack.style.setProperty('pointer-events', 'none', 'important');
+          
+          // Set data-expanded="false" on hStack (same as boards.html)
+          hStack.setAttribute('data-expanded', 'false');
+          
+          // Set collapsed flag
+          window.searchBarCollapsed = true;
+          hasCollapsed = true;
+        }
+        
+        function initAutoCollapse() {
+          const hStack = getHStack();
+          
+          if (!hStack) return false;
+          
+          // Clear any existing timeout
+          if (collapseTimeout) {
+            clearTimeout(collapseTimeout);
+          }
+          
+          // Collapse after 2 seconds
+          collapseTimeout = setTimeout(() => {
+            collapseSearchBar();
+          }, 2000);
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!initAutoCollapse()) {
+          // Use MutationObserver to wait for DOM
+          const observer = new MutationObserver(function() {
+            if (initAutoCollapse()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          // Also try on intervals as fallback
+          let attempts = 0;
+          const maxAttempts = 100;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initAutoCollapse() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
       // Hide SearchBar on scroll down and collapse hStack (same as boards.html)
       (function() {
         let lastScrollTop = 0;
