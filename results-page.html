@@ -289,7 +289,7 @@
         }
       })();
       
-      // Persist expanded search bar with typed text and closeup state
+      // Persist search query in SearchBar-module always
       (function() {
         const urlParams = new URLSearchParams(window.location.search);
         const searchQuery = urlParams.get('q') || '';
@@ -300,11 +300,58 @@
         // Global flag to track if SearchBar should be collapsed
         window.searchBarCollapsed = false;
         
+        // Function to persist search query value - always runs regardless of state
+        function persistSearchQuery() {
+          searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (!searchBar) return;
+          
+          input = searchBar.querySelector('input');
+          if (input) {
+            // Always set the search query value if it exists
+            if (searchQuery && input.value !== searchQuery) {
+              input.value = searchQuery;
+            }
+            
+            // Ensure input is editable - remove all restrictions
+            input.readOnly = false;
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+            input.disabled = false;
+            input.style.pointerEvents = 'auto';
+            input.style.userSelect = 'auto';
+            input.style.cursor = 'text';
+            input.setAttribute('contenteditable', 'true');
+            
+            // Add margin-left for spacing from avatar
+            input.style.marginLeft = '12px';
+            
+            // Add Enter key handler
+            if (!input.hasAttribute('data-enter-handler-added')) {
+              input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                  e.preventDefault();
+                  const currentQuery = input.value || '';
+                  window.location.href = '/results-page.html?q=' + encodeURIComponent(currentQuery);
+                }
+              });
+              input.setAttribute('data-enter-handler-added', 'true');
+            }
+            
+            if (!isInitialized) {
+              input.focus();
+              isInitialized = true;
+            }
+          }
+        }
+        
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           const hStack = document.querySelector('.SearchBar-module__hStack');
           
           if (searchBar) {
+            // Always persist search query first
+            persistSearchQuery();
+            
             // Only maintain expanded state if not collapsed
             if (!window.searchBarCollapsed) {
               if (!searchBar.classList.contains('SearchBar-module__expanded')) {
@@ -327,79 +374,43 @@
               }
             }
             
-            // Always set input value to persist search query
+            // Update closeup state when input changes
             input = searchBar.querySelector('input');
-            if (input) {
-              if (input.value !== searchQuery && searchQuery) {
-                input.value = searchQuery;
-              }
-              
-              // Ensure input is editable - remove all restrictions
-              input.readOnly = false;
-              input.removeAttribute('readonly');
-              input.removeAttribute('disabled');
-              input.disabled = false;
-              input.style.pointerEvents = 'auto';
-              input.style.userSelect = 'auto';
-              input.style.cursor = 'text';
-              input.setAttribute('contenteditable', 'true');
-              
-              // Add margin-left for spacing from avatar
-              input.style.marginLeft = '12px';
-              
-              // Add Enter key handler
-              if (!input.hasAttribute('data-enter-handler-added')) {
-                input.addEventListener('keydown', function(e) {
-                  if (e.key === 'Enter' || e.keyCode === 13) {
-                    e.preventDefault();
-                    const currentQuery = input.value || '';
-                    window.location.href = '/results-page.html?q=' + encodeURIComponent(currentQuery);
+            if (input && !input.hasAttribute('data-input-handler-added')) {
+              input.addEventListener('input', function() {
+                if (input.value) {
+                  if (!searchBar.classList.contains('SearchBar-module__closeup')) {
+                    searchBar.classList.add('SearchBar-module__closeup');
                   }
-                });
-                input.setAttribute('data-enter-handler-added', 'true');
-              }
-              
-              // Update closeup state when input changes
-              if (!input.hasAttribute('data-input-handler-added')) {
-                input.addEventListener('input', function() {
-                  if (input.value) {
-                    if (!searchBar.classList.contains('SearchBar-module__closeup')) {
-                      searchBar.classList.add('SearchBar-module__closeup');
-                    }
-                    searchBar.setAttribute('data-closeup-context-visible', 'true');
-                  } else {
-                    if (searchBar.classList.contains('SearchBar-module__closeup')) {
-                      searchBar.classList.remove('SearchBar-module__closeup');
-                    }
-                    searchBar.removeAttribute('data-closeup-context-visible');
+                  searchBar.setAttribute('data-closeup-context-visible', 'true');
+                } else {
+                  if (searchBar.classList.contains('SearchBar-module__closeup')) {
+                    searchBar.classList.remove('SearchBar-module__closeup');
                   }
-                });
-                input.setAttribute('data-input-handler-added', 'true');
-              }
-              
-              if (!isInitialized) {
-                input.focus();
-                isInitialized = true;
-              }
+                  searchBar.removeAttribute('data-closeup-context-visible');
+                }
+              });
+              input.setAttribute('data-input-handler-added', 'true');
             }
           }
         }
         
         // Continuously maintain state to override React's changes (but allow collapse on scroll)
         function startMaintainingState() {
+          // Always persist search query first
+          persistSearchQuery();
+          
           if (!window.searchBarCollapsed) {
             maintainSearchBarState();
-          } else {
-            // When collapsed, only maintain the search query value
-            if (input && input.value !== searchQuery) {
-              input.value = searchQuery;
-            }
           }
           
           // Watch for class/attribute changes and re-apply
           const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.target === searchBar) {
+                // Always persist query regardless of state
+                persistSearchQuery();
+                
                 if (mutation.attributeName === 'class') {
                   if (!window.searchBarCollapsed) {
                     maintainSearchBarState();
@@ -411,6 +422,8 @@
                 }
               }
             });
+            // Always persist query
+            persistSearchQuery();
             if (!window.searchBarCollapsed) {
               maintainSearchBarState();
             }
@@ -428,6 +441,8 @@
           
           // Also observe body for when search bar is added/removed
           const bodyObserver = new MutationObserver(function() {
+            // Always persist query when DOM changes
+            persistSearchQuery();
             if (!window.searchBarCollapsed) {
               maintainSearchBarState();
             }
@@ -437,26 +452,13 @@
             subtree: true
           });
           
-          // Continuously check and maintain state
+          // Continuously check and maintain state - always persist query
           setInterval(function() {
+            // Always persist search query first, regardless of collapsed state
+            persistSearchQuery();
+            
             if (!window.searchBarCollapsed) {
               maintainSearchBarState();
-            }
-            // Always ensure input remains editable and has the query
-            const input = searchBar ? searchBar.querySelector('input') : null;
-            if (input) {
-              // Persist search query
-              if (input.value !== searchQuery && searchQuery) {
-                input.value = searchQuery;
-              }
-              input.readOnly = false;
-              input.removeAttribute('readonly');
-              input.removeAttribute('disabled');
-              input.disabled = false;
-              input.style.pointerEvents = 'auto';
-              input.style.userSelect = 'auto';
-              input.style.cursor = 'text';
-              input.style.marginLeft = '12px';
             }
           }, 100);
         }
@@ -739,104 +741,6 @@
         window.addEventListener('resize', setGlobalNavWidth);
         // Also check periodically to catch React re-renders
         setInterval(setGlobalNavWidth, 100);
-      })();
-      
-      // Auto-collapse SearchBar after 2 seconds (same style/position as boards.html)
-      (function() {
-        let collapseTimeout;
-        let hasCollapsed = false;
-        
-        function getSearchBar() {
-          return document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded') ||
-                 document.querySelector('.SearchBar-module__searchBar') ||
-                 document.querySelector('[class*="SearchBar-module__searchBar"]');
-        }
-        
-        function getHStack() {
-          return document.querySelector('.SearchBar-module__hStack') ||
-                 document.querySelector('[class*="SearchBar"][class*="hStack"]');
-        }
-        
-        function collapseSearchBar() {
-          if (hasCollapsed) return;
-          
-          const hStack = getHStack();
-          
-          if (!hStack) return;
-          
-          // Get the current transform to preserve any existing transforms (same as boards.html)
-          const currentTransform = window.getComputedStyle(hStack).transform;
-          let baseTransform = '';
-          
-          // If there's an existing transform, we need to combine it
-          if (currentTransform && currentTransform !== 'none' && currentTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
-            const matrixMatch = currentTransform.match(/matrix\(([^)]+)\)/);
-            if (matrixMatch) {
-              const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
-              // values[4] is translateX, values[5] is translateY
-              // We want to preserve translateX but change translateY
-              baseTransform = `translate3d(${values[4] || 0}px, 100%, 0)`;
-            } else {
-              baseTransform = 'translate3d(0, 100%, 0)';
-            }
-          } else {
-            // No existing transform, just move down
-            baseTransform = 'translate3d(0, 100%, 0)';
-          }
-          
-          // Apply collapse styling to hStack (same as boards.html)
-          hStack.style.setProperty('transform', baseTransform, 'important');
-          hStack.style.setProperty('opacity', '0', 'important');
-          hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-          hStack.style.setProperty('pointer-events', 'none', 'important');
-          
-          // Set data-expanded="false" on hStack (same as boards.html)
-          hStack.setAttribute('data-expanded', 'false');
-          
-          // Set collapsed flag
-          window.searchBarCollapsed = true;
-          hasCollapsed = true;
-        }
-        
-        function initAutoCollapse() {
-          const hStack = getHStack();
-          
-          if (!hStack) return false;
-          
-          // Clear any existing timeout
-          if (collapseTimeout) {
-            clearTimeout(collapseTimeout);
-          }
-          
-          // Collapse after 2 seconds
-          collapseTimeout = setTimeout(() => {
-            collapseSearchBar();
-          }, 2000);
-          
-          return true;
-        }
-        
-        // Try immediately
-        if (!initAutoCollapse()) {
-          // Use MutationObserver to wait for DOM
-          const observer = new MutationObserver(function() {
-            if (initAutoCollapse()) {
-              observer.disconnect();
-            }
-          });
-          observer.observe(document.body, { childList: true, subtree: true });
-          
-          // Also try on intervals as fallback
-          let attempts = 0;
-          const maxAttempts = 100;
-          const interval = setInterval(function() {
-            attempts++;
-            if (initAutoCollapse() || attempts >= maxAttempts) {
-              clearInterval(interval);
-              observer.disconnect();
-            }
-          }, 100);
-        }
       })();
       
       // Hide SearchBar on scroll down and collapse hStack (same as boards.html)
