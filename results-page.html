@@ -1136,6 +1136,40 @@
             card.style.setProperty('display', 'none', 'important');
           });
           
+          // Show and position SearchRedirectChips carousel 4px above searchBar
+          const carousel = document.querySelector('.SearchRedirectChips-module__carousel');
+          if (carousel) {
+            // Ensure carousel is visible
+            carousel.style.setProperty('display', 'block', 'important');
+            carousel.style.setProperty('visibility', 'visible', 'important');
+            carousel.style.setProperty('opacity', '1', 'important');
+            
+            // Set margin-bottom to create 4px gap above searchBar
+            // This assumes the carousel is already positioned above the searchBar in the DOM
+            carousel.style.setProperty('margin-bottom', '4px', 'important');
+            
+            // Also ensure searchBar has proper spacing if needed
+            // Check if carousel is a sibling that comes before searchBar
+            const searchBarParent = searchBar.parentElement;
+            if (searchBarParent && searchBarParent.contains(carousel)) {
+              // Carousel is in the same parent, ensure proper order
+              const searchBarIndex = Array.from(searchBarParent.children).indexOf(searchBar);
+              const carouselIndex = Array.from(searchBarParent.children).indexOf(carousel);
+              
+              // If carousel comes after searchBar, we might need to adjust
+              // But let's not move it - just ensure spacing
+              if (carouselIndex > searchBarIndex) {
+                // Carousel is after searchBar, set margin-top on searchBar instead
+                searchBar.style.setProperty('margin-top', '4px', 'important');
+                carousel.style.removeProperty('margin-bottom');
+              } else {
+                // Carousel is before searchBar, use margin-bottom on carousel
+                carousel.style.setProperty('margin-bottom', '4px', 'important');
+                searchBar.style.removeProperty('margin-top');
+              }
+            }
+          }
+          
           // Add X icon if it doesn't exist
           if (!xIconButton) {
             xIconButton = document.createElement('button');
@@ -1212,6 +1246,18 @@
           helperCards.forEach(card => {
             card.style.removeProperty('display');
           });
+          
+          // Remove SearchRedirectChips carousel positioning when reference styling is removed
+          const carousel = document.querySelector('.SearchRedirectChips-module__carousel');
+          if (carousel) {
+            carousel.style.removeProperty('margin-bottom');
+            // Don't hide completely, just remove the positioning - let React handle visibility
+          }
+          
+          // Also remove margin-top from searchBar if we set it
+          if (searchBar) {
+            searchBar.style.removeProperty('margin-top');
+          }
           
           // Hide X icon
           if (xIconButton) {
@@ -1339,6 +1385,18 @@
                   card.style.setProperty('display', 'none', 'important');
                 }
               });
+              
+              // Ensure SearchRedirectChips carousel remains positioned 4px above
+              const carousel = document.querySelector('.SearchRedirectChips-module__carousel');
+              if (carousel) {
+                const currentMarginBottom = window.getComputedStyle(carousel).marginBottom;
+                if (currentMarginBottom !== '4px') {
+                  carousel.style.setProperty('margin-bottom', '4px', 'important');
+                  carousel.style.setProperty('display', 'block', 'important');
+                  carousel.style.setProperty('visibility', 'visible', 'important');
+                  carousel.style.setProperty('opacity', '1', 'important');
+                }
+              }
               
               // Ensure search query persists
               const input = getSearchInput();
