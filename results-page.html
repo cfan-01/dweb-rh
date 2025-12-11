@@ -475,6 +475,81 @@
         }, 100);
       })();
       
+      // Apply boards.html SearchBar styling after 2 seconds
+      (function() {
+        let styleTimeout;
+        let hasStyled = false;
+        
+        function applyBoardsSearchBarStyle() {
+          if (hasStyled) return;
+          
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const input = hStack ? hStack.querySelector('input') : (searchBar ? searchBar.querySelector('input') : null);
+          
+          if (!hStack && !searchBar) return false;
+          
+          // Apply transform-origin and will-change (same as boards.html)
+          if (hStack) {
+            hStack.style.setProperty('transform-origin', 'center top', 'important');
+            hStack.style.setProperty('will-change', 'transform, opacity', 'important');
+          }
+          if (searchBar) {
+            searchBar.style.setProperty('transform-origin', 'center top', 'important');
+            searchBar.style.setProperty('will-change', 'transform, opacity', 'important');
+          }
+          
+          // Change placeholder text to match boards.html
+          if (input) {
+            input.placeholder = 'Search your saved ideas';
+          }
+          
+          hasStyled = true;
+          return true;
+        }
+        
+        function initStyleApplication() {
+          const hStack = document.querySelector('.SearchBar-module__hStack');
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          
+          if (!hStack && !searchBar) return false;
+          
+          // Clear any existing timeout
+          if (styleTimeout) {
+            clearTimeout(styleTimeout);
+          }
+          
+          // Apply styling after 2 seconds
+          styleTimeout = setTimeout(() => {
+            applyBoardsSearchBarStyle();
+          }, 2000);
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!initStyleApplication()) {
+          // Use MutationObserver to wait for DOM
+          const observer = new MutationObserver(function() {
+            if (initStyleApplication()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          // Also try on intervals as fallback
+          let attempts = 0;
+          const maxAttempts = 100;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initStyleApplication() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
       // Replace SearchBar-module__searchIconContainer with boards-avatar copy (same as boards.html)
       (function() {
         let attempts = 0;
