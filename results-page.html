@@ -726,6 +726,22 @@
           headingQueryEl.textContent = query;
         }
       })();
+      
+      // Number SearchHelperCards
+      (function() {
+        function numberHelperCards() {
+          const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+          helperCards.forEach((card, index) => {
+            card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
+          });
+          return helperCards.length > 0;
+        }
+        
+        // Watch for cards to be rendered by React
+        const observer = new MutationObserver(numberHelperCards);
+        observer.observe(document.body, { childList: true, subtree: true });
+        numberHelperCards();
+      })();
     </script>
     <div class="app-container">
       <div class="MasonryGrid-module__container">

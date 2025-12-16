@@ -1300,6 +1300,9 @@
           const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
           
           helperCards.forEach((card, index) => {
+            // Add numbered class to differentiate each card's position
+            card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
+            
             // Get the category to determine which search terms to use
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
             if (!categoryElement) return;
