@@ -732,6 +732,10 @@
         function numberHelperCards() {
           const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
           helperCards.forEach((card, index) => {
+            // Skip if already processed
+            if (card.hasAttribute('data-card-processed')) return;
+            card.setAttribute('data-card-processed', 'true');
+            
             card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
             
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
