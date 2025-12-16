@@ -867,6 +867,76 @@
         }
       })();
       
+      // Prevent SearchHelperCards navigation (stay on results-page.html)
+      (function() {
+        function preventHelperCardsNavigation() {
+          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          if (!helperCardsContainer) return false;
+          
+          const helperCards = helperCardsContainer.querySelectorAll('.SearchHelperCard-module__helperCard');
+          let found = false;
+          
+          helperCards.forEach(card => {
+            // Find all links in the card
+            const links = card.querySelectorAll('a');
+            links.forEach(link => {
+              const href = link.getAttribute('href');
+              if (href && href !== '#' && !href.startsWith('javascript:')) {
+                // Store original href
+                link.setAttribute('data-original-href', href);
+                link.removeAttribute('href');
+                link.style.cursor = 'pointer';
+                
+                // Prevent navigation
+                link.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  return false;
+                }, true);
+                
+                found = true;
+              }
+            });
+            
+            // Prevent clicks on the card itself that might navigate
+            card.addEventListener('click', function(e) {
+              const target = e.target;
+              if (target.tagName === 'A' || target.closest('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }
+            }, true);
+          });
+          
+          return found;
+        }
+        
+        // Try immediately
+        if (!preventHelperCardsNavigation()) {
+          // Wait for cards to be rendered
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (preventHelperCardsNavigation() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
+        }
+        
+        // Also watch for dynamically added cards
+        const observer = new MutationObserver(function() {
+          preventHelperCardsNavigation();
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      })();
+      
       // Number SearchHelperCards and update category text
       (function() {
         let isProcessed = false;
