@@ -955,8 +955,8 @@
               const columnWidth = calculateColumnWidth(availableWidth, columnCount, gutter);
               
               const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
-              // Limit to 5 images
-              const itemsToLayout = Array.from(gridItems).slice(0, 5);
+              // Layout all items in the grid
+              const itemsToLayout = Array.from(gridItems);
               const columnHeights = Array(columnCount).fill(0);
               
               // First pass: set widths and calculate heights
