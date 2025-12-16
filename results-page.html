@@ -125,24 +125,25 @@
         display: none;
         position: fixed;
         top: 16px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 80px;
+        right: 16px;
         z-index: 300;
         align-items: center;
         background: #ffffff;
         border-radius: 24px;
-        padding: 8px 16px 8px 8px;
+        padding: 12px 20px 12px 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         gap: 12px;
         cursor: pointer;
-        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        transition: opacity 0.3s ease-out;
+        box-sizing: border-box;
       }
       .SearchBar-collapsed-pill.visible {
         display: flex;
       }
       .SearchBar-collapsed-pill__avatar {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
