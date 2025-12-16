@@ -23,6 +23,9 @@
       .App-module__main {
         display: none !important;
       }
+      .SearchHelperCard-module__helperCard {
+        box-shadow: var(--shadow-lg) !important;
+      }
       .SearchBar-module__searchBar.SearchBar-module__closeup[data-closeup-context-visible="true"] .SearchBar-module__searchIconContainer {
         width: 48px !important;
         height: 48px !important;
@@ -803,6 +806,64 @@
         const headingQueryEl = document.getElementById('heading-query');
         if (headingQueryEl) {
           headingQueryEl.textContent = query;
+        }
+      })();
+      
+      // Expand SearchHelperCards on SearchBar focus/click
+      (function() {
+        function expandHelperCards() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          
+          if (searchBar) {
+            searchBar.classList.add('SearchBar-module__expanded');
+          }
+          
+          if (helperCardsContainer) {
+            helperCardsContainer.classList.add('SearchHelperCards-module__visible');
+          }
+        }
+        
+        function attachFocusClickHandlers() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (!searchBar) return false;
+          
+          const input = searchBar.querySelector('input');
+          if (!input) return false;
+          
+          // Add focus handler
+          if (!input.hasAttribute('data-focus-handler-added')) {
+            input.addEventListener('focus', function() {
+              expandHelperCards();
+            });
+            input.setAttribute('data-focus-handler-added', 'true');
+          }
+          
+          // Add click handler to search bar
+          if (!searchBar.hasAttribute('data-click-handler-added')) {
+            searchBar.addEventListener('click', function(e) {
+              // Only expand if clicking on the search bar itself, not on child elements that might navigate
+              if (e.target === searchBar || e.target === input || e.target.closest('.SearchBar-module__searchInput')) {
+                expandHelperCards();
+              }
+            });
+            searchBar.setAttribute('data-click-handler-added', 'true');
+          }
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!attachFocusClickHandlers()) {
+          // Wait for React to render
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (attachFocusClickHandlers() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
         }
       })();
       
