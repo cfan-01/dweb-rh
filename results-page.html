@@ -110,6 +110,9 @@
         margin: 0;
         text-align: center;
       }
+      .MasonryGrid-module__gridContainer.packery-container-2 {
+        margin-top: 24px;
+      }
     </style>
   </head>
   <body>
@@ -802,6 +805,33 @@
           <h2 class="Heading-title">More Ideas</h2>
           <p class="Heading-subtitle">Here are some other ideas you might like about <span id="heading-query"></span></p>
         </div>
+        <div class="MasonryGrid-module__gridContainer packery-container packery-container-2">
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-5.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-7.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-9.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -809,7 +839,15 @@
       (function() {
         document.addEventListener('DOMContentLoaded', function() {
           function initMasonryGrid() {
-            const gridContainer = document.querySelector('.MasonryGrid-module__gridContainer.packery-container');
+            const gridContainers = document.querySelectorAll('.MasonryGrid-module__gridContainer.packery-container');
+            if (!gridContainers.length) return;
+            
+            gridContainers.forEach(function(gridContainer) {
+              initSingleGrid(gridContainer);
+            });
+          }
+          
+          function initSingleGrid(gridContainer) {
             if (!gridContainer) return;
             
             // Responsive breakpoints
