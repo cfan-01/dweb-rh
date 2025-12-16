@@ -74,6 +74,13 @@
         height: 100vh !important;
         z-index: 200 !important;
       }
+      /* SearchBar collapse/expand transitions */
+      .SearchBar-module__searchBar,
+      .SearchBar-module__hStack {
+        transform-origin: center top !important;
+        will-change: transform, opacity !important;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+      }
       .masonry-divider {
         width: 100%;
         padding: 24px 16px;
@@ -885,6 +892,104 @@
       </div>
     </div>
     <script>
+      // Hide SearchBar on scroll down, show on scroll up (matching boards.html behavior)
+      (function() {
+        let lastScrollTop = 0;
+        let isHidden = false;
+        let scrollTimeout;
+        let scrollStopTimeout;
+        let isInitialized = false;
+        
+        function getSearchBar() {
+          return document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]');
+        }
+        
+        function showSearchBar() {
+          const hStack = getSearchBar();
+          if (!hStack) return;
+          
+          if (isHidden) {
+            hStack.style.removeProperty('transform');
+            hStack.style.setProperty('opacity', '1', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'auto', 'important');
+            isHidden = false;
+          }
+        }
+        
+        function hideSearchBar() {
+          const hStack = getSearchBar();
+          if (!hStack) return;
+          
+          if (!isHidden) {
+            hStack.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
+            hStack.style.setProperty('opacity', '0', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'none', 'important');
+            isHidden = true;
+          }
+        }
+        
+        function handleScroll() {
+          const hStack = getSearchBar();
+          if (!hStack) return;
+          
+          const currentScrollTop = window.scrollY || window.pageYOffset || 0;
+          
+          clearTimeout(scrollStopTimeout);
+          clearTimeout(scrollTimeout);
+          
+          scrollTimeout = setTimeout(function() {
+            // Scroll down - hide
+            if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              hideSearchBar();
+            }
+            // Scroll up - show
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              showSearchBar();
+            }
+            
+            lastScrollTop = currentScrollTop;
+            
+            // Show after 2 seconds of no scrolling
+            scrollStopTimeout = setTimeout(function() {
+              showSearchBar();
+            }, 2000);
+          }, 10);
+        }
+        
+        function initScrollListener() {
+          const hStack = getSearchBar();
+          if (!hStack || isInitialized) return false;
+          
+          lastScrollTop = window.scrollY || window.pageYOffset || 0;
+          window.addEventListener('scroll', handleScroll, { passive: true });
+          isInitialized = true;
+          return true;
+        }
+        
+        // Try to initialize immediately or wait for DOM
+        if (!initScrollListener()) {
+          const observer = new MutationObserver(function() {
+            if (initScrollListener()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          let attempts = 0;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initScrollListener() || attempts >= 50) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
       // Randomize images in second grid
       (function() {
         function randomizeSecondGrid() {
