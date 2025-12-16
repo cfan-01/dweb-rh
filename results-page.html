@@ -120,9 +120,74 @@
       .MasonryGrid-module__gridContainer.packery-container-2 {
         margin-top: 24px;
       }
+      /* Collapsed search bar pill */
+      .SearchBar-collapsed-pill {
+        display: none;
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 300;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 8px 16px 8px 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        gap: 12px;
+        cursor: pointer;
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+      }
+      .SearchBar-collapsed-pill.visible {
+        display: flex;
+      }
+      .SearchBar-collapsed-pill__avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .SearchBar-collapsed-pill__avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .SearchBar-collapsed-pill__query {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-size: 16px;
+        font-weight: 400;
+        color: #111111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+      .SearchBar-collapsed-pill__clear {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #767676;
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .SearchBar-collapsed-pill__clear:hover {
+        color: #111111;
+      }
     </style>
   </head>
   <body>
+    <!-- Collapsed search bar pill -->
+    <div class="SearchBar-collapsed-pill" id="searchbar-collapsed-pill">
+      <div class="SearchBar-collapsed-pill__avatar">
+        <img src="/dweb-rh/assets/avatar/avatar.png" alt="Avatar" />
+      </div>
+      <span class="SearchBar-collapsed-pill__query" id="pill-query-text"></span>
+      <button class="SearchBar-collapsed-pill__clear" id="pill-clear-btn" aria-label="Clear search">&times;</button>
+    </div>
     <div id="root"></div>
     <script>
       // Fix asset paths for GitHub Pages (same as index.html)
@@ -892,10 +957,10 @@
       </div>
     </div>
     <script>
-      // Hide SearchBar on scroll down, show on scroll up (matching boards.html behavior)
+      // SearchBar collapse to pill behavior
       (function() {
         let lastScrollTop = 0;
-        let isHidden = false;
+        let isCollapsed = false;
         let scrollTimeout;
         let scrollStopTimeout;
         let isInitialized = false;
@@ -906,29 +971,75 @@
                  document.querySelector('[class*="SearchBar"][class*="hStack"]');
         }
         
+        function getPill() {
+          return document.getElementById('searchbar-collapsed-pill');
+        }
+        
+        function getPillQueryText() {
+          return document.getElementById('pill-query-text');
+        }
+        
+        function updatePillQuery() {
+          const pillQueryText = getPillQueryText();
+          if (!pillQueryText) return;
+          
+          // Get query from URL or from search input
+          const urlParams = new URLSearchParams(window.location.search);
+          let query = urlParams.get('q') || '';
+          
+          // Also try to get from search input if available
+          const searchInput = document.querySelector('.SearchBar-module__searchInput');
+          if (searchInput && searchInput.value) {
+            query = searchInput.value;
+          }
+          
+          pillQueryText.textContent = query;
+        }
+        
         function showSearchBar() {
           const hStack = getSearchBar();
-          if (!hStack) return;
+          const pill = getPill();
           
-          if (isHidden) {
-            hStack.style.removeProperty('transform');
-            hStack.style.setProperty('opacity', '1', 'important');
-            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-            hStack.style.setProperty('pointer-events', 'auto', 'important');
-            isHidden = false;
+          if (isCollapsed) {
+            // Hide pill
+            if (pill) {
+              pill.classList.remove('visible');
+            }
+            
+            // Show search bar
+            if (hStack) {
+              hStack.style.removeProperty('transform');
+              hStack.style.setProperty('opacity', '1', 'important');
+              hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+              hStack.style.setProperty('pointer-events', 'auto', 'important');
+            }
+            
+            isCollapsed = false;
           }
         }
         
-        function hideSearchBar() {
+        function collapseSearchBar() {
           const hStack = getSearchBar();
-          if (!hStack) return;
+          const pill = getPill();
           
-          if (!isHidden) {
-            hStack.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
-            hStack.style.setProperty('opacity', '0', 'important');
-            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-            hStack.style.setProperty('pointer-events', 'none', 'important');
-            isHidden = true;
+          if (!isCollapsed) {
+            // Update pill query text
+            updatePillQuery();
+            
+            // Hide search bar
+            if (hStack) {
+              hStack.style.setProperty('transform', 'translate3d(0, -100%, 0)', 'important');
+              hStack.style.setProperty('opacity', '0', 'important');
+              hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+              hStack.style.setProperty('pointer-events', 'none', 'important');
+            }
+            
+            // Show pill
+            if (pill) {
+              pill.classList.add('visible');
+            }
+            
+            isCollapsed = true;
           }
         }
         
@@ -942,22 +1053,66 @@
           clearTimeout(scrollTimeout);
           
           scrollTimeout = setTimeout(function() {
-            // Scroll down - hide
+            // Scroll down - collapse to pill
             if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
-              hideSearchBar();
+              collapseSearchBar();
             }
-            // Scroll up - show
+            // Scroll up - show full search bar
             else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
               showSearchBar();
             }
             
             lastScrollTop = currentScrollTop;
             
-            // Show after 2 seconds of no scrolling
+            // Collapse to pill after 2 seconds of no scrolling
             scrollStopTimeout = setTimeout(function() {
-              showSearchBar();
+              if (currentScrollTop > 50) {
+                collapseSearchBar();
+              }
             }, 2000);
           }, 10);
+        }
+        
+        function initPillClickHandlers() {
+          const pill = getPill();
+          const clearBtn = document.getElementById('pill-clear-btn');
+          
+          // Click on pill expands search bar
+          if (pill) {
+            pill.addEventListener('click', function(e) {
+              if (e.target !== clearBtn) {
+                showSearchBar();
+                // Focus the search input
+                setTimeout(function() {
+                  const searchInput = document.querySelector('.SearchBar-module__searchInput');
+                  if (searchInput) {
+                    searchInput.focus();
+                  }
+                }, 100);
+              }
+            });
+          }
+          
+          // Clear button clears search
+          if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Clear the search input
+              const searchInput = document.querySelector('.SearchBar-module__searchInput');
+              if (searchInput) {
+                searchInput.value = '';
+              }
+              // Hide pill and show search bar
+              showSearchBar();
+              // Focus the search input
+              setTimeout(function() {
+                const searchInput = document.querySelector('.SearchBar-module__searchInput');
+                if (searchInput) {
+                  searchInput.focus();
+                }
+              }, 100);
+            });
+          }
         }
         
         function initScrollListener() {
@@ -966,6 +1121,7 @@
           
           lastScrollTop = window.scrollY || window.pageYOffset || 0;
           window.addEventListener('scroll', handleScroll, { passive: true });
+          initPillClickHandlers();
           isInitialized = true;
           return true;
         }
