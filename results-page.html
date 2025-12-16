@@ -1114,18 +1114,27 @@
           
           const currentScrollTop = window.scrollY || window.pageYOffset || 0;
           
-          // Clear any existing timeouts
+          // Clear scroll stop timeout
           clearTimeout(scrollStopTimeout);
+          // Clear timeout to debounce
           clearTimeout(scrollTimeout);
           
           scrollTimeout = setTimeout(function() {
-            // Scroll down - collapse immediately
+            // Scroll down - collapse to pill
             if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
               collapseSearchBar();
             }
-            // Don't auto-expand on scroll up - user must click pill
+            // Scroll up - show full search bar
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              showSearchBar();
+            }
             
             lastScrollTop = currentScrollTop;
+            
+            // Show after 1 second of no scrolling
+            scrollStopTimeout = setTimeout(function() {
+              showSearchBar();
+            }, 1000);
           }, 10);
         }
         
