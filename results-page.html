@@ -729,13 +729,15 @@
       
       // Number SearchHelperCards and update category text
       (function() {
+        let isProcessed = false;
+        
         function numberHelperCards() {
+          if (isProcessed) return true;
+          
           const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+          if (helperCards.length === 0) return false;
+          
           helperCards.forEach((card, index) => {
-            // Skip if already processed
-            if (card.hasAttribute('data-card-processed')) return;
-            card.setAttribute('data-card-processed', 'true');
-            
             card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
             
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
@@ -747,13 +749,23 @@
               categoryElement.textContent = 'Recently saved';
             }
           });
-          return helperCards.length > 0;
+          
+          isProcessed = true;
+          return true;
         }
         
-        // Watch for cards to be rendered by React
-        const observer = new MutationObserver(numberHelperCards);
-        observer.observe(document.body, { childList: true, subtree: true });
-        numberHelperCards();
+        // Try immediately
+        if (!numberHelperCards()) {
+          // Watch for cards to be rendered by React, then disconnect
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (numberHelperCards() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
+        }
       })();
     </script>
     <div class="app-container">
