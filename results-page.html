@@ -86,6 +86,23 @@
         height: 1px;
         background-color: #C8C8C1;
       }
+      .Heading {
+        margin-top: 0;
+      }
+      .Heading-title {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-weight: 700;
+        font-size: 28px;
+        color: #111111;
+        margin: 0 0 8px 0;
+      }
+      .Heading-subtitle {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-weight: 400;
+        font-size: 14px;
+        color: #111111;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -692,6 +709,16 @@
         // Also check periodically to catch React re-renders
         setInterval(setGlobalNavWidth, 100);
       })();
+      
+      // Populate heading query from URL parameter
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('q') || '';
+        const headingQueryEl = document.getElementById('heading-query');
+        if (headingQueryEl) {
+          headingQueryEl.textContent = query;
+        }
+      })();
     </script>
     <div class="app-container">
       <div class="MasonryGrid-module__container">
@@ -723,6 +750,10 @@
           </div>
         </div>
         <div class="masonry-divider"></div>
+        <div class="Heading">
+          <h2 class="Heading-title">More Ideas</h2>
+          <p class="Heading-subtitle">Here are some other ideas you might like about <span id="heading-query"></span></p>
+        </div>
       </div>
     </div>
     <script>
