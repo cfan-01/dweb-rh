@@ -831,10 +831,81 @@
               <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Pin" class="Pin-module__pinImage" />
             </div>
           </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-2.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-6.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-10.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-11.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-15.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <script>
+      // Randomize images in second grid
+      (function() {
+        function randomizeSecondGrid() {
+          const secondGrid = document.querySelector('.packery-container-2');
+          if (!secondGrid) return;
+          
+          const images = secondGrid.querySelectorAll('img');
+          const imagePool = [];
+          for (let i = 1; i <= 21; i++) {
+            imagePool.push('/dweb-rh/assets/images/hf-' + i + '.jpg');
+          }
+          
+          images.forEach(function(img) {
+            const randomIndex = Math.floor(Math.random() * imagePool.length);
+            img.src = imagePool[randomIndex];
+          });
+        }
+        
+        document.addEventListener('DOMContentLoaded', randomizeSecondGrid);
+      })();
+      
       // Masonry grid implementation (same as index.html)
       (function() {
         document.addEventListener('DOMContentLoaded', function() {
