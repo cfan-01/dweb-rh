@@ -1307,6 +1307,15 @@
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
             if (!categoryElement) return;
             
+            // Update category text for specific cards
+            if (index === 1) { // Card 2
+              categoryElement.textContent = 'Recent Search';
+            } else if (index === 2) { // Card 3
+              categoryElement.textContent = 'Recently viewed';
+            } else if (index === 3) { // Card 4
+              categoryElement.textContent = 'Recently saved';
+            }
+            
             const category = categoryElement.textContent.trim().toLowerCase();
             
             // Randomize image
