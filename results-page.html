@@ -74,6 +74,18 @@
         height: 100vh !important;
         z-index: 200 !important;
       }
+      .masonry-divider {
+        width: 100%;
+        padding: 24px 16px;
+        box-sizing: border-box;
+      }
+      .masonry-divider::after {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 1px;
+        background-color: #C8C8C1;
+      }
     </style>
   </head>
   <body>
@@ -710,6 +722,7 @@
             </div>
           </div>
         </div>
+        <div class="masonry-divider"></div>
       </div>
     </div>
     <script>
