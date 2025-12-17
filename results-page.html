@@ -671,6 +671,8 @@
         let searchBar = null;
         let scrollHandlerInitialized = false;
         let scrollStopTimeout = null;
+        let pillReentryTimeout = null;
+        let isPillHiddenByScroll = false;
         
         function findSearchBarElements() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
@@ -689,6 +691,17 @@
             // Pill is at bottom: 24px, so need to move it down by its height + 24px + extra
             pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
             pill.style.setProperty('transform', 'translateX(-50%) translateY(calc(100% + 48px))', 'important');
+            isPillHiddenByScroll = true;
+          }
+        }
+        
+        function showPillAfterTimeout() {
+          const pill = getPill();
+          if (pill && isPillHiddenByScroll && pill.classList.contains('visible')) {
+            // Re-enter pill from below viewport
+            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+            isPillHiddenByScroll = false;
           }
         }
         
@@ -778,6 +791,7 @@
           
           // Clear scroll stop timeout on any scroll
           clearTimeout(scrollStopTimeout);
+          clearTimeout(pillReentryTimeout);
           
           // Apply collapse/expand based on scroll
           if (scrollingDown && scrollTop > scrollThreshold) {
@@ -806,6 +820,12 @@
           scrollStopTimeout = setTimeout(function() {
             switchToPill();
           }, 1000);
+          
+          // Set timeout to re-show pill after 2 seconds of no scrolling
+          // (if pill was hidden by scrolling)
+          pillReentryTimeout = setTimeout(function() {
+            showPillAfterTimeout();
+          }, 2000);
           
           lastScrollTop = scrollTop;
         }
