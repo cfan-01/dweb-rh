@@ -788,21 +788,15 @@
           searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           
-          console.log('switchToPill: isPillHiddenByScroll =', isPillHiddenByScroll);
-          
-          // Only show pill if it wasn't hidden by scrolling
-          // (if it was, the 2-second timeout will handle re-showing it)
-          if (!isPillHiddenByScroll) {
-            const pill = getPill();
-            console.log('switchToPill: showing pill', pill);
-            if (pill) {
-              pill.classList.add('visible');
-              pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-              pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
-              console.log('switchToPill: pill visible class added');
-            }
-          } else {
-            console.log('switchToPill: pill hidden by scroll, not showing');
+          // Always show pill when switching (after 1 second of no scrolling)
+          const pill = getPill();
+          console.log('switchToPill: showing pill', pill);
+          if (pill) {
+            pill.classList.add('visible');
+            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+            isPillHiddenByScroll = false; // Reset flag when pill is shown
+            console.log('switchToPill: pill visible class added');
           }
         }
         
