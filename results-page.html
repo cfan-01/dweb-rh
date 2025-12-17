@@ -1657,12 +1657,24 @@
             
             // Show and expand SearchBar
             if (searchBarWrapper) {
+              // Set transition and visibility
               searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
               searchBarWrapper.style.setProperty('opacity', '1', 'important');
               searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
-              searchBarWrapper.style.removeProperty('transform');
               searchBarWrapper.classList.add('SearchBar-module__expanded');
               searchBarWrapper.removeAttribute('data-scroll-collapsed');
+              
+              // Position 24px from bottom of viewport
+              // Temporarily reset transform to get accurate position
+              const originalTransform = searchBarWrapper.style.transform;
+              searchBarWrapper.style.transform = 'none';
+              const originalRect = searchBarWrapper.getBoundingClientRect();
+              
+              const viewportHeight = window.innerHeight;
+              const desiredBottomEdge = viewportHeight - 24;
+              const translateY = desiredBottomEdge - originalRect.bottom;
+              
+              searchBarWrapper.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
             }
             
             // Add expanded class to search bar
