@@ -428,18 +428,12 @@
                 searchBarWrapper.style.transform = 'translateY(100%)';
               } else {
                 // Position 24px from bottom of viewport when expanded
-                // First, temporarily reset transform to get original position
-                const originalTransform = searchBarWrapper.style.transform;
-                searchBarWrapper.style.transform = 'none';
-                const originalRect = searchBarWrapper.getBoundingClientRect();
-                searchBarWrapper.style.transform = originalTransform;
-                
                 const viewportHeight = window.innerHeight;
-                const searchBarHeight = originalRect.height;
-                const desiredBottom = 24;
-                const desiredTop = viewportHeight - searchBarHeight - desiredBottom;
-                const currentTop = originalRect.top;
-                const translateY = desiredTop - currentTop;
+                const currentRect = searchBarWrapper.getBoundingClientRect();
+                const desiredBottomEdge = viewportHeight - 24;
+                const currentBottomEdge = currentRect.bottom;
+                const translateY = desiredBottomEdge - currentBottomEdge;
+                
                 searchBarWrapper.style.transform = `translateY(${translateY}px)`;
               }
             }
@@ -691,19 +685,13 @@
             // Expand: add expanded class and position 24px from bottom of viewport
             searchBar.classList.add('SearchBar-module__expanded');
             
-            // Calculate position to be 24px from bottom of viewport
-            // First, temporarily reset transform to get original position
-            const originalTransform = searchBarWrapper.style.transform;
-            searchBarWrapper.style.transform = 'none';
-            const originalRect = searchBarWrapper.getBoundingClientRect();
-            searchBarWrapper.style.transform = originalTransform;
-            
+            // Position 24px from bottom of viewport
+            // Calculate transform to position bottom edge 24px from viewport bottom
             const viewportHeight = window.innerHeight;
-            const searchBarHeight = originalRect.height;
-            const desiredBottom = 24;
-            const desiredTop = viewportHeight - searchBarHeight - desiredBottom;
-            const currentTop = originalRect.top;
-            const translateY = desiredTop - currentTop;
+            const currentRect = searchBarWrapper.getBoundingClientRect();
+            const desiredBottomEdge = viewportHeight - 24;
+            const currentBottomEdge = currentRect.bottom;
+            const translateY = desiredBottomEdge - currentBottomEdge;
             
             searchBarWrapper.style.transform = `translateY(${translateY}px)`;
             searchBarWrapper.removeAttribute('data-scroll-collapsed');
@@ -734,18 +722,12 @@
               searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
             } else {
               // Position expanded SearchBar 24px from bottom of viewport
-              // First, temporarily reset transform to get original position
-              const originalTransform = searchBarWrapper.style.transform;
-              searchBarWrapper.style.transform = 'none';
-              const originalRect = searchBarWrapper.getBoundingClientRect();
-              searchBarWrapper.style.transform = originalTransform;
-              
               const viewportHeight = window.innerHeight;
-              const searchBarHeight = originalRect.height;
-              const desiredBottom = 24;
-              const desiredTop = viewportHeight - searchBarHeight - desiredBottom;
-              const currentTop = originalRect.top;
-              const translateY = desiredTop - currentTop;
+              const currentRect = searchBarWrapper.getBoundingClientRect();
+              const desiredBottomEdge = viewportHeight - 24;
+              const currentBottomEdge = currentRect.bottom;
+              const translateY = desiredBottomEdge - currentBottomEdge;
+              
               searchBarWrapper.style.transform = `translateY(${translateY}px)`;
             }
             
