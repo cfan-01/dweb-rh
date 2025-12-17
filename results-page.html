@@ -678,11 +678,37 @@
           return searchBarWrapper !== null && searchBar !== null;
         }
         
+        function getPill() {
+          return document.getElementById('searchbar-collapsed-pill');
+        }
+        
+        function hidePill() {
+          const pill = getPill();
+          if (pill) {
+            // Animate pill downward (same as SearchBar)
+            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(100%)', 'important');
+          }
+        }
+        
+        function showPill() {
+          const pill = getPill();
+          if (pill && pill.classList.contains('visible')) {
+            // Reset pill to original position
+            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+          }
+        }
+        
         function showSearchBar() {
           if (!findSearchBarElements()) return;
           
-          const isCurrentlyCollapsed = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
-          if (!isCurrentlyCollapsed) return;
+          // Hide pill when showing expanded SearchBar
+          const pill = getPill();
+          if (pill) {
+            pill.classList.remove('visible');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+          }
           
           // Expand: add expanded class and position 24px from bottom of viewport
           searchBar.classList.add('SearchBar-module__expanded');
@@ -711,6 +737,30 @@
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
         }
         
+        function switchToPill() {
+          if (!findSearchBarElements()) return;
+          
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          
+          // Only switch to pill if not at top of page
+          if (scrollTop <= scrollThreshold) return;
+          
+          // Hide expanded SearchBar
+          searchBar.classList.remove('SearchBar-module__expanded');
+          searchBarWrapper.classList.remove('SearchBar-module__expanded');
+          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+          searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
+          searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+          
+          // Show pill
+          const pill = getPill();
+          if (pill) {
+            pill.classList.add('visible');
+            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+          }
+        }
+        
         function handleScroll() {
           if (!findSearchBarElements()) return;
           
@@ -729,24 +779,31 @@
           clearTimeout(scrollStopTimeout);
           
           // Apply collapse/expand based on scroll
-          if (scrollingDown && scrollTop > scrollThreshold && !isCurrentlyCollapsed) {
-            // Collapse: remove expanded class and apply downward transform
-            searchBar.classList.remove('SearchBar-module__expanded');
-            searchBarWrapper.classList.remove('SearchBar-module__expanded');
+          if (scrollingDown && scrollTop > scrollThreshold) {
+            // Hide both expanded SearchBar and collapsed pill on scroll down
+            if (!isCurrentlyCollapsed) {
+              // Collapse: remove expanded class and apply downward transform
+              searchBar.classList.remove('SearchBar-module__expanded');
+              searchBarWrapper.classList.remove('SearchBar-module__expanded');
+              
+              // Set transition to match boards.html animation speed (0.3s ease-out)
+              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+              
+              searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
+              searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+            }
             
-            // Set transition to match boards.html animation speed (0.3s ease-out)
-            searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-            
-            searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
-            searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
-          } else if ((scrollingUp || atTop) && isCurrentlyCollapsed) {
-            // Show SearchBar immediately on scroll up or at top
+            // Also hide the collapsed pill
+            hidePill();
+          } else if (scrollingUp || atTop) {
+            // Show expanded SearchBar immediately on scroll up or at top
             showSearchBar();
           }
           
-          // Set timeout to show SearchBar after 1 second of no scrolling
+          // Set timeout to switch to pill after 1 second of no scrolling
+          // (only if not at top of page - switchToPill handles this check)
           scrollStopTimeout = setTimeout(function() {
-            showSearchBar();
+            switchToPill();
           }, 1000);
           
           lastScrollTop = scrollTop;
