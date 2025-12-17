@@ -1530,17 +1530,38 @@
           if (pill) {
             pill.addEventListener('click', function(e) {
               if (e.target !== clearBtn) {
-                showSearchBar();
-                // Add expanded class to search bar
+                // Hide pill
+                pill.classList.remove('visible');
+                pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+                
+                // Get SearchBar elements
                 const searchBar = document.querySelector('.SearchBar-module__searchBar');
+                const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+                
+                // Show and expand SearchBar
+                if (searchBarWrapper) {
+                  searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+                  searchBarWrapper.style.setProperty('opacity', '1', 'important');
+                  searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
+                  searchBarWrapper.style.removeProperty('transform');
+                  searchBarWrapper.classList.add('SearchBar-module__expanded');
+                  searchBarWrapper.removeAttribute('data-scroll-collapsed');
+                }
+                
+                // Add expanded class to search bar
                 if (searchBar) {
                   searchBar.classList.add('SearchBar-module__expanded');
                 }
+                
                 // Show helper cards container
                 const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
                 if (helperCards) {
                   helperCards.classList.add('SearchHelperCards-module__visible');
                 }
+                
+                // Reset scroll handler state
+                isCollapsed = false;
+                
                 // Focus the search input
                 setTimeout(function() {
                   const searchInput = document.querySelector('.SearchBar-module__searchInput');
