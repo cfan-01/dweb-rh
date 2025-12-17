@@ -766,12 +766,15 @@
           searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           
-          // Show pill
-          const pill = getPill();
-          if (pill) {
-            pill.classList.add('visible');
-            pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-            pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+          // Only show pill if it wasn't hidden by scrolling
+          // (if it was, the 2-second timeout will handle re-showing it)
+          if (!isPillHiddenByScroll) {
+            const pill = getPill();
+            if (pill) {
+              pill.classList.add('visible');
+              pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+              pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+            }
           }
         }
         
