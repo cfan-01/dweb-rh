@@ -674,6 +674,16 @@
         let pillReentryTimeout = null;
         let isPillHiddenByScroll = false;
         
+        // Expose timeouts to window for pill click handler to clear them
+        window.searchBarTimeouts = {
+          clearAll: function() {
+            clearTimeout(scrollStopTimeout);
+            clearTimeout(pillReentryTimeout);
+            scrollStopTimeout = null;
+            pillReentryTimeout = null;
+          }
+        };
+        
         function findSearchBarElements() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
           searchBar = document.querySelector('.SearchBar-module__searchBar');
@@ -1414,6 +1424,18 @@
         let scrollStopTimeout;
         let isInitialized = false;
         
+        // Add to window.searchBarTimeouts for pill click handler to clear
+        if (window.searchBarTimeouts) {
+          const originalClearAll = window.searchBarTimeouts.clearAll;
+          window.searchBarTimeouts.clearAll = function() {
+            originalClearAll();
+            clearTimeout(scrollTimeout);
+            clearTimeout(scrollStopTimeout);
+            scrollTimeout = null;
+            scrollStopTimeout = null;
+          };
+        }
+        
         function getSearchBar() {
           return document.querySelector('.SearchBar-module__searchBar') ||
                  document.querySelector('.SearchBar-module__hStack') ||
@@ -1646,6 +1668,11 @@
           
           pill.addEventListener('click', function(e) {
             if (e.target === clearBtn) return;
+            
+            // Clear any pending scroll timeouts to prevent SearchBar from being hidden
+            if (window.searchBarTimeouts && window.searchBarTimeouts.clearAll) {
+              window.searchBarTimeouts.clearAll();
+            }
             
             // Hide pill
             pill.classList.remove('visible');
