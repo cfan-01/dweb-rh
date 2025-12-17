@@ -766,12 +766,20 @@
         }
         
         function switchToPill() {
-          if (!findSearchBarElements()) return;
+          console.log('switchToPill called');
+          if (!findSearchBarElements()) {
+            console.log('switchToPill: SearchBar elements not found');
+            return;
+          }
           
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          console.log('switchToPill: scrollTop =', scrollTop, 'threshold =', scrollThreshold);
           
           // Only switch to pill if not at top of page
-          if (scrollTop <= scrollThreshold) return;
+          if (scrollTop <= scrollThreshold) {
+            console.log('switchToPill: at top, returning');
+            return;
+          }
           
           // Hide expanded SearchBar
           searchBar.classList.remove('SearchBar-module__expanded');
@@ -780,15 +788,21 @@
           searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           
+          console.log('switchToPill: isPillHiddenByScroll =', isPillHiddenByScroll);
+          
           // Only show pill if it wasn't hidden by scrolling
           // (if it was, the 2-second timeout will handle re-showing it)
           if (!isPillHiddenByScroll) {
             const pill = getPill();
+            console.log('switchToPill: showing pill', pill);
             if (pill) {
               pill.classList.add('visible');
               pill.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
               pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
+              console.log('switchToPill: pill visible class added');
             }
+          } else {
+            console.log('switchToPill: pill hidden by scroll, not showing');
           }
         }
         
