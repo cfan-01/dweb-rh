@@ -81,6 +81,7 @@
       .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-100%)"],
       .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-"] {
         transform: translateY(100%) !important;
+      }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
         margin-left: 0 !important;
@@ -732,6 +733,13 @@
           if (findSearchBarElements() && !scrollHandlerInitialized) {
             initScrollListener();
           }
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      })();
+      
       // Fix avatar image in GlobalNav AvatarButton
       (function() {
         let attempts = 0;
