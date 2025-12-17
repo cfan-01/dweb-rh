@@ -1450,8 +1450,8 @@
           const pill = getPill();
           
           if (isCollapsed) {
-            // Hide pill
-            if (pill) {
+            // Only hide pill if it was hidden by scroll (not if intentionally shown)
+            if (pill && isPillHiddenByScroll) {
               pill.classList.remove('visible');
             }
             
