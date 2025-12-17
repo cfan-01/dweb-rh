@@ -754,11 +754,6 @@
         function switchToPill() {
           if (!findSearchBarElements()) return;
           
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          
-          // Only switch to pill if not at top of page
-          if (scrollTop <= scrollThreshold) return;
-          
           // Hide expanded SearchBar
           searchBar.classList.remove('SearchBar-module__expanded');
           searchBarWrapper.classList.remove('SearchBar-module__expanded');
@@ -828,7 +823,7 @@
           // (if pill was hidden by scrolling)
           pillReentryTimeout = setTimeout(function() {
             showPillAfterTimeout();
-          }, 2000);
+          }, 1000);
           
           lastScrollTop = scrollTop;
         }
