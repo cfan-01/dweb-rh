@@ -950,12 +950,16 @@
           helperCards.forEach((card, index) => {
             card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
             
+            // Get the category to determine which search terms to use
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
-            if (index === 1 && categoryElement) {
+            if (!categoryElement) return;
+            
+            // Update category text for specific cards
+            if (index === 1) { // Card 2
               categoryElement.textContent = 'Recent Search';
-            } else if (index === 2 && categoryElement) {
+            } else if (index === 2) { // Card 3
               categoryElement.textContent = 'Recently viewed';
-            } else if (index === 3 && categoryElement) {
+            } else if (index === 3) { // Card 4
               categoryElement.textContent = 'Recently saved';
             }
           });
