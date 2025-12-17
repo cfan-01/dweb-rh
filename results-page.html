@@ -60,6 +60,24 @@
         fill: #ffffff !important;
         color: #ffffff !important;
       }
+      /* Override SearchBar collapse animation to move downward instead of upward */
+      .ScrollableSearchBar-module__searchBarWrapper[style*="transform: translateY(-"],
+      .ScrollableSearchBar-module__searchBarWrapper[style*="transform:translateY(-"] {
+        transform: translateY(100%) !important;
+      }
+      /* Target collapsed/hidden states - change upward translateY to downward */
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"]) {
+        transform: translateY(100%) !important;
+      }
+      /* Ensure smooth transitions for downward exit and re-entry */
+      .ScrollableSearchBar-module__searchBarWrapper {
+        transition: transform 0.3s ease-in-out !important;
+      }
+      /* Override any negative translateY values to positive (downward) */
+      .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-100%)"],
+      .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-"] {
+        transform: translateY(100%) !important;
+      }
     </style>
   </head>
   <body>
@@ -120,10 +138,27 @@
         
         function maintainSearchBarState() {
           searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
           if (searchBar) {
-            // Always maintain expanded state
-            if (!searchBar.classList.contains('SearchBar-module__expanded')) {
+            // Check if scroll handler has collapsed the search bar
+            const isScrollCollapsed = searchBarWrapper && searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const shouldBeExpanded = scrollTop <= 10 || !isScrollCollapsed;
+            
+            // Maintain expanded state only if not scroll-collapsed
+            if (shouldBeExpanded && !searchBar.classList.contains('SearchBar-module__expanded')) {
               searchBar.classList.add('SearchBar-module__expanded');
+            } else if (!shouldBeExpanded && searchBar.classList.contains('SearchBar-module__expanded')) {
+              searchBar.classList.remove('SearchBar-module__expanded');
+            }
+            
+            // Apply transform based on scroll state
+            if (searchBarWrapper) {
+              if (isScrollCollapsed || scrollTop > 10) {
+                searchBarWrapper.style.transform = 'translateY(100%)';
+              } else {
+                searchBarWrapper.style.transform = 'translateY(0)';
+              }
             }
             
             // Maintain closeup state if there's a query
@@ -332,6 +367,107 @@
         } else {
           startReplacing();
         }
+      })();
+      
+      // Scroll-based SearchBar collapse animation (mirroring boards.html behavior)
+      (function() {
+        let lastScrollTop = 0;
+        let isScrolling = false;
+        const scrollThreshold = 10; // Pixels to scroll before triggering collapse
+        let searchBarWrapper = null;
+        let searchBar = null;
+        let scrollHandlerInitialized = false;
+        
+        function findSearchBarElements() {
+          searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+          searchBar = document.querySelector('.SearchBar-module__searchBar');
+          return searchBarWrapper !== null && searchBar !== null;
+        }
+        
+        function handleScroll() {
+          if (!findSearchBarElements()) return;
+          
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollDelta = scrollTop - lastScrollTop;
+          
+          // Determine scroll direction
+          const scrollingDown = scrollDelta > 0;
+          const scrollingUp = scrollDelta < 0;
+          const atTop = scrollTop <= scrollThreshold;
+          
+          // Check current collapsed state
+          const isCurrentlyCollapsed = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
+          
+          // Apply collapse/expand based on scroll
+          if (scrollingDown && scrollTop > scrollThreshold && !isCurrentlyCollapsed) {
+            // Collapse: remove expanded class and apply downward transform
+            searchBar.classList.remove('SearchBar-module__expanded');
+            searchBarWrapper.style.transform = 'translateY(100%)';
+            searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+          } else if ((scrollingUp || atTop) && isCurrentlyCollapsed) {
+            // Expand: add expanded class and reset transform
+            searchBar.classList.add('SearchBar-module__expanded');
+            searchBarWrapper.style.transform = 'translateY(0)';
+            searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          }
+          
+          lastScrollTop = scrollTop;
+        }
+        
+        // Throttled scroll handler using requestAnimationFrame
+        function onScroll() {
+          if (!isScrolling) {
+            window.requestAnimationFrame(function() {
+              handleScroll();
+              isScrolling = false;
+            });
+            isScrolling = true;
+          }
+        }
+        
+        // Initialize scroll listener
+        function initScrollListener() {
+          if (findSearchBarElements() && !scrollHandlerInitialized) {
+            // Get initial scroll position
+            lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Set initial collapsed state if needed
+            if (lastScrollTop > scrollThreshold) {
+              searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+            }
+            
+            // Add scroll event listener with throttling
+            window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // Initial check
+            handleScroll();
+            
+            scrollHandlerInitialized = true;
+            return true;
+          }
+          return false;
+        }
+        
+        // Wait for React to render SearchBar, then initialize
+        let attempts = 0;
+        const maxAttempts = 100;
+        const checkInterval = setInterval(function() {
+          attempts++;
+          if (initScrollListener() || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        }, 100);
+        
+        // Also watch for when SearchBar is added dynamically
+        const observer = new MutationObserver(function() {
+          if (findSearchBarElements() && !scrollHandlerInitialized) {
+            initScrollListener();
+          }
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
       })();
     </script>
     <div class="app-container">
