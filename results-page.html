@@ -65,8 +65,9 @@
         color: #ffffff !important;
       }
       /* Override SearchBar collapse animation to move downward instead of upward */
-      .ScrollableSearchBar-module__searchBarWrapper[style*="transform: translateY(-"],
-      .ScrollableSearchBar-module__searchBarWrapper[style*="transform:translateY(-"] {
+      /* Only apply when NOT expanded - so expanded SearchBar can use negative translateY */
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform: translateY(-"],
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform:translateY(-"] {
         transform: translateY(100%) !important;
       }
       /* Target collapsed/hidden states - change upward translateY to downward */
@@ -76,11 +77,6 @@
       /* Ensure smooth transitions for downward exit and re-entry */
       .ScrollableSearchBar-module__searchBarWrapper {
         transition: transform 0.3s ease-in-out !important;
-      }
-      /* Override any negative translateY values to positive (downward) */
-      .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-100%)"],
-      .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-"] {
-        transform: translateY(100%) !important;
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
