@@ -670,11 +670,45 @@
         let searchBarWrapper = null;
         let searchBar = null;
         let scrollHandlerInitialized = false;
+        let scrollStopTimeout = null;
         
         function findSearchBarElements() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           return searchBarWrapper !== null && searchBar !== null;
+        }
+        
+        function showSearchBar() {
+          if (!findSearchBarElements()) return;
+          
+          const isCurrentlyCollapsed = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
+          if (!isCurrentlyCollapsed) return;
+          
+          // Expand: add expanded class and position 24px from bottom of viewport
+          searchBar.classList.add('SearchBar-module__expanded');
+          searchBarWrapper.classList.add('SearchBar-module__expanded');
+          
+          // Set transition to match boards.html animation speed (0.3s ease-out)
+          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+          
+          // Ensure SearchBar is visible
+          searchBarWrapper.style.opacity = '1';
+          searchBarWrapper.style.visibility = 'visible';
+          searchBarWrapper.style.display = '';
+          
+          // Position 24px from bottom of viewport
+          const originalTransform = searchBarWrapper.style.transform;
+          searchBarWrapper.style.transform = 'none';
+          const originalRect = searchBarWrapper.getBoundingClientRect();
+          searchBarWrapper.style.transform = originalTransform;
+          
+          const viewportHeight = window.innerHeight;
+          const desiredBottomEdge = viewportHeight - 24;
+          const currentBottomEdge = originalRect.bottom;
+          const translateY = desiredBottomEdge - currentBottomEdge;
+          
+          searchBarWrapper.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
+          searchBarWrapper.removeAttribute('data-scroll-collapsed');
         }
         
         function handleScroll() {
@@ -691,6 +725,9 @@
           // Check current collapsed state
           const isCurrentlyCollapsed = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
           
+          // Clear scroll stop timeout on any scroll
+          clearTimeout(scrollStopTimeout);
+          
           // Apply collapse/expand based on scroll
           if (scrollingDown && scrollTop > scrollThreshold && !isCurrentlyCollapsed) {
             // Collapse: remove expanded class and apply downward transform
@@ -703,36 +740,14 @@
             searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
             searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           } else if ((scrollingUp || atTop) && isCurrentlyCollapsed) {
-            // Expand: add expanded class and position 24px from bottom of viewport
-            searchBar.classList.add('SearchBar-module__expanded');
-            // Also add expanded class to wrapper to prevent CSS from overriding
-            searchBarWrapper.classList.add('SearchBar-module__expanded');
-            
-            // Set transition to match boards.html animation speed (0.3s ease-out)
-            searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-            
-            // Ensure SearchBar is visible
-            searchBarWrapper.style.opacity = '1';
-            searchBarWrapper.style.visibility = 'visible';
-            searchBarWrapper.style.display = '';
-            
-            // Position 24px from bottom of viewport
-            // First, reset any existing transform to get accurate position
-            const originalTransform = searchBarWrapper.style.transform;
-            searchBarWrapper.style.transform = 'none';
-            const originalRect = searchBarWrapper.getBoundingClientRect();
-            searchBarWrapper.style.transform = originalTransform;
-            
-            // Calculate transform to position bottom edge 24px from viewport bottom
-            const viewportHeight = window.innerHeight;
-            const desiredBottomEdge = viewportHeight - 24;
-            const currentBottomEdge = originalRect.bottom;
-            const translateY = desiredBottomEdge - currentBottomEdge;
-            
-            // Use !important to override CSS rules
-            searchBarWrapper.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
-            searchBarWrapper.removeAttribute('data-scroll-collapsed');
+            // Show SearchBar immediately on scroll up or at top
+            showSearchBar();
           }
+          
+          // Set timeout to show SearchBar after 1 second of no scrolling
+          scrollStopTimeout = setTimeout(function() {
+            showSearchBar();
+          }, 1000);
           
           lastScrollTop = scrollTop;
         }
