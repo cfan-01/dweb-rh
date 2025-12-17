@@ -674,7 +674,7 @@
         let pillReentryTimeout = null;
         let isPillHiddenByScroll = false;
         
-        // Expose timeouts to window for pill click handler to clear them
+        // Expose timeouts and state to window for other handlers to access
         window.searchBarTimeouts = {
           clearAll: function() {
             clearTimeout(scrollStopTimeout);
@@ -682,6 +682,14 @@
             scrollStopTimeout = null;
             pillReentryTimeout = null;
           }
+        };
+        
+        // Expose isPillHiddenByScroll getter/setter
+        window.isPillHiddenByScroll = function(value) {
+          if (value !== undefined) {
+            isPillHiddenByScroll = value;
+          }
+          return isPillHiddenByScroll;
         };
         
         function findSearchBarElements() {
@@ -1473,7 +1481,7 @@
           
           if (isCollapsed) {
             // Only hide pill if it was hidden by scroll (not if intentionally shown)
-            if (pill && isPillHiddenByScroll) {
+            if (pill && window.isPillHiddenByScroll && window.isPillHiddenByScroll()) {
               pill.classList.remove('visible');
             }
             
