@@ -1626,10 +1626,18 @@
           const pill = document.getElementById('searchbar-collapsed-pill');
           const clearBtn = document.getElementById('pill-clear-btn');
           
+          console.log('initPillClick called, pill:', pill);
+          
           if (!pill) return false;
-          if (pill.hasAttribute('data-click-handler-added')) return true;
+          if (pill.hasAttribute('data-click-handler-added')) {
+            console.log('Pill click handler already added');
+            return true;
+          }
+          
+          console.log('Adding pill click handler');
           
           pill.addEventListener('click', function(e) {
+            console.log('Pill clicked!');
             if (e.target === clearBtn) return;
             
             // Clear any pending scroll timeouts to prevent SearchBar from being hidden
@@ -1645,8 +1653,12 @@
             const searchBar = document.querySelector('.SearchBar-module__searchBar');
             const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
             
+            console.log('SearchBar found:', searchBar);
+            console.log('SearchBarWrapper found:', searchBarWrapper);
+            
             // Show and expand SearchBar
             if (searchBarWrapper) {
+              console.log('Showing SearchBar wrapper');
               // Add expanded class FIRST to prevent CSS from hiding it
               searchBarWrapper.classList.add('SearchBar-module__expanded');
               searchBarWrapper.removeAttribute('data-scroll-collapsed');
@@ -1671,6 +1683,11 @@
               // Set transition and final position
               searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
               searchBarWrapper.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
+              console.log('SearchBar positioned with translateY:', translateY);
+              console.log('SearchBar wrapper classes:', searchBarWrapper.className);
+              console.log('SearchBar wrapper style:', searchBarWrapper.style.cssText);
+            } else {
+              console.log('SearchBarWrapper NOT found!');
             }
             
             // Add expanded class to search bar
