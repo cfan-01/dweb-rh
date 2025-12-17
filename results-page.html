@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Results - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <link rel="icon" href="/dweb-rh/favicon.ico" />
+    <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -21,6 +22,9 @@
       }
       .App-module__main {
         display: none !important;
+      }
+      .SearchHelperCard-module__helperCard {
+        box-shadow: var(--shadow-lg) !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__closeup[data-closeup-context-visible="true"] .SearchBar-module__searchIconContainer {
         width: 48px !important;
@@ -77,12 +81,277 @@
       .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-100%)"],
       .ScrollableSearchBar-module__searchBarWrapper[style*="translateY(-"] {
         transform: translateY(100%) !important;
+      .MasonryGrid-module__gridContainer {
+        margin-top: 16px !important;
+        margin-left: 0 !important;
+        margin-right: 16px !important;
+        position: relative !important;
+      }
+      .GlobalNav-module__globalNav {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        z-index: 200 !important;
+      }
+      /* SearchBar collapse/expand transitions */
+      .SearchBar-module__searchBar,
+      .SearchBar-module__hStack {
+        transform-origin: center top !important;
+        will-change: transform, opacity !important;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+      }
+      .masonry-divider {
+        width: 100%;
+        padding: 24px 16px;
+        box-sizing: border-box;
+      }
+      .masonry-divider::after {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 1px;
+        background-color: #C8C8C1;
+      }
+      .Heading {
+        margin-top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .Heading-title {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-weight: 700;
+        font-size: 28px;
+        color: #111111;
+        margin: 0 0 8px 0;
+        text-align: center;
+      }
+      .Heading-subtitle {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-weight: 400;
+        font-size: 14px;
+        color: #111111;
+        margin: 0;
+        text-align: center;
+      }
+      .MasonryGrid-module__gridContainer.packery-container-2 {
+        margin-top: 24px;
+      }
+      /* Collapsed search bar pill */
+      .SearchBar-collapsed-pill {
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 323.094px;
+        max-width: 380px;
+        z-index: 300;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 12px 20px 12px 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        gap: 12px;
+        cursor: pointer;
+        transition: opacity 0.3s ease-out;
+        box-sizing: border-box;
+      }
+      .SearchBar-collapsed-pill.visible {
+        display: flex;
+      }
+      .SearchBar-collapsed-pill__avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .SearchBar-collapsed-pill__avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .SearchBar-collapsed-pill__query {
+        font-family: "Pin Sans", var(--font-family-pin-sans);
+        font-size: 16px;
+        font-weight: 400;
+        color: #111111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+      .SearchBar-collapsed-pill__clear {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #767676;
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+      }
+      .SearchBar-collapsed-pill__clear:hover {
+        color: #111111;
       }
     </style>
   </head>
   <body>
+    <!-- Collapsed search bar pill -->
+    <div class="SearchBar-collapsed-pill" id="searchbar-collapsed-pill">
+      <div class="SearchBar-collapsed-pill__avatar">
+        <img src="/dweb-rh/assets/avatar/avatar.png" alt="Avatar" />
+      </div>
+      <span class="SearchBar-collapsed-pill__query" id="pill-query-text"></span>
+      <button class="SearchBar-collapsed-pill__clear" id="pill-clear-btn" aria-label="Clear search">&times;</button>
+    </div>
     <div id="root"></div>
-    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script>
+      // Fix asset paths for GitHub Pages (same as index.html)
+      (function() {
+        const basePath = '/dweb-rh';
+        const maxImageNumber = 21; // We only have hf-1.jpg through hf-21.jpg
+        
+        // Map missing image numbers to existing ones and fix extensions
+        function getValidImagePath(requestedPath) {
+          if (!requestedPath) return null;
+          const match = requestedPath.match(/hf-(\d+)\.(jpg|webp|png)/i);
+          if (match) {
+            const requestedNum = parseInt(match[1], 10);
+            const originalExtension = match[2].toLowerCase();
+            const validNum = requestedNum > maxImageNumber 
+              ? ((requestedNum - 1) % maxImageNumber) + 1 
+              : requestedNum;
+            let fixedPath = requestedPath.replace(/hf-\d+\.(jpg|webp|png)/i, `hf-${validNum}.jpg`);
+            return fixedPath;
+          }
+          return null;
+        }
+        
+        function fixPathAndImageNumber(path) {
+          if (!path || typeof path !== 'string') return path;
+          let fixedPath = path;
+          try {
+            const url = new URL(path, window.location.origin);
+            fixedPath = url.pathname;
+          } catch(e) {
+            if (path.startsWith('/')) {
+              fixedPath = path;
+            }
+          }
+          if (fixedPath && fixedPath.startsWith('/assets/') && !fixedPath.startsWith(basePath)) {
+            fixedPath = basePath + fixedPath;
+          }
+          const validPath = getValidImagePath(fixedPath);
+          if (validPath) {
+            fixedPath = validPath;
+          }
+          return fixedPath;
+        }
+        
+        // Override src property setter on HTMLImageElement prototype
+        const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+        if (originalSrcDescriptor && originalSrcDescriptor.set) {
+          const originalSet = originalSrcDescriptor.set;
+          Object.defineProperty(HTMLImageElement.prototype, 'src', {
+            set: function(value) {
+              if (value && typeof value === 'string') {
+                const fixedPath = fixPathAndImageNumber(value);
+                if (fixedPath !== value) {
+                  value = fixedPath;
+                }
+              }
+              originalSet.call(this, value);
+            },
+            get: originalSrcDescriptor.get,
+            configurable: true,
+            enumerable: true
+          });
+        }
+        
+        // Override setAttribute for images
+        const originalSetAttribute = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function(name, value) {
+          if (this.tagName === 'IMG' && (name === 'src' || name === 'data-src' || name === 'data-lazy-src')) {
+            if (value && typeof value === 'string') {
+              const fixedPath = fixPathAndImageNumber(value);
+              if (fixedPath !== value) {
+                value = fixedPath;
+              }
+            }
+          }
+          return originalSetAttribute.call(this, name, value);
+        };
+        
+        // Fix font paths in CSS
+        function fixFontPaths() {
+          try {
+            const styleSheets = document.styleSheets;
+            for (let i = 0; i < styleSheets.length; i++) {
+              try {
+                const rules = styleSheets[i].cssRules || styleSheets[i].rules;
+                if (rules) {
+                  for (let j = 0; j < rules.length; j++) {
+                    const rule = rules[j];
+                    if (rule instanceof CSSFontFaceRule && rule.style && rule.style.src) {
+                      let src = rule.style.src;
+                      if (src && src.includes('/assets/') && !src.includes(basePath)) {
+                        src = src.replace(/\/assets\//g, basePath + '/assets/');
+                        rule.style.src = src;
+                      }
+                    }
+                  }
+                }
+              } catch(e) {
+                // Cross-origin stylesheet, skip
+              }
+            }
+          } catch(e) {
+            // Ignore errors
+          }
+        }
+        
+        // Fix fonts on load and watch for new stylesheets
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', fixFontPaths);
+        } else {
+          fixFontPaths();
+        }
+        
+        const styleObserver = new MutationObserver(() => {
+          fixFontPaths();
+        });
+        styleObserver.observe(document.head, { childList: true, subtree: true });
+        
+        // Also fix fonts periodically
+        setInterval(fixFontPaths, 500);
+        
+        // Intercept image error events
+        document.addEventListener('error', function(e) {
+          if (e.target && e.target.tagName === 'IMG') {
+            const img = e.target;
+            let src = img.src || img.getAttribute('src') || '';
+            try {
+              const url = new URL(src, window.location.origin);
+              src = url.pathname;
+            } catch(e) {}
+            const fixedPath = fixPathAndImageNumber(src);
+            if (fixedPath && fixedPath !== src) {
+              img.src = fixedPath;
+              if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
+            }
+          }
+        }, true);
+      })();
+    </script>
+    <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
       // Fix App-module__app link to home page
       (function() {
@@ -94,14 +363,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/index.html';
-              appLink.setAttribute('href', '/index.html');
+              appLink.href = '/dweb-rh/index.html';
+              appLink.setAttribute('href', '/dweb-rh/index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = '/dweb-rh/index.html';
               });
             }
             return true;
@@ -305,12 +574,12 @@
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (searchIconContainer) {
             // Check if avatar already exists
-            const existingAvatar = searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]');
+            const existingAvatar = searchIconContainer.querySelector('img[src="/dweb-rh/assets/avatar/avatar.png"]');
             if (existingAvatar) return true;
             
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
@@ -463,15 +732,978 @@
           if (findSearchBarElements() && !scrollHandlerInitialized) {
             initScrollListener();
           }
+      // Fix avatar image in GlobalNav AvatarButton
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function fixGlobalNavAvatar() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          if (!globalNav) return false;
+          
+          const avatarButton = globalNav.querySelector('.AvatarButton-module__avatarButton');
+          if (!avatarButton) return false;
+          
+          // Find the image inside the avatar button
+          let avatarImg = avatarButton.querySelector('img');
+          
+          // If no image exists, create one
+          if (!avatarImg) {
+            avatarImg = document.createElement('img');
+            avatarButton.appendChild(avatarImg);
+          }
+          
+          // Set the image source and make it visible
+          avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
+          avatarImg.alt = 'Avatar';
+          avatarImg.style.display = 'block';
+          avatarImg.style.visibility = 'visible';
+          avatarImg.style.opacity = '1';
+          avatarImg.style.width = '28px';
+          avatarImg.style.height = '28px';
+          avatarImg.style.borderRadius = '50%';
+          avatarImg.style.objectFit = 'cover';
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!fixGlobalNavAvatar()) {
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          const interval = setInterval(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+        
+        // Also run periodically to catch React re-renders
+        setInterval(fixGlobalNavAvatar, 1000);
+      })();
+      
+      // Fix navigation links in GlobalNav
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function findNavIcon(iconName) {
+          const nav = document.querySelector('.GlobalNav-module__globalNav') || 
+                     document.querySelector('[class*="GlobalNav"]');
+          if (!nav) return null;
+          
+          const clickables = nav.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+          
+          for (let el of clickables) {
+            const text = (el.textContent || el.innerText || '').trim();
+            const ariaLabel = (el.getAttribute('aria-label') || '').toLowerCase();
+            const title = (el.getAttribute('title') || '').toLowerCase();
+            
+            if (text === iconName || ariaLabel.includes(iconName.toLowerCase()) || title.includes(iconName.toLowerCase())) {
+              return el;
+            }
+            
+            const parent = el.parentElement;
+            if (parent) {
+              const parentText = (parent.textContent || parent.innerText || '').trim();
+              if (parentText === iconName) {
+                return parent;
+              }
+            }
+          }
+          
+          // Alternative: look by position in leading section
+          const leading = nav.querySelector('[class*="leading"]') || nav.querySelector('[class*="Leading"]');
+          if (leading) {
+            const icons = leading.querySelectorAll('button, [role="button"], a, div[class*="iconButton"], div[class*="IconButton"]');
+            // Home is typically 2nd icon (index 1), Boards is 4th (index 3)
+            if (iconName === 'Home' && icons.length >= 2) {
+              return icons[1];
+            } else if (iconName === 'Boards' && icons.length >= 4) {
+              return icons[3];
+            }
+          }
+          
+          return null;
+        }
+        
+        function attachNavHandlers() {
+          // Fix Home icon
+          const homeIcon = findNavIcon('Home');
+          if (homeIcon && !homeIcon.hasAttribute('data-nav-handler-attached')) {
+            homeIcon.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/dweb-rh/index.html';
+              return false;
+            });
+            homeIcon.style.cursor = 'pointer';
+            homeIcon.setAttribute('data-nav-handler-attached', 'true');
+          }
+          
+          // Fix Boards icon
+          const boardsIcon = findNavIcon('Boards');
+          if (boardsIcon && !boardsIcon.hasAttribute('data-nav-handler-attached')) {
+            boardsIcon.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/dweb-rh/boards.html';
+              return false;
+            });
+            boardsIcon.style.cursor = 'pointer';
+            boardsIcon.setAttribute('data-nav-handler-attached', 'true');
+          }
+        }
+        
+        // Try immediately
+        attachNavHandlers();
+        
+        // Use MutationObserver to watch for DOM changes
+        const observer = new MutationObserver(function() {
+          attempts++;
+          attachNavHandlers();
+          if (attempts >= maxAttempts) {
+            observer.disconnect();
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        // Also try on intervals as fallback
+        const interval = setInterval(function() {
+          attempts++;
+          attachNavHandlers();
+          if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            observer.disconnect();
+          }
+        }, 100);
+        
+        // Keep checking periodically to catch React re-renders
+        setInterval(attachNavHandlers, 1000);
+      })();
+      
+      // Set GlobalNav width as CSS variable and apply margin to app-container
+      (function() {
+        function setGlobalNavWidth() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          const appContainer = document.querySelector('.app-container');
+          const masonryContainer = document.querySelector('.MasonryGrid-module__container');
+          
+          if (globalNav) {
+            const width = globalNav.offsetWidth || 80;
+            const marginValue = width + 16; // GlobalNav width + 16px gap
+            document.documentElement.style.setProperty('--global-nav-width', width + 'px');
+            
+            // Apply margin to app-container only
+            if (appContainer) {
+              appContainer.style.marginLeft = marginValue + 'px';
+            }
+          }
+        }
+        
+        // Run immediately and also wait for DOM
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setGlobalNavWidth);
+        } else {
+          setGlobalNavWidth();
+        }
+        
+        const observer = new MutationObserver(setGlobalNavWidth);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('resize', setGlobalNavWidth);
+        // Also check periodically to catch React re-renders
+        setInterval(setGlobalNavWidth, 100);
+      })();
+      
+      // Populate heading query from URL parameter
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('q') || '';
+        const headingQueryEl = document.getElementById('heading-query');
+        if (headingQueryEl) {
+          headingQueryEl.textContent = query;
+        }
+      })();
+      
+      // Expand SearchHelperCards on SearchBar focus/click
+      (function() {
+        function expandHelperCards() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          
+          if (searchBar) {
+            searchBar.classList.add('SearchBar-module__expanded');
+          }
+          
+          if (helperCardsContainer) {
+            helperCardsContainer.classList.add('SearchHelperCards-module__visible');
+          }
+        }
+        
+        function attachFocusClickHandlers() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          if (!searchBar) return false;
+          
+          const input = searchBar.querySelector('input');
+          if (!input) return false;
+          
+          // Add focus handler
+          if (!input.hasAttribute('data-focus-handler-added')) {
+            input.addEventListener('focus', function() {
+              expandHelperCards();
+            });
+            input.setAttribute('data-focus-handler-added', 'true');
+          }
+          
+          // Add click handler to search bar
+          if (!searchBar.hasAttribute('data-click-handler-added')) {
+            searchBar.addEventListener('click', function(e) {
+              // Only expand if clicking on the search bar itself, not on child elements that might navigate
+              if (e.target === searchBar || e.target === input || e.target.closest('.SearchBar-module__searchInput')) {
+                expandHelperCards();
+              }
+            });
+            searchBar.setAttribute('data-click-handler-added', 'true');
+          }
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!attachFocusClickHandlers()) {
+          // Wait for React to render
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (attachFocusClickHandlers() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
+        }
+      })();
+      
+      // Prevent SearchHelperCards navigation (stay on results-page.html)
+      (function() {
+        function preventHelperCardsNavigation() {
+          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          if (!helperCardsContainer) return false;
+          
+          const helperCards = helperCardsContainer.querySelectorAll('.SearchHelperCard-module__helperCard');
+          let found = false;
+          
+          helperCards.forEach(card => {
+            // Find all links in the card
+            const links = card.querySelectorAll('a');
+            links.forEach(link => {
+              const href = link.getAttribute('href');
+              if (href && href !== '#' && !href.startsWith('javascript:')) {
+                // Store original href
+                link.setAttribute('data-original-href', href);
+                link.removeAttribute('href');
+                link.style.cursor = 'pointer';
+                
+                // Prevent navigation
+                link.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  return false;
+                }, true);
+                
+                found = true;
+              }
+            });
+            
+            // Prevent clicks on the card itself that might navigate
+            card.addEventListener('click', function(e) {
+              const target = e.target;
+              if (target.tagName === 'A' || target.closest('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }
+            }, true);
+          });
+          
+          return found;
+        }
+        
+        // Try immediately
+        if (!preventHelperCardsNavigation()) {
+          // Wait for cards to be rendered
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (preventHelperCardsNavigation() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
+        }
+        
+        // Also watch for dynamically added cards
+        const observer = new MutationObserver(function() {
+          preventHelperCardsNavigation();
         });
         observer.observe(document.body, {
           childList: true,
           subtree: true
         });
       })();
+      
+      // Number SearchHelperCards and update category text
+      (function() {
+        let isProcessed = false;
+        
+        function numberHelperCards() {
+          if (isProcessed) return true;
+          
+          const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
+          if (helperCards.length === 0) return false;
+          
+          helperCards.forEach((card, index) => {
+            card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
+            
+            // Get the category to determine which search terms to use
+            const categoryElement = card.querySelector('.SearchHelperCard-module__category');
+            if (!categoryElement) return;
+            
+            // Update category text for specific cards
+            if (index === 1) { // Card 2
+              categoryElement.textContent = 'Recent Search';
+            } else if (index === 2) { // Card 3
+              categoryElement.textContent = 'Recently viewed';
+            } else if (index === 3) { // Card 4
+              categoryElement.textContent = 'Recently saved';
+            }
+          });
+          
+          isProcessed = true;
+          return true;
+        }
+        
+        // Try immediately
+        if (!numberHelperCards()) {
+          // Watch for cards to be rendered by React, then disconnect
+          let attempts = 0;
+          const maxAttempts = 50;
+          const interval = setInterval(function() {
+            attempts++;
+            if (numberHelperCards() || attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 100);
+        }
+      })();
     </script>
     <div class="app-container">
+      <div class="MasonryGrid-module__container">
+        <div class="MasonryGrid-module__gridContainer packery-container">
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-5.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-7.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-9.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+        </div>
+        <div class="masonry-divider"></div>
+        <div class="Heading">
+          <h2 class="Heading-title">More Ideas</h2>
+          <p class="Heading-subtitle">Here are some other ideas you might like about <span id="heading-query"></span></p>
+        </div>
+        <div class="MasonryGrid-module__gridContainer packery-container packery-container-2">
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-5.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-7.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-9.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-2.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-6.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-10.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-11.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio2_3">
+              <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio3_4">
+              <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+          <div class="MasonryGrid-module__gridItem">
+            <div class="Pin-module__pin Pin-module__ratio1_1">
+              <img src="/dweb-rh/assets/images/hf-15.jpg" alt="Pin" class="Pin-module__pinImage" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <script>
+      // SearchBar collapse to pill behavior
+      (function() {
+        let lastScrollTop = 0;
+        let isCollapsed = false;
+        let scrollTimeout;
+        let scrollStopTimeout;
+        let isInitialized = false;
+        
+        function getSearchBar() {
+          return document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]');
+        }
+        
+        function getPill() {
+          return document.getElementById('searchbar-collapsed-pill');
+        }
+        
+        function getPillQueryText() {
+          return document.getElementById('pill-query-text');
+        }
+        
+        function updatePillQuery() {
+          const pillQueryText = getPillQueryText();
+          if (!pillQueryText) return;
+          
+          // Get query from URL or from search input
+          const urlParams = new URLSearchParams(window.location.search);
+          let query = urlParams.get('q') || '';
+          
+          // Also try to get from search input if available
+          const searchInput = document.querySelector('.SearchBar-module__searchInput');
+          if (searchInput && searchInput.value) {
+            query = searchInput.value;
+          }
+          
+          pillQueryText.textContent = query;
+        }
+        
+        function showSearchBar() {
+          const hStack = getSearchBar();
+          const pill = getPill();
+          
+          if (isCollapsed) {
+            // Hide pill
+            if (pill) {
+              pill.classList.remove('visible');
+            }
+            
+            // Show search bar
+            if (hStack) {
+              hStack.style.removeProperty('transform');
+              hStack.style.setProperty('opacity', '1', 'important');
+              hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+              hStack.style.setProperty('pointer-events', 'auto', 'important');
+            }
+            
+            isCollapsed = false;
+          }
+        }
+        
+        function collapseSearchBar() {
+          const hStack = getSearchBar();
+          const pill = getPill();
+          
+          if (!isCollapsed) {
+            // Update pill query text
+            updatePillQuery();
+            
+            // Hide search bar
+            if (hStack) {
+              hStack.style.setProperty('transform', 'translate3d(0, -100%, 0)', 'important');
+              hStack.style.setProperty('opacity', '0', 'important');
+              hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+              hStack.style.setProperty('pointer-events', 'none', 'important');
+            }
+            
+            // Show pill
+            if (pill) {
+              pill.classList.add('visible');
+            }
+            
+            isCollapsed = true;
+          }
+        }
+        
+        function handleScroll() {
+          const hStack = getSearchBar();
+          if (!hStack) return;
+          
+          const currentScrollTop = window.scrollY || window.pageYOffset || 0;
+          
+          // Clear scroll stop timeout
+          clearTimeout(scrollStopTimeout);
+          // Clear timeout to debounce
+          clearTimeout(scrollTimeout);
+          
+          scrollTimeout = setTimeout(function() {
+            // Scroll down - collapse to pill
+            if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              collapseSearchBar();
+            }
+            // Scroll up - show full search bar
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              showSearchBar();
+            }
+            
+            lastScrollTop = currentScrollTop;
+            
+            // Show after 1 second of no scrolling
+            scrollStopTimeout = setTimeout(function() {
+              showSearchBar();
+            }, 1000);
+          }, 10);
+        }
+        
+        function initPillClickHandlers() {
+          const pill = getPill();
+          const clearBtn = document.getElementById('pill-clear-btn');
+          
+          // Click on pill expands search bar
+          if (pill) {
+            pill.addEventListener('click', function(e) {
+              if (e.target !== clearBtn) {
+                showSearchBar();
+                // Focus the search input
+                setTimeout(function() {
+                  const searchInput = document.querySelector('.SearchBar-module__searchInput');
+                  if (searchInput) {
+                    searchInput.focus();
+                  }
+                }, 100);
+              }
+            });
+          }
+          
+          // Clear button clears search and expands search bar with helper cards
+          if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Clear the search input
+              const searchInput = document.querySelector('.SearchBar-module__searchInput');
+              if (searchInput) {
+                searchInput.value = '';
+              }
+              // Hide pill and show search bar
+              showSearchBar();
+              // Add expanded class to search bar
+              const searchBar = document.querySelector('.SearchBar-module__searchBar');
+              if (searchBar) {
+                searchBar.classList.add('SearchBar-module__expanded');
+              }
+              // Show helper cards container
+              const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+              if (helperCards) {
+                helperCards.classList.add('SearchHelperCards-module__visible');
+              }
+              // Focus the search input
+              setTimeout(function() {
+                if (searchInput) {
+                  searchInput.focus();
+                }
+              }, 100);
+            });
+          }
+        }
+        
+        function initScrollListener() {
+          const hStack = getSearchBar();
+          if (!hStack || isInitialized) return false;
+          
+          lastScrollTop = window.scrollY || window.pageYOffset || 0;
+          window.addEventListener('scroll', handleScroll, { passive: true });
+          initPillClickHandlers();
+          isInitialized = true;
+          return true;
+        }
+        
+        // Try to initialize immediately or wait for DOM
+        if (!initScrollListener()) {
+          const observer = new MutationObserver(function() {
+            if (initScrollListener()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          let attempts = 0;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initScrollListener() || attempts >= 50) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
+      // Randomize images in second grid
+      (function() {
+        function randomizeSecondGrid() {
+          const secondGrid = document.querySelector('.packery-container-2');
+          if (!secondGrid) return;
+          
+          const images = secondGrid.querySelectorAll('img');
+          const imagePool = [];
+          for (let i = 1; i <= 21; i++) {
+            imagePool.push('/dweb-rh/assets/images/hf-' + i + '.jpg');
+          }
+          
+          images.forEach(function(img) {
+            const randomIndex = Math.floor(Math.random() * imagePool.length);
+            img.src = imagePool[randomIndex];
+          });
+        }
+        
+        document.addEventListener('DOMContentLoaded', randomizeSecondGrid);
+      })();
+      
+      // Masonry grid implementation (same as index.html)
+      (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+          function initMasonryGrid() {
+            const gridContainers = document.querySelectorAll('.MasonryGrid-module__gridContainer.packery-container');
+            if (!gridContainers.length) return;
+            
+            gridContainers.forEach(function(gridContainer) {
+              initSingleGrid(gridContainer);
+            });
+          }
+          
+          function initSingleGrid(gridContainer) {
+            if (!gridContainer) return;
+            
+            // Responsive breakpoints
+            const breakpoints = [
+              { min: 1372, cols: 5 },
+              { min: 1115, cols: 4 },
+              { min: 860, cols: 3 },
+              { min: 500, cols: 2 }
+            ];
+            
+            function getColumnCount() {
+              const width = window.innerWidth;
+              for (const bp of breakpoints) {
+                if (width >= bp.min) {
+                  return bp.cols;
+                }
+              }
+              return 1;
+            }
+            
+            function calculateColumnWidth(containerWidth, columnCount, gutter) {
+              const totalGutters = gutter * (columnCount - 1);
+              return (containerWidth - totalGutters) / columnCount;
+            }
+            
+            function layoutGrid() {
+              // Calculate available width: use actual container width minus right margin
+              const container = gridContainer.closest('.MasonryGrid-module__container');
+              const containerWidth = container ? container.offsetWidth : window.innerWidth;
+              // Account for right margin (16px) on gridContainer
+              const availableWidth = containerWidth - 16;
+              const columnCount = getColumnCount();
+              const gutter = 16;
+              const columnWidth = calculateColumnWidth(availableWidth, columnCount, gutter);
+              
+              const gridItems = gridContainer.querySelectorAll('.MasonryGrid-module__gridItem');
+              // Layout all items in the grid
+              const itemsToLayout = Array.from(gridItems);
+              const columnHeights = Array(columnCount).fill(0);
+              
+              // First pass: set widths and calculate heights
+              const itemHeights = [];
+              itemsToLayout.forEach((item, index) => {
+                const pin = item.querySelector('.Pin-module__pin');
+                if (!pin) {
+                  itemHeights[index] = 0;
+                  return;
+                }
+                
+                const img = pin.querySelector('img');
+                if (!img) {
+                  itemHeights[index] = 0;
+                  return;
+                }
+                
+                // Set item width first
+                item.style.width = columnWidth + 'px';
+                item.style.position = 'absolute';
+                pin.style.width = '100%';
+                
+                // Override CSS aspect-ratio to use natural image dimensions (varying aspect ratios)
+                pin.style.aspectRatio = 'unset';
+                pin.style.height = 'auto';
+                
+                // Calculate height based on image aspect ratio - prefer actual rendered dimensions
+                let itemHeight = 0;
+                
+                // First try to use natural dimensions if image is loaded (this gives varying aspect ratios)
+                if (img.complete && img.naturalHeight && img.naturalWidth && img.naturalWidth > 0) {
+                  const aspectRatio = img.naturalHeight / img.naturalWidth;
+                  itemHeight = columnWidth * aspectRatio;
+                } 
+                // Then try offset dimensions (actual rendered size)
+                else if (img.offsetHeight && img.offsetWidth && img.offsetWidth > 0) {
+                  const aspectRatio = img.offsetHeight / img.offsetWidth;
+                  itemHeight = columnWidth * aspectRatio;
+                } 
+                // Fallback to CSS aspect ratio or default
+                else {
+                  let aspectRatio = 1.5; // Default 2:3
+                  if (pin.classList.contains('Pin-module__ratio2_3')) aspectRatio = 1.5; // 2:3
+                  else if (pin.classList.contains('Pin-module__ratio1_1')) aspectRatio = 1; // 1:1
+                  else if (pin.classList.contains('Pin-module__ratio3_4')) aspectRatio = 1.333; // 3:4
+                  itemHeight = columnWidth * aspectRatio;
+                }
+                
+                // Ensure minimum height
+                if (itemHeight < 100) {
+                  itemHeight = columnWidth * 1.5; // Default 2:3 ratio
+                }
+                
+                itemHeights[index] = itemHeight;
+              });
+              
+              // Second pass: position items
+              itemsToLayout.forEach((item, index) => {
+                if (itemHeights[index] === 0) return;
+                
+                let itemHeight = itemHeights[index];
+                
+                // Get actual rendered height if available (more accurate)
+                const pin = item.querySelector('.Pin-module__pin');
+                const img = pin ? pin.querySelector('img') : null;
+                
+                // If image is fully loaded, recalculate height from actual dimensions
+                if (img && img.complete && img.naturalHeight > 0 && img.naturalWidth > 0) {
+                  const aspectRatio = img.naturalHeight / img.naturalWidth;
+                  itemHeight = columnWidth * aspectRatio;
+                } else if (img && img.offsetHeight > 0 && img.offsetWidth > 0 && img.offsetWidth === columnWidth) {
+                  // Use actual rendered height if width matches
+                  itemHeight = img.offsetHeight;
+                } else if (pin && pin.offsetHeight > 0) {
+                  // Use pin's actual height as fallback
+                  itemHeight = pin.offsetHeight;
+                }
+                
+                // Find shortest column
+                const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+                
+                // Position item
+                const x = shortestColumn * (columnWidth + gutter);
+                const y = columnHeights[shortestColumn];
+                
+                item.style.left = x + 'px';
+                item.style.top = y + 'px';
+                
+                // Update column height (add item height + gutter)
+                columnHeights[shortestColumn] += itemHeight + gutter;
+              });
+              
+              // Set container height
+              const maxHeight = Math.max(...columnHeights, 0);
+              gridContainer.style.height = maxHeight + 'px';
+              
+              // Final pass: verify and fix any overlapping by checking actual rendered heights
+              setTimeout(() => {
+                let needsRelayout = false;
+                itemsToLayout.forEach((item, index) => {
+                  const pin = item.querySelector('.Pin-module__pin');
+                  const img = pin ? pin.querySelector('img') : null;
+                  
+                  if (img && img.complete && img.offsetHeight > 0) {
+                    const actualHeight = img.offsetHeight;
+                    const expectedHeight = itemHeights[index];
+                    
+                    // If actual height differs significantly, we need to relayout
+                    if (Math.abs(actualHeight - expectedHeight) > 10) {
+                      itemHeights[index] = actualHeight;
+                      needsRelayout = true;
+                    }
+                  }
+                });
+                
+                if (needsRelayout) {
+                  // Recalculate positions with accurate heights
+                  const newColumnHeights = Array(columnCount).fill(0);
+                  itemsToLayout.forEach((item, index) => {
+                    if (itemHeights[index] === 0) return;
+                    const itemHeight = itemHeights[index];
+                    const shortestColumn = newColumnHeights.indexOf(Math.min(...newColumnHeights));
+                    const x = shortestColumn * (columnWidth + gutter);
+                    const y = newColumnHeights[shortestColumn];
+                    item.style.left = x + 'px';
+                    item.style.top = y + 'px';
+                    newColumnHeights[shortestColumn] += itemHeight + gutter;
+                  });
+                  const newMaxHeight = Math.max(...newColumnHeights, 0);
+                  gridContainer.style.height = newMaxHeight + 'px';
+                }
+              }, 300);
+            }
+            
+            // Wait for images to load before initial layout
+            function waitForImagesAndLayout() {
+              const images = gridContainer.querySelectorAll('img');
+              let loadedCount = 0;
+              const totalImages = images.length;
+              
+              if (totalImages === 0) {
+                layoutGrid();
+                return;
+              }
+              
+              function checkAndLayout() {
+                loadedCount++;
+                if (loadedCount === totalImages) {
+                  // Wait longer for browser to calculate dimensions and render
+                  setTimeout(() => {
+                    layoutGrid();
+                    // Re-layout again after a short delay to ensure accurate heights
+                    setTimeout(() => {
+                      layoutGrid();
+                    }, 200);
+                  }, 200);
+                }
+              }
+              
+              images.forEach(img => {
+                if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  checkAndLayout();
+                } else {
+                  img.addEventListener('load', checkAndLayout, { once: true });
+                  img.addEventListener('error', checkAndLayout, { once: true });
+                }
+              });
+              
+              // Fallback: layout after a timeout if images don't load
+              setTimeout(() => {
+                layoutGrid();
+              }, 2000);
+            }
+            
+            // Initialize after images load
+            waitForImagesAndLayout();
+            
+            // Reinitialize on resize with debounce
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+              clearTimeout(resizeTimeout);
+              resizeTimeout = setTimeout(() => {
+                layoutGrid();
+              }, 250);
+            });
+            
+            // Watch for new images being added
+            const imageObserver = new MutationObserver(() => {
+              const images = gridContainer.querySelectorAll('img');
+              images.forEach(img => {
+                if (!img.hasAttribute('data-layout-watched')) {
+                  img.setAttribute('data-layout-watched', 'true');
+                  if (!img.complete) {
+                    img.addEventListener('load', () => {
+                      setTimeout(layoutGrid, 100);
+                    }, { once: true });
+                  }
+                }
+              });
+            });
+            imageObserver.observe(gridContainer, {
+              childList: true,
+              subtree: true
+            });
+          }
+          
+          // Initialize masonry grid
+          initMasonryGrid();
+        });
+      })();
+    </script>
   </body>
 </html>
-

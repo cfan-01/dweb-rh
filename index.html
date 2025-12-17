@@ -5,13 +5,390 @@
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Pinterest</title>
-      <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
-      <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+      <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
+      <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
+      <!-- Updated paths for GitHub Pages -->
     </head>
 
   <body>
     <div id="root"></div>
     <script>
+      // Fix image paths for GitHub Pages
+      (function() {
+        const basePath = '/dweb-rh';
+        const maxImageNumber = 21; // We only have hf-1.jpg through hf-21.jpg
+        
+        // Map missing image numbers to existing ones and fix extensions
+        function getValidImagePath(requestedPath) {
+          if (!requestedPath) return null;
+          // Extract image number from path like /dweb-rh/assets/images/hf-40.jpg or hf-40.jpg
+          const match = requestedPath.match(/hf-(\d+)\.(jpg|webp|png)/i);
+          if (match) {
+            const requestedNum = parseInt(match[1], 10);
+            const originalExtension = match[2].toLowerCase();
+            
+            // Always map to .jpg since we only have .jpg files (except hf-2.webp)
+            const validNum = requestedNum > maxImageNumber 
+              ? ((requestedNum - 1) % maxImageNumber) + 1 
+              : requestedNum;
+            
+            // Always convert to .jpg (we only have .jpg files, not .png or .webp except hf-2.webp)
+            // But we'll use .jpg for consistency
+            let fixedPath = requestedPath.replace(/hf-\d+\.(jpg|webp|png)/i, `hf-${validNum}.jpg`);
+            
+            // If the number changed OR the extension changed, log it
+            if (fixedPath !== requestedPath) {
+              console.log('Fixed image path:', requestedPath, '->', fixedPath, 
+                (requestedNum > maxImageNumber ? '(number mapped)' : ''), 
+                (originalExtension !== 'jpg' ? '(extension converted)' : ''));
+            }
+            return fixedPath;
+          }
+          return null;
+        }
+        
+        // Helper to fix path and image number in one go
+        function fixPathAndImageNumber(path) {
+          if (!path || typeof path !== 'string') return path;
+          
+          // First fix the base path
+          let fixedPath = path;
+          try {
+            const url = new URL(path, window.location.origin);
+            fixedPath = url.pathname;
+          } catch(e) {
+            if (path.startsWith('/')) {
+              fixedPath = path;
+            }
+          }
+          
+          // Fix base path if needed
+          if (fixedPath && fixedPath.startsWith('/assets/') && !fixedPath.startsWith(basePath)) {
+            fixedPath = basePath + fixedPath;
+          }
+          
+          // Always check for image number and extension fixes (even for valid numbers, need to fix .png -> .jpg)
+          const validPath = getValidImagePath(fixedPath);
+          if (validPath) {
+            fixedPath = validPath;
+          }
+          
+          return fixedPath;
+        }
+        
+        function fixImageSrc(img) {
+          if (!img) return;
+          // Check src, data-src, and other lazy loading attributes
+          let src = img.getAttribute('src') || 
+                    img.getAttribute('data-src') || 
+                    img.getAttribute('data-lazy-src') ||
+                    img.src || '';
+          
+          const originalSrc = src;
+          
+          // Remove domain if present to get just the path
+          try {
+            const url = new URL(src, window.location.origin);
+            src = url.pathname;
+          } catch(e) {
+            // Not a full URL, use as is
+            if (src && !src.startsWith('/') && !src.startsWith('http')) {
+              // Relative path, skip
+              return false;
+            }
+          }
+          
+          // Check if it needs fixing
+          if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+            const fixedSrc = basePath + src;
+            // Fix all possible attributes
+            if (img.getAttribute('src')) img.setAttribute('src', fixedSrc);
+            if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedSrc);
+            if (img.getAttribute('data-lazy-src')) img.setAttribute('data-lazy-src', fixedSrc);
+            img.src = fixedSrc;
+            console.log('Fixed image path:', originalSrc, '->', fixedSrc);
+            return true;
+          }
+          
+          // Log images that might need fixing but don't match our pattern
+          if (src && src.includes('assets') && !src.startsWith(basePath)) {
+            console.warn('Image with assets path not fixed:', src, img);
+          }
+          
+          return false;
+        }
+        
+        // Override src property setter on HTMLImageElement prototype - more aggressive
+        const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+        if (originalSrcDescriptor && originalSrcDescriptor.set) {
+          const originalSet = originalSrcDescriptor.set;
+          Object.defineProperty(HTMLImageElement.prototype, 'src', {
+            set: function(value) {
+              if (value && typeof value === 'string') {
+                let path = value;
+                try {
+                  const url = new URL(value, window.location.origin);
+                  path = url.pathname;
+                } catch(e) {
+                  // Not a full URL, check if it's a relative path
+                  if (value.startsWith('/')) {
+                    path = value;
+                  }
+                }
+                // Fix both path and image number
+                const fixedPath = fixPathAndImageNumber(value);
+                if (fixedPath !== value) {
+                  console.log('Fixed src setter:', value, '->', fixedPath);
+                  value = fixedPath;
+                }
+              }
+              originalSet.call(this, value);
+            },
+            get: originalSrcDescriptor.get,
+            configurable: true,
+            enumerable: true
+          });
+        }
+        
+        // Also override data-src and other lazy loading attributes
+        const originalSetAttribute = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function(name, value) {
+          if (this.tagName === 'IMG' && (name === 'src' || name === 'data-src' || name === 'data-lazy-src')) {
+            if (value && typeof value === 'string') {
+              let path = value;
+              try {
+                const url = new URL(value, window.location.origin);
+                path = url.pathname;
+              } catch(e) {
+                if (value.startsWith('/')) {
+                  path = value;
+                }
+              }
+              // Fix both path and image number
+              const fixedPath = fixPathAndImageNumber(value);
+              if (fixedPath !== value) {
+                console.log('Fixed setAttribute:', name, value, '->', fixedPath);
+                value = fixedPath;
+              }
+            }
+          }
+          return originalSetAttribute.call(this, name, value);
+        };
+        
+        // Intercept image error events and map missing images to existing ones
+        document.addEventListener('error', function(e) {
+          if (e.target && e.target.tagName === 'IMG') {
+            const img = e.target;
+            let src = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
+            
+            // Remove domain to get just path
+            try {
+              const url = new URL(src, window.location.origin);
+              src = url.pathname;
+            } catch(e) {}
+            
+            console.error('Image failed to load:', src, img);
+            
+            // Try to map to a valid image
+            let fixedPath = fixPathAndImageNumber(src);
+            
+            // If it's still hf-2.jpg or hf-10.jpg and failed, try a different image
+            if (fixedPath && (fixedPath.includes('/hf-2.jpg') || fixedPath.includes('/hf-10.jpg'))) {
+              // Try using a random valid image instead
+              const randomNum = Math.floor(Math.random() * maxImageNumber) + 1;
+              fixedPath = fixedPath.replace(/hf-\d+\.jpg/i, `hf-${randomNum}.jpg`);
+              console.log('Retrying with random image:', src, '->', fixedPath);
+            }
+            
+            if (fixedPath && fixedPath !== src) {
+              img.src = fixedPath;
+              if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
+              if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedPath);
+              console.log('Fixed missing image by mapping to valid image:', src, '->', fixedPath);
+            } else {
+              // Try to fix path one more time
+              if (src && src.includes('/assets/')) {
+                setTimeout(() => fixImageSrc(img), 0);
+              }
+            }
+          }
+        }, true);
+        
+        // Also proactively fix images that request numbers > 21
+        function fixImageNumber(img) {
+          if (!img) return;
+          let src = img.getAttribute('src') || img.getAttribute('data-src') || img.src || '';
+          const fixedPath = fixPathAndImageNumber(src);
+          if (fixedPath && fixedPath !== src) {
+            img.src = fixedPath;
+            if (img.getAttribute('src')) img.setAttribute('src', fixedPath);
+            if (img.getAttribute('data-src')) img.setAttribute('data-src', fixedPath);
+            console.log('Fixed image number:', src, '->', fixedPath);
+            return true;
+          }
+          return false;
+        }
+        
+        // Fix images that are already in the DOM
+        function fixImagePaths() {
+          const images = document.querySelectorAll('img');
+          images.forEach(img => {
+            // Try multiple times with different approaches
+            fixImageSrc(img);
+            fixImageNumber(img);
+            
+            // Also check current src and fix if needed
+            const currentSrc = img.src || img.getAttribute('src') || img.getAttribute('data-src');
+            if (currentSrc) {
+              const fixed = fixPathAndImageNumber(currentSrc);
+              if (fixed && fixed !== currentSrc) {
+                img.src = fixed;
+                if (img.getAttribute('src')) img.setAttribute('src', fixed);
+                if (img.getAttribute('data-src')) img.setAttribute('data-src', fixed);
+              }
+            }
+          });
+        }
+        
+        // Override Image constructor to fix dynamically created images
+        const OriginalImage = window.Image;
+        window.Image = function(...args) {
+          const img = new OriginalImage(...args);
+          if (args.length > 0 && typeof args[0] === 'string') {
+            const src = args[0];
+            if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          }
+          return img;
+        };
+        
+        // Watch for new images being added - more aggressive
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) { // Element node
+                if (node.tagName === 'IMG') {
+                  fixImageSrc(node);
+                  // Also check for data-src that might be converted later
+                  setTimeout(() => fixImageSrc(node), 0);
+                  setTimeout(() => fixImageSrc(node), 50);
+                  setTimeout(() => fixImageSrc(node), 100);
+                }
+                // Check child images
+                const images = node.querySelectorAll && node.querySelectorAll('img');
+                if (images) {
+                  images.forEach(img => {
+                    fixImageSrc(img);
+                    setTimeout(() => fixImageSrc(img), 0);
+                    setTimeout(() => fixImageSrc(img), 50);
+                    setTimeout(() => fixImageSrc(img), 100);
+                  });
+                }
+              }
+            });
+          });
+        });
+        
+        // Fix existing images
+        fixImagePaths();
+        
+        // Watch for new images
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src']
+        });
+        
+        // Also fix images on attribute changes - watch for src, data-src, etc.
+        const attrObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            const attrName = mutation.attributeName;
+            if (mutation.type === 'attributes' && 
+                (attrName === 'src' || attrName === 'data-src' || attrName === 'data-lazy-src')) {
+              fixImageSrc(mutation.target);
+            }
+          });
+        });
+        
+        // Watch for src attribute changes on all images - including data-src
+        function observeAllImages() {
+          const allImages = document.querySelectorAll('img');
+          allImages.forEach(img => {
+            attrObserver.observe(img, { 
+              attributes: true, 
+              attributeFilter: ['src', 'data-src', 'data-lazy-src'] 
+            });
+            fixImageSrc(img);
+          });
+        }
+        
+        document.addEventListener('DOMContentLoaded', observeAllImages);
+        
+        // Periodic check to catch images that might be missed (more frequent)
+        setInterval(function() {
+          fixImagePaths();
+        }, 300);
+        
+        // Also check after delays to catch React-rendered images
+        setTimeout(fixImagePaths, 50);
+        setTimeout(fixImagePaths, 100);
+        setTimeout(fixImagePaths, 200);
+        setTimeout(fixImagePaths, 300);
+        setTimeout(fixImagePaths, 500);
+        setTimeout(fixImagePaths, 750);
+        setTimeout(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 1500);
+        setTimeout(fixImagePaths, 2000);
+        setTimeout(fixImagePaths, 3000);
+        setTimeout(fixImagePaths, 4000);
+        setTimeout(fixImagePaths, 5000);
+        
+        // Watch for scroll events (lazy loading) - more aggressive
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+          clearTimeout(scrollTimeout);
+          // Fix immediately and also after a short delay
+          fixImagePaths();
+          scrollTimeout = setTimeout(fixImagePaths, 50);
+          setTimeout(fixImagePaths, 150);
+          setTimeout(fixImagePaths, 300);
+        }, { passive: true });
+        
+        // Also watch for resize events (might trigger lazy loading)
+        window.addEventListener('resize', function() {
+          setTimeout(fixImagePaths, 100);
+        }, { passive: true });
+        
+        // Watch for intersection observer (common for lazy loading)
+        const originalIntersectionObserver = window.IntersectionObserver;
+        window.IntersectionObserver = function(callback, options) {
+          const wrappedCallback = function(entries, observer) {
+            // Fix images before and after callback runs
+            fixImagePaths();
+            setTimeout(fixImagePaths, 0);
+            setTimeout(fixImagePaths, 50);
+            setTimeout(fixImagePaths, 100);
+            const result = callback(entries, observer);
+            setTimeout(fixImagePaths, 0);
+            return result;
+          };
+          return new originalIntersectionObserver(wrappedCallback, options);
+        };
+        
+        // Also intercept requestAnimationFrame (React might use this)
+        const originalRAF = window.requestAnimationFrame;
+        window.requestAnimationFrame = function(callback) {
+          return originalRAF(function(time) {
+            const result = callback(time);
+            // Check images after animation frame
+            setTimeout(fixImagePaths, 0);
+            return result;
+          });
+        };
+      })();
+      
       // Make boards icon clickable - wait for React app to render
       (function() {
         let boardsIcon = null;
@@ -72,7 +449,7 @@
             boardsIcon.addEventListener('click', function(e) {
               e.preventDefault();
               e.stopPropagation();
-              window.location.href = '/boards.html';
+              window.location.href = '/dweb-rh/boards.html';
               return false;
             });
             boardsIcon.style.cursor = 'pointer';

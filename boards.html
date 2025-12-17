@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Boards - Pinterest</title>
-    <link rel="stylesheet" crossorigin href="/assets/index-I0l3_rlN.css">
+    <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
     <style>
       body {
         margin: 0;
@@ -25,11 +25,43 @@
         overflow-y: auto;
         overflow-x: hidden;
         position: relative;
+        /* Prevent horizontal scrolling and diagonal movement */
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        /* Ensure content doesn't exceed container width */
+        max-width: 100%;
+        box-sizing: border-box;
+        /* Force strict vertical scrolling */
+        direction: ltr;
+        /* Add margin to account for fixed GlobalNav + 16px gap */
+        margin-left: calc(var(--global-nav-width, 80px) + 16px);
+      }
+      /* Ensure all child elements respect container width */
+      .boards-main > * {
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      /* Prevent any horizontal transforms or shifts */
+      body, html {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+      /* Ensure app-container doesn't cause horizontal overflow */
+      .app-container {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+      }
+      /* Ensure SearchBar transforms don't cause layout shifts */
+      .SearchBar-module__searchBar,
+      .SearchBar-module__hStack {
+        transform-origin: center top !important;
+        will-change: transform, opacity !important;
       }
       .boards-title {
         position: absolute;
         top: 28px;
-        left: 32px;
+        left: 0;
         font-family: "Pin Sans", var(--font-family-pin-sans);
         font-size: 28px;
         font-weight: 700;
@@ -39,7 +71,7 @@
       .boards-tabs {
         position: absolute;
         top: 88px;
-        left: 40px;
+        left: 0;
         display: flex;
         gap: 24px;
       }
@@ -70,7 +102,7 @@
       .filter-controls {
         position: absolute;
         top: calc(89px + 22px + 30px);
-        left: 48px;
+        left: 0;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -162,12 +194,23 @@
         background-color: #F6F6F3;
         border-color: #85857F;
       }
+      /* Sticky profile header */
+      .profile-header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        z-index: 100;
+        width: 100%;
+        min-height: 200px;
+      }
       .MasonryGrid-module__gridContainer {
-        margin-left: 32px;
+        margin-left: 0;
         margin-right: 0;
         position: relative;
-        margin-top: calc(89px + 22px + 30px + 36px + 36px);
-        width: calc(100% - 32px);
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
       }
       .board-rep {
         width: 236px;
@@ -235,7 +278,7 @@
         margin: 0;
       }
       .profile-preview {
-        position: fixed;
+        position: absolute;
         top: 32px;
         right: 104px;
         width: auto;
@@ -393,12 +436,152 @@
         fill: #ffffff !important;
         color: #ffffff !important;
       }
+      .GlobalNav-module__globalNav {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        z-index: 200 !important;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" crossorigin src="/assets/index-BLL-NyY1.js"></script>
+    <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
+      // Fix image paths for GitHub Pages
+      (function() {
+        const basePath = '/dweb-rh';
+        
+        function fixImageSrc(img) {
+          if (!img) return;
+          let src = img.getAttribute('src') || img.src || '';
+          try {
+            const url = new URL(src, window.location.origin);
+            src = url.pathname;
+          } catch(e) {}
+          
+          if (src && src.startsWith('/assets/') && !src.startsWith(basePath)) {
+            const fixedSrc = basePath + src;
+            img.src = fixedSrc;
+            img.setAttribute('src', fixedSrc);
+            return true;
+          }
+          return false;
+        }
+        
+        function fixImagePaths() {
+          const images = document.querySelectorAll('img');
+          images.forEach(fixImageSrc);
+        }
+        
+        const OriginalImage = window.Image;
+        window.Image = function(...args) {
+          const img = new OriginalImage(...args);
+          if (args.length > 0 && typeof args[0] === 'string') {
+            const src = args[0];
+            if (src.startsWith('/assets/') && !src.startsWith(basePath)) {
+              img.src = basePath + src;
+            }
+          }
+          return img;
+        };
+        
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) {
+                if (node.tagName === 'IMG') {
+                  fixImageSrc(node);
+                }
+                const images = node.querySelectorAll && node.querySelectorAll('img');
+                if (images) {
+                  images.forEach(fixImageSrc);
+                }
+              }
+            });
+          });
+        });
+        
+        fixImagePaths();
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src']
+        });
+        
+        const attrObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+              fixImageSrc(mutation.target);
+            }
+          });
+        });
+        
+        function observeAllImages() {
+          const allImages = document.querySelectorAll('img');
+          allImages.forEach(img => {
+            attrObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+            fixImageSrc(img);
+          });
+        }
+        
+        document.addEventListener('DOMContentLoaded', observeAllImages);
+        setInterval(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 100);
+        setTimeout(fixImagePaths, 500);
+        setTimeout(fixImagePaths, 1000);
+        setTimeout(fixImagePaths, 2000);
+      })();
+      
+      // Fix font paths in CSS
+      (function() {
+        const basePath = '/dweb-rh';
+        
+        function fixFontPaths() {
+          try {
+            const styleSheets = document.styleSheets;
+            for (let i = 0; i < styleSheets.length; i++) {
+              try {
+                const rules = styleSheets[i].cssRules || styleSheets[i].rules;
+                if (rules) {
+                  for (let j = 0; j < rules.length; j++) {
+                    const rule = rules[j];
+                    if (rule instanceof CSSFontFaceRule && rule.style && rule.style.src) {
+                      let src = rule.style.src;
+                      if (src && src.includes('/assets/') && !src.includes(basePath)) {
+                        src = src.replace(/\/assets\//g, basePath + '/assets/');
+                        rule.style.src = src;
+                      }
+                    }
+                  }
+                }
+              } catch(e) {
+                // Cross-origin stylesheet, skip
+              }
+            }
+          } catch(e) {
+            // Ignore errors
+          }
+        }
+        
+        // Fix fonts on load and watch for new stylesheets
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', fixFontPaths);
+        } else {
+          fixFontPaths();
+        }
+        
+        const styleObserver = new MutationObserver(() => {
+          fixFontPaths();
+        });
+        styleObserver.observe(document.head, { childList: true, subtree: true });
+        
+        // Also fix fonts periodically
+        setInterval(fixFontPaths, 500);
+      })();
+      
       // Fix App-module__app link to home page
       (function() {
         let attempts = 0;
@@ -409,14 +592,14 @@
           if (appLink) {
             // If it's already an anchor tag, set href
             if (appLink.tagName === 'A') {
-              appLink.href = '/index.html';
-              appLink.setAttribute('href', '/index.html');
+              appLink.href = '/dweb-rh/index.html';
+              appLink.setAttribute('href', '/dweb-rh/index.html');
             } else {
               // If it's a button or div, make it clickable
               appLink.style.cursor = 'pointer';
               appLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = '/dweb-rh/index.html';
               });
             }
             return true;
@@ -642,10 +825,10 @@
         
         function replaceSearchIcon() {
           const searchIconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
-          if (searchIconContainer && !searchIconContainer.querySelector('img[src="/assets/avatar/avatar.png"]')) {
+          if (searchIconContainer && !searchIconContainer.querySelector('img[src="/dweb-rh/assets/avatar/avatar.png"]')) {
             // Create avatar image matching boards-avatar styling
             const avatarImg = document.createElement('img');
-            avatarImg.src = '/assets/avatar/avatar.png';
+            avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
             avatarImg.alt = 'Avatar';
             avatarImg.style.width = '48px';
             avatarImg.style.height = '48px';
@@ -690,10 +873,334 @@
         }
       })();
       
+      // Fix avatar image in GlobalNav AvatarButton
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function fixGlobalNavAvatar() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          if (!globalNav) return false;
+          
+          const avatarButton = globalNav.querySelector('.AvatarButton-module__avatarButton');
+          if (!avatarButton) return false;
+          
+          // Find the image inside the avatar button
+          let avatarImg = avatarButton.querySelector('img');
+          
+          // If no image exists, create one
+          if (!avatarImg) {
+            avatarImg = document.createElement('img');
+            avatarButton.appendChild(avatarImg);
+          }
+          
+          // Set the image source and make it visible
+          avatarImg.src = '/dweb-rh/assets/avatar/avatar.png';
+          avatarImg.alt = 'Avatar';
+          avatarImg.style.display = 'block';
+          avatarImg.style.visibility = 'visible';
+          avatarImg.style.opacity = '1';
+          avatarImg.style.width = '28px';
+          avatarImg.style.height = '28px';
+          avatarImg.style.borderRadius = '50%';
+          avatarImg.style.objectFit = 'cover';
+          
+          return true;
+        }
+        
+        // Try immediately
+        if (!fixGlobalNavAvatar()) {
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          const interval = setInterval(function() {
+            attempts++;
+            if (fixGlobalNavAvatar() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+        
+        // Also run periodically to catch React re-renders
+        setInterval(fixGlobalNavAvatar, 1000);
+      })();
+      
+      // Set GlobalNav width as CSS variable and apply margin to boards-main
+      (function() {
+        function setGlobalNavWidth() {
+          const globalNav = document.querySelector('.GlobalNav-module__globalNav');
+          const boardsMain = document.querySelector('.boards-main');
+          if (globalNav && boardsMain) {
+            const width = globalNav.offsetWidth || 80;
+            const marginValue = width + 16; // GlobalNav width + 16px gap
+            document.documentElement.style.setProperty('--global-nav-width', width + 'px');
+            // Also directly set margin to ensure it's applied
+            boardsMain.style.marginLeft = marginValue + 'px';
+          }
+        }
+        setGlobalNavWidth();
+        const observer = new MutationObserver(setGlobalNavWidth);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('resize', setGlobalNavWidth);
+        // Also check periodically
+        setInterval(setGlobalNavWidth, 500);
+      })();
+      
+      // Hide SearchBar on scroll down (same as home page reveal animation)
+      (function() {
+        let lastScrollTop = 0;
+        let isHidden = false;
+        let scrollTimeout;
+        let scrollStopTimeout;
+        let isInitialized = false;
+        
+        function getSearchBar() {
+          // Try multiple selectors to find the SearchBar
+          return document.querySelector('.SearchBar-module__searchBar') ||
+                 document.querySelector('.SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar"][class*="hStack"]') ||
+                 document.querySelector('.ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack') ||
+                 document.querySelector('[class*="SearchBar-module__searchBar"]');
+        }
+        
+        function showSearchBar() {
+          const hStack = getSearchBar();
+          if (!hStack) {
+            console.log('SearchBar not found for show');
+            return;
+          }
+          
+          if (isHidden) {
+            // Remove transform completely to restore original positioning
+            hStack.style.removeProperty('transform');
+            hStack.style.setProperty('opacity', '1', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'auto', 'important');
+            // Don't override transform-origin, let it use original CSS
+            hStack.style.removeProperty('transform-origin');
+            hStack.style.removeProperty('will-change');
+            isHidden = false;
+            console.log('SearchBar shown');
+          }
+        }
+        
+        function hideSearchBar() {
+          const hStack = getSearchBar();
+          if (!hStack) {
+            console.log('SearchBar not found for hide');
+            return;
+          }
+          
+          if (!isHidden) {
+            // Get the current transform to preserve any existing transforms
+            const currentTransform = window.getComputedStyle(hStack).transform;
+            let baseTransform = '';
+            
+            // If there's an existing transform, we need to combine it
+            if (currentTransform && currentTransform !== 'none' && currentTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+              // Extract the matrix values to preserve X translation
+              const matrixMatch = currentTransform.match(/matrix\(([^)]+)\)/);
+              if (matrixMatch) {
+                const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
+                // values[4] is translateX, values[5] is translateY
+                // We want to preserve translateX but change translateY
+                baseTransform = `translate3d(${values[4] || 0}px, 100%, 0)`;
+              } else {
+                baseTransform = 'translate3d(0, 100%, 0)';
+              }
+            } else {
+              // No existing transform, just move down
+              baseTransform = 'translate3d(0, 100%, 0)';
+            }
+            
+            // Move down (reverse of reveal animation) - use translate3d to ensure only Y movement
+            hStack.style.setProperty('transform', baseTransform, 'important');
+            hStack.style.setProperty('opacity', '0', 'important');
+            hStack.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+            hStack.style.setProperty('pointer-events', 'none', 'important');
+            isHidden = true;
+            console.log('SearchBar hidden');
+          }
+        }
+        
+        function handleScroll(e) {
+          const boardsMain = document.querySelector('.boards-main');
+          const hStack = getSearchBar();
+          
+          if (!hStack) {
+            console.log('SearchBar not found in scroll handler');
+            return;
+          }
+          
+          // Get scroll position from multiple sources
+          const boardsScrollTop = boardsMain ? boardsMain.scrollTop : 0;
+          const windowScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollTop = boardsScrollTop || windowScrollY;
+          
+          console.log('Scroll event fired:', { 
+            currentScrollTop, 
+            lastScrollTop, 
+            isHidden,
+            boardsScrollTop,
+            windowScrollY,
+            eventTarget: e ? e.target : 'unknown'
+          });
+          
+          // Clear scroll stop timeout
+          clearTimeout(scrollStopTimeout);
+          
+          // Clear timeout to debounce
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            // Scroll down - hide
+            if (currentScrollTop > lastScrollTop && currentScrollTop > 50) {
+              console.log('Scrolling down, hiding SearchBar');
+              hideSearchBar();
+            }
+            // Scroll up - show
+            else if (currentScrollTop < lastScrollTop || currentScrollTop <= 50) {
+              console.log('Scrolling up or at top, showing SearchBar');
+              showSearchBar();
+            }
+            
+            lastScrollTop = currentScrollTop;
+            
+            // Show after 1 second of no scrolling
+            scrollStopTimeout = setTimeout(() => {
+              console.log('1 second of no scrolling, showing SearchBar');
+              showSearchBar();
+            }, 1000);
+          }, 10);
+        }
+        
+        // Wait for boards-main and SearchBar to be available
+        function initScrollListener() {
+          const boardsMain = document.querySelector('.boards-main');
+          const hStack = getSearchBar();
+          
+          if (!boardsMain) {
+            console.log('boards-main not found yet');
+            return false;
+          }
+          
+          if (!hStack) {
+            console.log('SearchBar not found yet');
+            return false;
+          }
+          
+          if (!isInitialized) {
+            // Check what's actually scrolling
+            console.log('boards-main scrollHeight:', boardsMain.scrollHeight, 'clientHeight:', boardsMain.clientHeight);
+            console.log('boards-main overflow:', window.getComputedStyle(boardsMain).overflowY);
+            
+            // Try to find the actual scrolling container
+            let scrollContainer = boardsMain;
+            const body = document.body;
+            const html = document.documentElement;
+            
+            // Check if body/html is scrolling instead
+            if (body.scrollHeight > body.clientHeight || html.scrollHeight > html.clientHeight) {
+              console.log('Body or HTML might be scrolling instead');
+            }
+            
+            lastScrollTop = boardsMain.scrollTop || window.scrollY || window.pageYOffset || 0;
+            
+            // Add scroll listener to boards-main
+            boardsMain.addEventListener('scroll', handleScroll, { passive: true });
+            
+            // Also add to window as fallback
+            window.addEventListener('scroll', function() {
+              const scrollY = window.scrollY || window.pageYOffset;
+              console.log('Window scroll event:', scrollY);
+              // Use window scroll if boards-main isn't scrolling
+              if (boardsMain.scrollTop === 0 && scrollY > 0) {
+                handleScroll();
+              }
+            }, { passive: true });
+            
+            isInitialized = true;
+            console.log('Scroll listener initialized, initial scrollTop:', lastScrollTop);
+            console.log('SearchBar element found:', hStack, hStack.className);
+            console.log('SearchBar current styles:', {
+              transform: window.getComputedStyle(hStack).transform,
+              opacity: window.getComputedStyle(hStack).opacity
+            });
+            return true;
+          }
+          return false;
+        }
+        
+        // Try immediately
+        if (!initScrollListener()) {
+          // Use MutationObserver to wait for DOM
+          const observer = new MutationObserver(function() {
+            if (initScrollListener()) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          // Also try on intervals as fallback
+          let attempts = 0;
+          const maxAttempts = 100;
+          const interval = setInterval(function() {
+            attempts++;
+            if (initScrollListener() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+        
+        // Also monitor for React re-renders that might reset styles
+        const styleObserver = new MutationObserver(function() {
+          const hStack = getSearchBar();
+          if (hStack && isInitialized) {
+            // Re-apply hidden state if needed
+            if (isHidden) {
+              const currentTransform = window.getComputedStyle(hStack).transform;
+              if (currentTransform === 'none' || currentTransform === 'matrix(1, 0, 0, 1, 0, 0)') {
+                hideSearchBar();
+              }
+            }
+          }
+        });
+        
+        // Start monitoring after a delay to let React render
+        setTimeout(() => {
+          const hStack = getSearchBar();
+          if (hStack) {
+            styleObserver.observe(hStack, { 
+              attributes: true, 
+              attributeFilter: ['style', 'class'],
+              childList: false,
+              subtree: false
+            });
+          }
+        }, 1000);
+      })();
+      
       // Navigate to results-page.html on Enter key in search bar
       (function() {
         let attempts = 0;
         const maxAttempts = 50;
+        
+        // Save search state to sessionStorage before navigation
+        function saveSearchState(searchQuery, isExpanded) {
+          try {
+            sessionStorage.setItem('searchQuery', searchQuery);
+            sessionStorage.setItem('searchBarExpanded', isExpanded ? 'true' : 'false');
+            console.log('Saved search state:', { searchQuery, isExpanded });
+          } catch(e) {
+            console.log('Could not save search state:', e);
+          }
+        }
         
         function addSearchEnterHandler() {
           const searchBar = document.querySelector('.SearchBar-module__searchBar.SearchBar-module__expanded');
@@ -704,7 +1211,9 @@
                 if (e.key === 'Enter' || e.keyCode === 13) {
                   e.preventDefault();
                   const searchQuery = input.value || '';
-                  window.location.href = '/results-page.html?q=' + encodeURIComponent(searchQuery);
+                  const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
+                  saveSearchState(searchQuery, isExpanded);
+                  window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(searchQuery);
                 }
               });
               input.setAttribute('data-enter-handler-added', 'true');
@@ -726,7 +1235,8 @@
                   if (isExpanded) {
                     e.preventDefault();
                     const searchQuery = input.value || '';
-                    window.location.href = '/results-page.html?q=' + encodeURIComponent(searchQuery);
+                    saveSearchState(searchQuery, isExpanded);
+                    window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(searchQuery);
                   }
                 }
               });
@@ -760,7 +1270,7 @@
       (function() {
         const imageFiles = [];
         for (let i = 1; i <= 21; i++) {
-          imageFiles.push(`/assets/images/hf-${i}.jpg`);
+          imageFiles.push(`/dweb-rh/assets/images/hf-${i}.jpg`);
         }
         
         const searchTerms = {
@@ -790,9 +1300,25 @@
           const helperCards = document.querySelectorAll('.SearchHelperCard-module__helperCard');
           
           helperCards.forEach((card, index) => {
+            // Skip if already processed
+            if (card.hasAttribute('data-card-processed')) return;
+            card.setAttribute('data-card-processed', 'true');
+            
+            // Add numbered class to differentiate each card's position
+            card.classList.add(`SearchHelperCard-module__helperCard-${index + 1}`);
+            
             // Get the category to determine which search terms to use
             const categoryElement = card.querySelector('.SearchHelperCard-module__category');
             if (!categoryElement) return;
+            
+            // Update category text for specific cards
+            if (index === 1) { // Card 2
+              categoryElement.textContent = 'Recent Search';
+            } else if (index === 2) { // Card 3
+              categoryElement.textContent = 'Recently viewed';
+            } else if (index === 3) { // Card 4
+              categoryElement.textContent = 'Recently saved';
+            }
             
             const category = categoryElement.textContent.trim().toLowerCase();
             
@@ -854,87 +1380,199 @@
     </script>
     <div class="app-container">
       <main class="boards-main">
-        <h1 class="boards-title">Your saved ideas</h1>
-        <div class="boards-tabs">
-          <button class="boards-tab active" data-tab="pins">Pins</button>
-          <button class="boards-tab" data-tab="boards">Boards</button>
-          <button class="boards-tab" data-tab="collages">Collages</button>
-        </div>
-        <div class="filter-controls">
-          <div class="filter-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 16.2499C6.695 16.2499 6.04167 15.5966 6.04167 14.7916C6.04167 13.9866 6.695 13.3333 7.5 13.3333C8.305 13.3333 8.95833 13.9866 8.95833 14.7916C8.95833 15.5966 8.305 16.2499 7.5 16.2499ZM18.5417 13.3333H11.6075C11.0042 11.6383 9.4025 10.4166 7.5 10.4166C5.5975 10.4166 3.99583 11.6383 3.3925 13.3333H1.45833C0.653333 13.3333 0 13.9866 0 14.7916C0 15.5966 0.653333 16.2499 1.45833 16.2499H3.3925C3.99583 17.9449 5.5975 19.1666 7.5 19.1666C9.4025 19.1666 11.0042 17.9449 11.6075 16.2499H18.5417C19.3467 16.2499 20 15.5966 20 14.7916C20 13.9866 19.3467 13.3333 18.5417 13.3333ZM12.5 3.74992C13.305 3.74992 13.9583 4.40325 13.9583 5.20825C13.9583 6.01325 13.305 6.66658 12.5 6.66658C11.695 6.66658 11.0417 6.01325 11.0417 5.20825C11.0417 4.40325 11.695 3.74992 12.5 3.74992ZM1.45833 6.66658H8.3925C8.99583 8.36158 10.5975 9.58325 12.5 9.58325C14.4025 9.58325 16.0042 8.36158 16.6075 6.66658H18.5417C19.3467 6.66658 20 6.01325 20 5.20825C20 4.40325 19.3467 3.74992 18.5417 3.74992H16.6075C16.0042 2.05492 14.4025 0.833252 12.5 0.833252C10.5975 0.833252 8.99583 2.05492 8.3925 3.74992H1.45833C0.653333 3.74992 0 4.40325 0 5.20825C0 6.01325 0.653333 6.66658 1.45833 6.66658Z" fill="#111111"/>
-            </svg>
+        <div class="profile-header">
+          <h1 class="boards-title">Your saved ideas</h1>
+          <div class="boards-tabs">
+            <button class="boards-tab active" data-tab="pins">Pins</button>
+            <button class="boards-tab" data-tab="boards">Boards</button>
+            <button class="boards-tab" data-tab="collages">Collages</button>
           </div>
-          <button class="group-button">Group</button>
-          <button class="secret-button">Secret</button>
-          <button class="archived-button">Archived</button>
+          <div class="filter-controls">
+            <div class="filter-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 16.2499C6.695 16.2499 6.04167 15.5966 6.04167 14.7916C6.04167 13.9866 6.695 13.3333 7.5 13.3333C8.305 13.3333 8.95833 13.9866 8.95833 14.7916C8.95833 15.5966 8.305 16.2499 7.5 16.2499ZM18.5417 13.3333H11.6075C11.0042 11.6383 9.4025 10.4166 7.5 10.4166C5.5975 10.4166 3.99583 11.6383 3.3925 13.3333H1.45833C0.653333 13.3333 0 13.9866 0 14.7916C0 15.5966 0.653333 16.2499 1.45833 16.2499H3.3925C3.99583 17.9449 5.5975 19.1666 7.5 19.1666C9.4025 19.1666 11.0042 17.9449 11.6075 16.2499H18.5417C19.3467 16.2499 20 15.5966 20 14.7916C20 13.9866 19.3467 13.3333 18.5417 13.3333ZM12.5 3.74992C13.305 3.74992 13.9583 4.40325 13.9583 5.20825C13.9583 6.01325 13.305 6.66658 12.5 6.66658C11.695 6.66658 11.0417 6.01325 11.0417 5.20825C11.0417 4.40325 11.695 3.74992 12.5 3.74992ZM1.45833 6.66658H8.3925C8.99583 8.36158 10.5975 9.58325 12.5 9.58325C14.4025 9.58325 16.0042 8.36158 16.6075 6.66658H18.5417C19.3467 6.66658 20 6.01325 20 5.20825C20 4.40325 19.3467 3.74992 18.5417 3.74992H16.6075C16.0042 2.05492 14.4025 0.833252 12.5 0.833252C10.5975 0.833252 8.99583 2.05492 8.3925 3.74992H1.45833C0.653333 3.74992 0 4.40325 0 5.20825C0 6.01325 0.653333 6.66658 1.45833 6.66658Z" fill="#111111"/>
+              </svg>
+            </div>
+            <button class="group-button">Group</button>
+            <button class="secret-button">Secret</button>
+            <button class="archived-button">Archived</button>
+          </div>
+          <div class="profile-preview">
+            <img src="/dweb-rh/assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
+            <div class="profile-info-wrapper">
+              <div class="profile-name">Peter Som</div>
+              <div class="profile-description">Chocolate jelly beans danish chocolate cookie liquorice liqu...</div>
+              <div class="profile-stats">177 followers · 16k following</div>
+            </div>
+            <button class="view-profile-button">View profile</button>
+          </div>
         </div>
         <div class="MasonryGrid-module__gridContainer packery-container">
           <div class="board-rep">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-5.jpg" alt="Board image">
+              <img src="/dweb-rh/assets/images/hf-5.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-14.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-19.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-19.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Pink vibes</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-2">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-12.jpg" alt="Board image">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-10.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-9.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="/dweb-rh/assets/images/hf-10.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-9.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Freshness</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-3">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-3.jpg" alt="Board image">
+              <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-4.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-21.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-21.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Adventure</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-4">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-13.jpg" alt="Board image">
+              <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-12.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-3.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Hike</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
           <div class="board-rep board-rep-5">
             <div class="board-rep-left">
-              <img src="/assets/images/hf-14.jpg" alt="Board image">
+              <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Board image">
             </div>
             <div class="board-rep-right">
-              <img src="/assets/images/hf-15.jpg" alt="Board image" class="board-rep-small-top">
-              <img src="/assets/images/hf-7.jpg" alt="Board image" class="board-rep-small-bottom">
+              <img src="/dweb-rh/assets/images/hf-15.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-7.jpg" alt="Board image" class="board-rep-small-bottom">
             </div>
             <div class="board-title">Swimming</div>
             <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
-        </div>
-        <div class="profile-preview">
-          <img src="/assets/avatar/avatar.png" alt="Avatar" class="boards-avatar">
-          <div class="profile-info-wrapper">
-            <div class="profile-name">Peter Som</div>
-            <div class="profile-description">Chocolate jelly beans danish chocolate cookie liquorice liqu...</div>
-            <div class="profile-stats">177 followers · 16k following</div>
+          <div class="board-rep board-rep-6">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-11.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Haus</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
           </div>
-          <button class="view-profile-button">View profile</button>
+          <div class="board-rep board-rep-7">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-6.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-16.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-18.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Kicks</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-8">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-17.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-20.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-2.webp" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Travel</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-9">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-13.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-5.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Looks</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-10">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-21.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-6.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Type</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-11">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-7.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-9.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Colours</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-12">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-10.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-14.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-17.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Rides</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-13">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-11.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-19.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-20.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Shackets</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-14">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-15.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-8.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Parisian apartment</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
+          <div class="board-rep board-rep-15">
+            <div class="board-rep-left">
+              <img src="/dweb-rh/assets/images/hf-18.jpg" alt="Board image">
+            </div>
+            <div class="board-rep-right">
+              <img src="/dweb-rh/assets/images/hf-12.jpg" alt="Board image" class="board-rep-small-top">
+              <img src="/dweb-rh/assets/images/hf-16.jpg" alt="Board image" class="board-rep-small-bottom">
+            </div>
+            <div class="board-title">Pink vibes</div>
+            <div class="board-subtitle">123 Pins · 4 sections</div>
+          </div>
         </div>
       </main>
     </div>
