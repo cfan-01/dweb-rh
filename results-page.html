@@ -1639,23 +1639,29 @@
             
             // Show and expand SearchBar
             if (searchBarWrapper) {
-              // Set transition and visibility
-              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-              searchBarWrapper.style.setProperty('opacity', '1', 'important');
-              searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
+              // Add expanded class FIRST to prevent CSS from hiding it
               searchBarWrapper.classList.add('SearchBar-module__expanded');
               searchBarWrapper.removeAttribute('data-scroll-collapsed');
               
-              // Position 24px from bottom of viewport
-              // Temporarily reset transform to get accurate position
-              const originalTransform = searchBarWrapper.style.transform;
-              searchBarWrapper.style.transform = 'none';
-              const originalRect = searchBarWrapper.getBoundingClientRect();
+              // Set visibility and display
+              searchBarWrapper.style.setProperty('opacity', '1', 'important');
+              searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
+              searchBarWrapper.style.setProperty('display', 'block', 'important');
               
+              // Remove any hiding transform first
+              searchBarWrapper.style.setProperty('transform', 'none', 'important');
+              
+              // Force reflow to get accurate position
+              searchBarWrapper.offsetHeight;
+              
+              // Get position after removing transform
+              const rect = searchBarWrapper.getBoundingClientRect();
               const viewportHeight = window.innerHeight;
               const desiredBottomEdge = viewportHeight - 24;
-              const translateY = desiredBottomEdge - originalRect.bottom;
+              const translateY = desiredBottomEdge - rect.bottom;
               
+              // Set transition and final position
+              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
               searchBarWrapper.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
             }
             
