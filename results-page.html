@@ -1531,6 +1531,16 @@
             pill.addEventListener('click', function(e) {
               if (e.target !== clearBtn) {
                 showSearchBar();
+                // Add expanded class to search bar
+                const searchBar = document.querySelector('.SearchBar-module__searchBar');
+                if (searchBar) {
+                  searchBar.classList.add('SearchBar-module__expanded');
+                }
+                // Show helper cards container
+                const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+                if (helperCards) {
+                  helperCards.classList.add('SearchHelperCards-module__visible');
+                }
                 // Focus the search input
                 setTimeout(function() {
                   const searchInput = document.querySelector('.SearchBar-module__searchInput');
