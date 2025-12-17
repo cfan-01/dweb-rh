@@ -429,6 +429,10 @@
               } else {
                 // Ensure SearchBar is visible and has expanded class
                 searchBarWrapper.classList.add('SearchBar-module__expanded');
+                
+                // Set transition to match boards.html animation speed (0.3s ease-out)
+                searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+                
                 searchBarWrapper.style.opacity = '1';
                 searchBarWrapper.style.visibility = 'visible';
                 searchBarWrapper.style.display = '';
@@ -692,6 +696,10 @@
             // Collapse: remove expanded class and apply downward transform
             searchBar.classList.remove('SearchBar-module__expanded');
             searchBarWrapper.classList.remove('SearchBar-module__expanded');
+            
+            // Set transition to match boards.html animation speed (0.3s ease-out)
+            searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            
             searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
             searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           } else if ((scrollingUp || atTop) && isCurrentlyCollapsed) {
@@ -699,6 +707,9 @@
             searchBar.classList.add('SearchBar-module__expanded');
             // Also add expanded class to wrapper to prevent CSS from overriding
             searchBarWrapper.classList.add('SearchBar-module__expanded');
+            
+            // Set transition to match boards.html animation speed (0.3s ease-out)
+            searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
             
             // Ensure SearchBar is visible
             searchBarWrapper.style.opacity = '1';
@@ -749,6 +760,10 @@
             } else {
               // Ensure SearchBar is visible and has expanded class
               searchBarWrapper.classList.add('SearchBar-module__expanded');
+              
+              // Set transition to match boards.html animation speed (0.3s ease-out)
+              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+              
               searchBarWrapper.style.opacity = '1';
               searchBarWrapper.style.visibility = 'visible';
               searchBarWrapper.style.display = '';
