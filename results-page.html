@@ -202,138 +202,6 @@
       .SearchBar-collapsed-pill__clear:hover {
         color: #111111;
       }
-      
-      /* Custom Expanded SearchBar Overlay */
-      .custom-expanded-searchbar {
-        display: none;
-        position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10000;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-      .custom-expanded-searchbar.visible {
-        display: flex;
-      }
-      
-      /* Custom Helper Cards - vertical cards like boards.html */
-      .custom-helper-cards {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 4px;
-        align-items: flex-end;
-      }
-      .custom-helper-card {
-        display: flex;
-        flex-direction: column;
-        width: 180px;
-        background: transparent;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-        position: relative;
-      }
-      .custom-helper-card:hover {
-        transform: scale(1.02);
-      }
-      .custom-helper-card__thumbnail {
-        width: 100%;
-        height: 200px;
-        border-radius: 16px;
-        overflow: hidden;
-        margin-bottom: -60px;
-        position: relative;
-        z-index: 1;
-      }
-      .custom-helper-card__thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .custom-helper-card__content {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 72px 16px 16px 16px;
-        box-shadow: 0 1px 20px rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 0;
-      }
-      .custom-helper-card__category {
-        font-family: "Pin Sans", var(--font-family-pin-sans);
-        font-size: 12px;
-        font-weight: 400;
-        color: #767676;
-        margin-bottom: 4px;
-      }
-      .custom-helper-card__title {
-        font-family: "Pin Sans", var(--font-family-pin-sans);
-        font-size: 16px;
-        font-weight: 600;
-        color: #111111;
-        line-height: 1.2;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      
-      /* Custom SearchBar Input Container - like boards.html expanded SearchBar */
-      .custom-searchbar-input-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px 20px;
-        background: #ffffff;
-        border-radius: 24px;
-        box-shadow: 0 1px 20px rgba(0, 0, 0, 0.1);
-        min-width: 560px;
-      }
-      .custom-searchbar-icon {
-        width: 24px;
-        height: 24px;
-        flex-shrink: 0;
-        color: #767676;
-      }
-      .custom-searchbar-icon svg {
-        width: 100%;
-        height: 100%;
-      }
-      .custom-searchbar-input {
-        flex: 1;
-        border: none;
-        outline: none;
-        font-family: "Pin Sans", var(--font-family-pin-sans);
-        font-size: 16px;
-        font-weight: 400;
-        color: #111111;
-        background: transparent;
-      }
-      .custom-searchbar-input::placeholder {
-        color: #767676;
-      }
-      .custom-searchbar-close {
-        background: none;
-        border: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        color: #767676;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s ease;
-      }
-      .custom-searchbar-close:hover {
-        background-color: #f0f0f0;
-        color: #111111;
-      }
-      .custom-searchbar-close svg {
-        width: 20px;
-        height: 20px;
-      }
     </style>
   </head>
   <body>
@@ -344,63 +212,6 @@
       </div>
       <span class="SearchBar-collapsed-pill__query" id="pill-query-text"></span>
       <button class="SearchBar-collapsed-pill__clear" id="pill-clear-btn" aria-label="Clear search">&times;</button>
-    </div>
-    
-    <!-- Custom Expanded SearchBar Overlay (shown when pill is clicked) -->
-    <div class="custom-expanded-searchbar" id="custom-expanded-searchbar">
-      <!-- Helper Cards Container - vertical cards like boards.html -->
-      <div class="custom-helper-cards" id="custom-helper-cards">
-        <div class="custom-helper-card" data-query="minimalist home decor">
-          <div class="custom-helper-card__thumbnail">
-            <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Suggestion" />
-          </div>
-          <div class="custom-helper-card__content">
-            <div class="custom-helper-card__category">Trending</div>
-            <div class="custom-helper-card__title">minimalist home decor</div>
-          </div>
-        </div>
-        <div class="custom-helper-card" data-query="summer outfit ideas">
-          <div class="custom-helper-card__thumbnail">
-            <img src="/dweb-rh/assets/images/hf-2.jpg" alt="Suggestion" />
-          </div>
-          <div class="custom-helper-card__content">
-            <div class="custom-helper-card__category">Popular</div>
-            <div class="custom-helper-card__title">summer outfit ideas</div>
-          </div>
-        </div>
-        <div class="custom-helper-card" data-query="easy dinner recipes">
-          <div class="custom-helper-card__thumbnail">
-            <img src="/dweb-rh/assets/images/hf-3.jpg" alt="Suggestion" />
-          </div>
-          <div class="custom-helper-card__content">
-            <div class="custom-helper-card__category">For you</div>
-            <div class="custom-helper-card__title">easy dinner recipes</div>
-          </div>
-        </div>
-        <div class="custom-helper-card" data-query="DIY craft projects">
-          <div class="custom-helper-card__thumbnail">
-            <img src="/dweb-rh/assets/images/hf-4.jpg" alt="Suggestion" />
-          </div>
-          <div class="custom-helper-card__content">
-            <div class="custom-helper-card__category">Trending</div>
-            <div class="custom-helper-card__title">DIY craft projects</div>
-          </div>
-        </div>
-      </div>
-      <!-- SearchBar - like boards.html expanded SearchBar -->
-      <div class="custom-searchbar-input-container">
-        <div class="custom-searchbar-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6m13.12 2.88-4.26-4.26A9.842 9.842 0 0 0 20 10c0-5.52-4.48-10-10-10S0 4.48 0 10s4.48 10 10 10c1.67 0 3.24-.41 4.62-1.14l4.26 4.26a3 3 0 0 0 4.24 0 3 3 0 0 0 0-4.24"></path>
-          </svg>
-        </div>
-        <input type="text" class="custom-searchbar-input" id="custom-searchbar-input" placeholder="Search" />
-        <button class="custom-searchbar-close" id="custom-searchbar-close" aria-label="Close search">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M15.18 12l7.16-7.16c.88-.88.88-2.3 0-3.18-.88-.88-2.3-.88-3.18 0L12 8.82 4.84 1.66c-.88-.88-2.3-.88-3.18 0-.88.88-.88 2.3 0 3.18L8.82 12l-7.16 7.16c-.88.88-.88 2.3 0 3.18.88.88 2.3.88 3.18 0L12 15.18l7.16 7.16c.88.88 2.3.88 3.18 0 .88-.88.88-2.3 0-3.18L15.18 12z"></path>
-          </svg>
-        </button>
-      </div>
     </div>
     
     <div id="root"></div>
@@ -1869,28 +1680,56 @@
             // Hide pill
             pill.classList.remove('visible');
             
-            // Show custom expanded SearchBar overlay
-            const customSearchBar = document.getElementById('custom-expanded-searchbar');
-            const customInput = document.getElementById('custom-searchbar-input');
+            // Show React SearchBar with expanded classes (like boards.html)
+            const searchBar = document.querySelector('.SearchBar-module__searchBar');
+            const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+            const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
             
-            if (customSearchBar) {
-              // Copy the current query from the pill to the custom input
-              const pillQuery = document.getElementById('pill-query-text');
-              if (customInput && pillQuery) {
-                customInput.value = pillQuery.textContent || '';
-              }
-              
-              // Show the custom expanded SearchBar
-              customSearchBar.classList.add('visible');
-              
-              // Focus the input
-              setTimeout(function() {
-                if (customInput) {
-                  customInput.focus();
-                  customInput.select();
-                }
-              }, 100);
+            if (searchBar) {
+              // Add expanded class
+              searchBar.classList.add('SearchBar-module__expanded');
+              searchBar.style.setProperty('opacity', '1', 'important');
+              searchBar.style.setProperty('visibility', 'visible', 'important');
+              searchBar.style.setProperty('pointer-events', 'auto', 'important');
             }
+            
+            if (searchBarWrapper) {
+              // Add expanded class and position 24px from bottom
+              searchBarWrapper.classList.add('SearchBar-module__expanded');
+              searchBarWrapper.removeAttribute('data-scroll-collapsed');
+              searchBarWrapper.style.setProperty('opacity', '1', 'important');
+              searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
+              searchBarWrapper.style.setProperty('display', 'block', 'important');
+              
+              // Remove hiding transform first
+              searchBarWrapper.style.setProperty('transform', 'none', 'important');
+              
+              // Force reflow to get accurate position
+              searchBarWrapper.offsetHeight;
+              
+              // Get position and calculate translateY for 24px from bottom
+              const rect = searchBarWrapper.getBoundingClientRect();
+              const viewportHeight = window.innerHeight;
+              const desiredBottomEdge = viewportHeight - 24;
+              const translateY = desiredBottomEdge - rect.bottom;
+              
+              // Set transition and final position
+              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+              searchBarWrapper.style.setProperty('transform', 'translateY(' + translateY + 'px)', 'important');
+            }
+            
+            // Show helper cards
+            if (helperCards) {
+              helperCards.classList.add('SearchHelperCards-module__visible');
+            }
+            
+            // Focus the search input
+            setTimeout(function() {
+              const searchInput = document.querySelector('.SearchBar-module__searchInput');
+              if (searchInput) {
+                searchInput.focus();
+              }
+            }, 100);
           });
           
           pill.setAttribute('data-click-handler-added', 'true');
@@ -1909,90 +1748,60 @@
         }
       })();
       
-      // Custom expanded SearchBar handlers (click-outside and enter key)
+      // React SearchBar close/outside click handler
       (function() {
-        function initCustomSearchBarHandlers() {
-          const customSearchBar = document.getElementById('custom-expanded-searchbar');
-          const customInput = document.getElementById('custom-searchbar-input');
-          const closeBtn = document.getElementById('custom-searchbar-close');
+        function initReactSearchBarHandlers() {
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+          const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
           const pill = document.getElementById('searchbar-collapsed-pill');
-          const pillQueryText = document.getElementById('pill-query-text');
           
-          if (!customSearchBar || !customInput) return false;
-          if (customSearchBar.hasAttribute('data-handlers-added')) return true;
+          if (!searchBar || !searchBarWrapper) return false;
+          if (searchBarWrapper.hasAttribute('data-close-handler-added')) return true;
           
-          // Close button handler
-          if (closeBtn) {
-            closeBtn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              
-              // Hide custom SearchBar
-              customSearchBar.classList.remove('visible');
-              
-              // Show pill again
-              if (pill) {
-                pill.classList.add('visible');
-              }
-            });
-          }
-          
-          // Click outside handler
+          // Click outside handler to collapse SearchBar and show pill
           document.addEventListener('click', function(e) {
-            if (!customSearchBar.classList.contains('visible')) return;
+            // Only handle when SearchBar is expanded
+            if (!searchBar.classList.contains('SearchBar-module__expanded')) return;
             
-            // Check if click is outside the custom SearchBar
-            if (!customSearchBar.contains(e.target) && e.target !== pill && !pill.contains(e.target)) {
-              // Hide custom SearchBar
-              customSearchBar.classList.remove('visible');
+            // Check if click is outside the SearchBar and helper cards
+            const isOutsideSearchBar = !searchBar.contains(e.target) && !searchBarWrapper.contains(e.target);
+            const isOutsideHelperCards = !helperCards || !helperCards.contains(e.target);
+            const isOutsidePill = !pill || (!pill.contains(e.target) && e.target !== pill);
+            
+            if (isOutsideSearchBar && isOutsideHelperCards && isOutsidePill) {
+              // Collapse SearchBar
+              searchBar.classList.remove('SearchBar-module__expanded');
+              searchBarWrapper.classList.remove('SearchBar-module__expanded');
+              searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
+              searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
               
-              // Update pill query text with current input value
-              if (pillQueryText && customInput.value) {
-                pillQueryText.textContent = customInput.value;
+              // Hide helper cards
+              if (helperCards) {
+                helperCards.classList.remove('SearchHelperCards-module__visible');
               }
               
               // Show pill again
               if (pill) {
                 pill.classList.add('visible');
+                pill.style.setProperty('transform', 'translateX(-50%) translateY(0)', 'important');
               }
+              
+              // Reset pillClickedAt to allow normal scroll behavior
+              window.pillClickedAt = 0;
             }
           });
           
-          // Enter key handler for navigation
-          customInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.keyCode === 13) {
-              e.preventDefault();
-              const query = customInput.value.trim();
-              if (query) {
-                // Navigate to results page with the query
-                window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(query);
-              }
-            }
-          });
-          
-          // Helper card click handlers
-          const helperCards = customSearchBar.querySelectorAll('.custom-helper-card');
-          helperCards.forEach(function(card) {
-            card.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              const query = card.getAttribute('data-query') || card.querySelector('.custom-helper-card__title').textContent.trim();
-              if (query) {
-                window.location.href = '/dweb-rh/results-page.html?q=' + encodeURIComponent(query);
-              }
-            });
-          });
-          
-          customSearchBar.setAttribute('data-handlers-added', 'true');
+          searchBarWrapper.setAttribute('data-close-handler-added', 'true');
           return true;
         }
         
         // Try immediately, then poll
-        if (!initCustomSearchBarHandlers()) {
+        if (!initReactSearchBarHandlers()) {
           let attempts = 0;
           const interval = setInterval(function() {
             attempts++;
-            if (initCustomSearchBarHandlers() || attempts >= 50) {
+            if (initReactSearchBarHandlers() || attempts >= 50) {
               clearInterval(interval);
             }
           }, 100);
