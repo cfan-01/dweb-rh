@@ -26,6 +26,10 @@
       .SearchHelperCard-module__helperCard {
         box-shadow: var(--shadow-lg) !important;
       }
+      /* Position helper cards container above SearchBar with 4px gap */
+      .SearchHelperCards-module__helperCardsContainer.SearchHelperCards-module__visible {
+        margin-bottom: 4px !important;
+      }
       .SearchBar-module__searchBar.SearchBar-module__closeup[data-closeup-context-visible="true"] .SearchBar-module__searchIconContainer {
         width: 48px !important;
         height: 48px !important;
@@ -1694,15 +1698,25 @@
               console.log('SearchBarWrapper NOT found!');
             }
             
-            // Add expanded class to search bar
+            // Add expanded class to search bar and ensure visibility
+            // Reset any styles set by collapseSearchBar()
             if (searchBar) {
               searchBar.classList.add('SearchBar-module__expanded');
+              searchBar.style.setProperty('opacity', '1', 'important');
+              searchBar.style.setProperty('visibility', 'visible', 'important');
+              searchBar.style.setProperty('display', 'flex', 'important');
+              searchBar.style.setProperty('pointer-events', 'auto', 'important');
+              searchBar.style.removeProperty('transform'); // Remove translate3d that hides it
+              searchBar.style.setProperty('transform', 'none', 'important');
+              console.log('SearchBar classes:', searchBar.className);
+              console.log('SearchBar style:', searchBar.style.cssText);
             }
             
             // Show helper cards container
             const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
             if (helperCards) {
               helperCards.classList.add('SearchHelperCards-module__visible');
+              console.log('Helper cards classes:', helperCards.className);
             }
             
             // Focus the search input
