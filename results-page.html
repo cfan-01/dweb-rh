@@ -1704,23 +1704,36 @@
               searchBarWrapper.style.setProperty('z-index', '10000', 'important');
             }
             
-            // Show helper cards with 4px gap above SearchBar
+            // Show helper cards
             if (helperCards) {
               helperCards.classList.add('SearchHelperCards-module__visible');
-              helperCards.style.setProperty('margin-bottom', '4px', 'important');
             }
             
-            // Position the SearchBar (not wrapper) 24px from bottom using the vStack container
+            // Position the SearchBar input 24px from bottom, helper cards 4px above it
             setTimeout(function() {
-              const vStack = document.querySelector('.SearchBar-module__vStack');
-              if (vStack) {
-                vStack.style.setProperty('position', 'fixed', 'important');
-                vStack.style.setProperty('bottom', '24px', 'important');
-                vStack.style.setProperty('left', '50%', 'important');
-                vStack.style.setProperty('transform', 'translateX(-50%)', 'important');
-                vStack.style.setProperty('z-index', '10000', 'important');
-                vStack.style.setProperty('width', 'auto', 'important');
-                vStack.style.setProperty('max-width', '90vw', 'important');
+              // Position the hStack (SearchBar input container) fixed at bottom
+              const hStack = document.querySelector('.SearchBar-module__hStack');
+              if (hStack) {
+                hStack.style.setProperty('position', 'fixed', 'important');
+                hStack.style.setProperty('bottom', '24px', 'important');
+                hStack.style.setProperty('left', '50%', 'important');
+                hStack.style.setProperty('transform', 'translateX(-50%)', 'important');
+                hStack.style.setProperty('z-index', '10000', 'important');
+                hStack.style.setProperty('width', 'auto', 'important');
+                hStack.style.setProperty('min-width', '600px', 'important');
+              }
+              
+              // Position helper cards 4px above the SearchBar input
+              const helperCardsEl = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+              if (helperCardsEl && hStack) {
+                const hStackRect = hStack.getBoundingClientRect();
+                helperCardsEl.style.setProperty('position', 'fixed', 'important');
+                helperCardsEl.style.setProperty('bottom', (window.innerHeight - hStackRect.top + 4) + 'px', 'important');
+                helperCardsEl.style.setProperty('left', '50%', 'important');
+                helperCardsEl.style.setProperty('transform', 'translateX(-50%)', 'important');
+                helperCardsEl.style.setProperty('z-index', '10000', 'important');
+                helperCardsEl.style.setProperty('width', 'auto', 'important');
+                helperCardsEl.style.setProperty('max-width', '90vw', 'important');
               }
             }, 50);
             
@@ -1780,22 +1793,28 @@
               searchBarWrapper.style.removeProperty('z-index');
               searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
               
-              // Reset vStack positioning
-              const vStack = document.querySelector('.SearchBar-module__vStack');
-              if (vStack) {
-                vStack.style.removeProperty('position');
-                vStack.style.removeProperty('bottom');
-                vStack.style.removeProperty('left');
-                vStack.style.removeProperty('transform');
-                vStack.style.removeProperty('z-index');
-                vStack.style.removeProperty('width');
-                vStack.style.removeProperty('max-width');
+              // Reset hStack positioning
+              const hStack = document.querySelector('.SearchBar-module__hStack');
+              if (hStack) {
+                hStack.style.removeProperty('position');
+                hStack.style.removeProperty('bottom');
+                hStack.style.removeProperty('left');
+                hStack.style.removeProperty('transform');
+                hStack.style.removeProperty('z-index');
+                hStack.style.removeProperty('width');
+                hStack.style.removeProperty('min-width');
               }
               
-              // Hide helper cards
+              // Hide and reset helper cards positioning
               if (helperCards) {
                 helperCards.classList.remove('SearchHelperCards-module__visible');
-                helperCards.style.removeProperty('margin-bottom');
+                helperCards.style.removeProperty('position');
+                helperCards.style.removeProperty('bottom');
+                helperCards.style.removeProperty('left');
+                helperCards.style.removeProperty('transform');
+                helperCards.style.removeProperty('z-index');
+                helperCards.style.removeProperty('width');
+                helperCards.style.removeProperty('max-width');
               }
               
               // Show pill again
