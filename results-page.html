@@ -1334,7 +1334,7 @@
           <div class="MasonryGrid-module__gridItem">
             <div class="Pin-module__pin Pin-module__ratio2_3">
               <img src="/dweb-rh/assets/images/hf-1.jpg" alt="Pin" class="Pin-module__pinImage" />
-            </div>
+    </div>
           </div>
           <div class="MasonryGrid-module__gridItem">
             <div class="Pin-module__pin Pin-module__ratio3_4">
@@ -1516,6 +1516,11 @@
         }
         
         function collapseSearchBar() {
+          // Skip if pill was just clicked (user wants to see expanded SearchBar)
+          if (window.pillJustClicked) {
+            return;
+          }
+          
           const hStack = getSearchBar();
           const pill = getPill();
           
@@ -1543,6 +1548,9 @@
         function handleScroll() {
           const hStack = getSearchBar();
           if (!hStack) return;
+          
+          // Reset pillJustClicked flag on scroll - user is interacting again
+          window.pillJustClicked = false;
           
           const currentScrollTop = window.scrollY || window.pageYOffset || 0;
           
