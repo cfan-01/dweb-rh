@@ -79,12 +79,25 @@
         width: fit-content !important;
         z-index: 1000 !important;
         transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
       }
       /* Only hide wrapper when explicitly marked as collapsed by scroll */
       .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"] {
         transform: translateY(calc(100% + 48px)) !important;
         opacity: 0 !important;
         pointer-events: none !important;
+      }
+      /* Ensure vStack doesn't add extra space below SearchBar */
+      .ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__vStack {
+        display: flex !important;
+        flex-direction: column-reverse !important;
+      }
+      /* Position hStack (the actual input bar) at bottom of vStack */
+      .ScrollableSearchBar-module__searchBarWrapper .SearchBar-module__hStack {
+        order: -1 !important;
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
