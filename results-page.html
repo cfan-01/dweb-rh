@@ -1661,13 +1661,23 @@
           }
           
           console.log('Adding pill click handler');
+          console.log('Pill computed style pointer-events:', window.getComputedStyle(pill).pointerEvents);
+          console.log('Pill visible class:', pill.classList.contains('visible'));
           
           pill.addEventListener('click', function(e) {
-            console.log('Pill clicked!');
-            if (e.target === clearBtn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('=== PILL CLICKED ===');
+            console.log('Event target:', e.target);
+            console.log('clearBtn:', clearBtn);
+            if (e.target === clearBtn) {
+              console.log('Clear button clicked, returning');
+              return;
+            }
             
             // Set flag to prevent switchToPill from showing pill again
             window.pillJustClicked = true;
+            console.log('pillJustClicked set to true');
             
             // Clear any pending scroll timeouts to prevent SearchBar from being hidden
             if (window.searchBarTimeouts && window.searchBarTimeouts.clearAll) {
