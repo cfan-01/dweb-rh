@@ -223,27 +223,29 @@
       .custom-helper-cards {
         display: flex;
         gap: 12px;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
+        align-items: flex-end;
       }
       .custom-helper-card {
         display: flex;
         flex-direction: column;
-        width: 136px;
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 1px 20px rgba(0, 0, 0, 0.1);
+        width: 180px;
+        background: transparent;
         cursor: pointer;
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform 0.2s ease;
+        position: relative;
       }
       .custom-helper-card:hover {
         transform: scale(1.02);
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
       }
       .custom-helper-card__thumbnail {
         width: 100%;
-        height: 136px;
+        height: 200px;
+        border-radius: 16px;
         overflow: hidden;
+        margin-bottom: -60px;
+        position: relative;
+        z-index: 1;
       }
       .custom-helper-card__thumbnail img {
         width: 100%;
@@ -251,7 +253,12 @@
         object-fit: cover;
       }
       .custom-helper-card__content {
-        padding: 12px;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 72px 16px 16px 16px;
+        box-shadow: 0 1px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 0;
       }
       .custom-helper-card__category {
         font-family: "Pin Sans", var(--font-family-pin-sans);
