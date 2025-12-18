@@ -704,10 +704,12 @@
           searchBar.style.setProperty('pointer-events', 'auto', 'important');
           searchBar.style.removeProperty('transform');
           
-          // Show wrapper by removing collapsed attribute
+          // Show wrapper by removing collapsed attribute and resetting transform
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          searchBarWrapper.style.setProperty('transform', 'translateY(0)', 'important');
           searchBarWrapper.style.setProperty('opacity', '1', 'important');
           searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
+          searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
           
           isHidden = false;
         }
@@ -730,10 +732,12 @@
           searchBar.style.setProperty('pointer-events', 'auto', 'important');
           searchBar.style.removeProperty('transform');
           
-          // Show wrapper by removing collapsed attribute
+          // Show wrapper by removing collapsed attribute and resetting transform
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          searchBarWrapper.style.setProperty('transform', 'translateY(0)', 'important');
           searchBarWrapper.style.setProperty('opacity', '1', 'important');
           searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
+          searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
           
           isHidden = false;
         }
