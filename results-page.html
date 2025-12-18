@@ -1721,6 +1721,15 @@
               console.log('SearchBar positioned with translateY:', translateY);
               console.log('SearchBar wrapper classes:', searchBarWrapper.className);
               console.log('SearchBar wrapper style:', searchBarWrapper.style.cssText);
+              
+              // Debug: log computed style after a short delay
+              setTimeout(function() {
+                const computed = window.getComputedStyle(searchBarWrapper);
+                console.log('COMPUTED transform:', computed.transform);
+                console.log('COMPUTED opacity:', computed.opacity);
+                console.log('COMPUTED visibility:', computed.visibility);
+                console.log('WRAPPER getBoundingClientRect:', searchBarWrapper.getBoundingClientRect());
+              }, 100);
             } else {
               console.log('SearchBarWrapper NOT found!');
             }
