@@ -743,6 +743,11 @@
           if (!findSearchBarElements()) return;
           if (isHidden) return;
           
+          // Hide helper cards
+          if (helperCards) {
+            helperCards.classList.remove('SearchHelperCards-module__visible');
+          }
+          
           // Mark wrapper as hidden (CSS handles the animation)
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           
