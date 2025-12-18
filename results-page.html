@@ -382,9 +382,16 @@
           searchBar = document.querySelector('.SearchBar-module__searchBar');
           const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
           if (searchBar) {
-            // Check if scroll handler has collapsed the search bar
+            // Check if scroll handler has collapsed the search bar (hidden) or showing collapsed state
             const isScrollCollapsed = searchBarWrapper && searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
+            const isCollapsedState = searchBar.classList.contains('SearchBar-module__collapsed');
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Don't interfere if SearchBar is in collapsed state (scroll handler is managing it)
+            if (isCollapsedState) {
+              return;
+            }
+            
             const shouldBeExpanded = scrollTop <= 10 || !isScrollCollapsed;
             
             // Maintain expanded state only if not scroll-collapsed
@@ -394,11 +401,12 @@
               searchBar.classList.remove('SearchBar-module__expanded');
             }
             
-            // Apply transform based on scroll state
+            // Apply transform based on scroll state - but don't hide if in collapsed visible state
             if (searchBarWrapper) {
-              if (isScrollCollapsed || scrollTop > 10) {
+              if (isScrollCollapsed) {
+                // Only hide if explicitly marked as collapsed by scroll (not just scrollTop > 10)
                 searchBarWrapper.style.transform = 'translateY(100%)';
-              } else {
+              } else if (scrollTop <= 10) {
                 // Ensure SearchBar is visible and has expanded class
                 searchBarWrapper.classList.add('SearchBar-module__expanded');
                 
