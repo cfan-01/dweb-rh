@@ -68,19 +68,20 @@
         fill: #ffffff !important;
         color: #ffffff !important;
       }
-      /* Override SearchBar collapse animation to move downward instead of upward */
-      /* Only apply when NOT expanded - so expanded SearchBar can use negative translateY */
-      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform: translateY(-"],
-      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform:translateY(-"] {
-        transform: translateY(100%) !important;
-      }
-      /* Target collapsed/hidden states - change upward translateY to downward */
-      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"]) {
-        transform: translateY(100%) !important;
-      }
-      /* Ensure smooth transitions for downward exit and re-entry */
+      /* SearchBar wrapper - fixed at bottom, visible by default */
       .ScrollableSearchBar-module__searchBarWrapper {
-        transition: transform 0.3s ease-in-out !important;
+        position: fixed !important;
+        bottom: 24px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 1000 !important;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+      }
+      /* Only hide wrapper when explicitly marked as collapsed by scroll */
+      .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"] {
+        transform: translateX(-50%) translateY(calc(100% + 48px)) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
@@ -662,13 +663,16 @@
             helperCards.classList.add('SearchHelperCards-module__visible');
           }
           
-          // Make visible with transition
-          searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+          // Make SearchBar visible
           searchBar.style.setProperty('opacity', '1', 'important');
           searchBar.style.setProperty('pointer-events', 'auto', 'important');
           searchBar.style.removeProperty('transform');
           
+          // Show wrapper by removing collapsed attribute
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          searchBarWrapper.style.setProperty('opacity', '1', 'important');
+          searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
+          
           isHidden = false;
         }
         
@@ -685,13 +689,16 @@
             helperCards.classList.remove('SearchHelperCards-module__visible');
           }
           
-          // Make visible with transition
-          searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+          // Make SearchBar visible
           searchBar.style.setProperty('opacity', '1', 'important');
           searchBar.style.setProperty('pointer-events', 'auto', 'important');
           searchBar.style.removeProperty('transform');
           
+          // Show wrapper by removing collapsed attribute
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          searchBarWrapper.style.setProperty('opacity', '1', 'important');
+          searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
+          
           isHidden = false;
         }
         
@@ -700,13 +707,9 @@
           if (!findSearchBarElements()) return;
           if (isHidden) return;
           
-          // Apply hide animation
-          searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-          searchBar.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
-          searchBar.style.setProperty('opacity', '0', 'important');
-          searchBar.style.setProperty('pointer-events', 'none', 'important');
-          
+          // Mark wrapper as hidden (CSS handles the animation)
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+          
           isHidden = true;
         }
         
