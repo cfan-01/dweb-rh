@@ -155,19 +155,27 @@
         align-items: center !important;
         gap: 12px !important;
         background: #ffffff !important;
-        border-radius: 24px !important;
+        border-radius: 16px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
         cursor: pointer !important;
         overflow: hidden !important;
+        /* Responsive width like boards.html */
+        width: auto !important;
+        min-width: 300px !important;
+        max-width: calc(100vw - 200px) !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__hStack {
         height: 64px !important;
         padding: 0 !important;
         gap: 12px !important;
+        display: flex !important;
+        align-items: center !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__vStack {
         gap: 0 !important;
         height: 64px !important;
+        display: flex !important;
+        align-items: center !important;
       }
       /* Hide helper cards in collapsed state */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchHelperCards-module__helperCardsContainer {
@@ -176,11 +184,28 @@
         height: 0 !important;
         overflow: hidden !important;
       }
-      /* Ensure avatar is visible in collapsed state */
+      /* Avatar vertically centered in collapsed state */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
         width: 48px !important;
         height: 48px !important;
         flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      /* Input text styling in collapsed state */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchInput,
+      .SearchBar-module__searchBar.SearchBar-module__collapsed input {
+        color: #62625B !important;
+        font-size: 16px !important;
+        font-weight: 400 !important;
+        font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__collapsed input::placeholder {
+        color: #62625B !important;
+        font-size: 16px !important;
+        font-weight: 400 !important;
+        font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
       }
     </style>
   </head>
