@@ -735,21 +735,6 @@
           searchBarWrapper.style.setProperty('opacity', '1', 'important');
           searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
           
-          // Position the SearchBar correctly - calculate offset to place it 24px from bottom
-          setTimeout(function() {
-            var hStack = searchBar.querySelector('.SearchBar-module__hStack');
-            if (hStack) {
-              var hStackRect = hStack.getBoundingClientRect();
-              var viewportHeight = window.innerHeight;
-              var currentBottom = viewportHeight - hStackRect.bottom;
-              var desiredBottom = 24;
-              var offset = desiredBottom - currentBottom;
-              if (Math.abs(offset) > 5) {
-                searchBarWrapper.style.setProperty('bottom', (24 + offset) + 'px', 'important');
-              }
-            }
-          }, 50);
-          
           isHidden = false;
         }
         
