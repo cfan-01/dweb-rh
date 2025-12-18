@@ -1694,33 +1694,26 @@
             }
             
             if (searchBarWrapper) {
-              // Add expanded class and position 24px from bottom
+              // Add expanded class
               searchBarWrapper.classList.add('SearchBar-module__expanded');
               searchBarWrapper.removeAttribute('data-scroll-collapsed');
               searchBarWrapper.style.setProperty('opacity', '1', 'important');
               searchBarWrapper.style.setProperty('visibility', 'visible', 'important');
               searchBarWrapper.style.setProperty('display', 'block', 'important');
               
-              // Remove hiding transform first
+              // Position fixed at bottom of viewport
+              searchBarWrapper.style.setProperty('position', 'fixed', 'important');
+              searchBarWrapper.style.setProperty('bottom', '24px', 'important');
+              searchBarWrapper.style.setProperty('left', '0', 'important');
+              searchBarWrapper.style.setProperty('right', '0', 'important');
               searchBarWrapper.style.setProperty('transform', 'none', 'important');
-              
-              // Force reflow to get accurate position
-              searchBarWrapper.offsetHeight;
-              
-              // Get position and calculate translateY for 24px from bottom
-              const rect = searchBarWrapper.getBoundingClientRect();
-              const viewportHeight = window.innerHeight;
-              const desiredBottomEdge = viewportHeight - 24;
-              const translateY = desiredBottomEdge - rect.bottom;
-              
-              // Set transition and final position
-              searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-              searchBarWrapper.style.setProperty('transform', 'translateY(' + translateY + 'px)', 'important');
+              searchBarWrapper.style.setProperty('z-index', '10000', 'important');
             }
             
-            // Show helper cards
+            // Show helper cards with 4px gap above SearchBar
             if (helperCards) {
               helperCards.classList.add('SearchHelperCards-module__visible');
+              helperCards.style.setProperty('margin-bottom', '4px', 'important');
             }
             
             // Focus the search input
@@ -1773,12 +1766,20 @@
               // Collapse SearchBar
               searchBar.classList.remove('SearchBar-module__expanded');
               searchBarWrapper.classList.remove('SearchBar-module__expanded');
-              searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
               searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+              
+              // Reset positioning to hide SearchBar
+              searchBarWrapper.style.removeProperty('position');
+              searchBarWrapper.style.removeProperty('bottom');
+              searchBarWrapper.style.removeProperty('left');
+              searchBarWrapper.style.removeProperty('right');
+              searchBarWrapper.style.removeProperty('z-index');
+              searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
               
               // Hide helper cards
               if (helperCards) {
                 helperCards.classList.remove('SearchHelperCards-module__visible');
+                helperCards.style.removeProperty('margin-bottom');
               }
               
               // Show pill again
