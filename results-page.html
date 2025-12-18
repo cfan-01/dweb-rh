@@ -771,6 +771,13 @@
         
         function switchToPill() {
           console.log('switchToPill called');
+          
+          // Skip if pill was just clicked (user wants to see expanded SearchBar)
+          if (window.pillJustClicked) {
+            console.log('switchToPill: pillJustClicked is true, skipping');
+            return;
+          }
+          
           if (!findSearchBarElements()) {
             console.log('switchToPill: SearchBar elements not found');
             return;
@@ -806,6 +813,9 @@
         
         function handleScroll() {
           if (!findSearchBarElements()) return;
+          
+          // Reset pillJustClicked flag on scroll - user is interacting again
+          window.pillJustClicked = false;
           
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           const scrollDelta = scrollTop - lastScrollTop;
@@ -1647,6 +1657,9 @@
           pill.addEventListener('click', function(e) {
             console.log('Pill clicked!');
             if (e.target === clearBtn) return;
+            
+            // Set flag to prevent switchToPill from showing pill again
+            window.pillJustClicked = true;
             
             // Clear any pending scroll timeouts to prevent SearchBar from being hidden
             if (window.searchBarTimeouts && window.searchBarTimeouts.clearAll) {
