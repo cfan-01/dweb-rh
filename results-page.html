@@ -68,13 +68,19 @@
         fill: #ffffff !important;
         color: #ffffff !important;
       }
-      /* SearchBar wrapper - fixed at bottom */
+      /* Override SearchBar collapse animation to move downward instead of upward */
+      /* Only apply when NOT expanded - so expanded SearchBar can use negative translateY */
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform: translateY(-"],
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"])[style*="transform:translateY(-"] {
+        transform: translateY(100%) !important;
+      }
+      /* Target collapsed/hidden states - change upward translateY to downward */
+      .ScrollableSearchBar-module__searchBarWrapper:not([class*="expanded"]) {
+        transform: translateY(100%) !important;
+      }
+      /* Ensure smooth transitions for downward exit and re-entry */
       .ScrollableSearchBar-module__searchBarWrapper {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 1000 !important;
+        transition: transform 0.3s ease-in-out !important;
       }
       .MasonryGrid-module__gridContainer {
         margin-top: 16px !important;
@@ -591,12 +597,11 @@
       (function() {
         let lastScrollTop = 0;
         let isScrolling = false;
-        const scrollThreshold = 50; // Same as boards.html
+        const scrollThreshold = 10;
         let searchBarWrapper = null;
         let searchBar = null;
         let scrollHandlerInitialized = false;
         let scrollStopTimeout = null;
-        let isHidden = false;
         
         function findSearchBarElements() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
@@ -606,46 +611,37 @@
         
         function showSearchBar() {
           if (!findSearchBarElements()) return;
-          if (!isHidden) return;
           
-          // Apply transition
-          searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+          searchBar.classList.add('SearchBar-module__expanded');
+          searchBarWrapper.classList.add('SearchBar-module__expanded');
+          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+          searchBarWrapper.style.opacity = '1';
+          searchBarWrapper.style.visibility = 'visible';
+          searchBarWrapper.style.display = '';
           
           // Position 24px from bottom of viewport
-          // First get the natural position
-          searchBar.style.transform = 'none';
-          const rect = searchBar.getBoundingClientRect();
+          const originalTransform = searchBarWrapper.style.transform;
+          searchBarWrapper.style.transform = 'none';
+          const originalRect = searchBarWrapper.getBoundingClientRect();
+          searchBarWrapper.style.transform = originalTransform;
           
           const viewportHeight = window.innerHeight;
           const desiredBottomEdge = viewportHeight - 24;
-          const currentBottomEdge = rect.bottom;
+          const currentBottomEdge = originalRect.bottom;
           const translateY = desiredBottomEdge - currentBottomEdge;
           
-          // Apply show animation
-          searchBar.style.setProperty('transform', 'translateY(' + translateY + 'px)', 'important');
-          searchBar.style.setProperty('opacity', '1', 'important');
-          searchBar.style.setProperty('pointer-events', 'auto', 'important');
-          
-          // Update wrapper state
+          searchBarWrapper.style.setProperty('transform', 'translateY(' + translateY + 'px)', 'important');
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
-          
-          isHidden = false;
         }
         
         function hideSearchBar() {
           if (!findSearchBarElements()) return;
-          if (isHidden) return;
           
-          // Apply hide animation to searchBar (like boards.html)
-          searchBar.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-          searchBar.style.setProperty('transform', 'translate3d(0, 100%, 0)', 'important');
-          searchBar.style.setProperty('opacity', '0', 'important');
-          searchBar.style.setProperty('pointer-events', 'none', 'important');
-          
-          // Update wrapper state
+          searchBar.classList.remove('SearchBar-module__expanded');
+          searchBarWrapper.classList.remove('SearchBar-module__expanded');
+          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+          searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
-          
-          isHidden = true;
         }
         
         function handleScroll() {
@@ -656,15 +652,15 @@
           const scrollingDown = scrollDelta > 0;
           const scrollingUp = scrollDelta < 0;
           const atTop = scrollTop <= scrollThreshold;
+          const isCurrentlyCollapsed = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
           
           clearTimeout(scrollStopTimeout);
           
-          // Scroll down past threshold - hide
           if (scrollingDown && scrollTop > scrollThreshold) {
-            hideSearchBar();
-          }
-          // Scroll up or at top - show
-          else if (scrollingUp || atTop) {
+            if (!isCurrentlyCollapsed) {
+              hideSearchBar();
+            }
+          } else if (scrollingUp || atTop) {
             showSearchBar();
           }
           
@@ -690,22 +686,8 @@
           if (findSearchBarElements() && !scrollHandlerInitialized) {
             lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
-            // Initially show SearchBar positioned correctly
             if (lastScrollTop <= scrollThreshold) {
-              // Position 24px from bottom
-              const rect = searchBar.getBoundingClientRect();
-              const viewportHeight = window.innerHeight;
-              const desiredBottomEdge = viewportHeight - 24;
-              const currentBottomEdge = rect.bottom;
-              const translateY = desiredBottomEdge - currentBottomEdge;
-              
-              searchBar.style.setProperty('transform', 'translateY(' + translateY + 'px)', 'important');
-              searchBar.style.setProperty('opacity', '1', 'important');
-              searchBar.style.setProperty('pointer-events', 'auto', 'important');
-              isHidden = false;
-            } else {
-              isHidden = true;
-              hideSearchBar();
+              showSearchBar();
             }
             
             window.addEventListener('scroll', onScroll, { passive: true });
