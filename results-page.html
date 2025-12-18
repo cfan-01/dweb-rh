@@ -770,11 +770,12 @@
         }
         
         function switchToPill() {
-          console.log('switchToPill called');
+          // Skip if pill was clicked within the last 2 seconds (user wants to see expanded SearchBar)
+          const timeSinceClick = window.pillClickedAt ? Date.now() - window.pillClickedAt : Infinity;
+          console.log('switchToPill called, timeSinceClick =', timeSinceClick);
           
-          // Skip if pill was just clicked (user wants to see expanded SearchBar)
-          if (window.pillJustClicked) {
-            console.log('switchToPill: pillJustClicked is true, skipping');
+          if (timeSinceClick < 2000) {
+            console.log('switchToPill: pill was clicked recently, skipping');
             return;
           }
           
@@ -813,9 +814,6 @@
         
         function handleScroll() {
           if (!findSearchBarElements()) return;
-          
-          // Reset pillJustClicked flag on scroll - user is interacting again
-          window.pillJustClicked = false;
           
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           const scrollDelta = scrollTop - lastScrollTop;
@@ -1516,8 +1514,9 @@
         }
         
         function collapseSearchBar() {
-          // Skip if pill was just clicked (user wants to see expanded SearchBar)
-          if (window.pillJustClicked) {
+          // Skip if pill was clicked within the last 2 seconds (user wants to see expanded SearchBar)
+          const timeSinceClick = window.pillClickedAt ? Date.now() - window.pillClickedAt : Infinity;
+          if (timeSinceClick < 2000) {
             return;
           }
           
@@ -1548,9 +1547,6 @@
         function handleScroll() {
           const hStack = getSearchBar();
           if (!hStack) return;
-          
-          // Reset pillJustClicked flag on scroll - user is interacting again
-          window.pillJustClicked = false;
           
           const currentScrollTop = window.scrollY || window.pageYOffset || 0;
           
@@ -1675,9 +1671,9 @@
               return;
             }
             
-            // Set flag to prevent switchToPill from showing pill again
-            window.pillJustClicked = true;
-            console.log('pillJustClicked set to true');
+            // Set timestamp to prevent switchToPill from showing pill for 2 seconds
+            window.pillClickedAt = Date.now();
+            console.log('pillClickedAt set to', window.pillClickedAt);
             
             // Clear any pending scroll timeouts to prevent SearchBar from being hidden
             if (window.searchBarTimeouts && window.searchBarTimeouts.clearAll) {
