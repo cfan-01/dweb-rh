@@ -141,44 +141,6 @@
       .MasonryGrid-module__gridContainer.packery-container-2 {
         margin-top: 24px;
       }
-      /* Minimized SearchBar state - mirrors hStack styling from boards.html */
-      .SearchBar-module__searchBar.SearchBar-module__minimized {
-        position: fixed !important;
-        bottom: 24px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 1000 !important;
-        width: auto !important;
-        min-width: 400px !important;
-        max-width: 600px !important;
-      }
-      .SearchBar-module__minimized .SearchBar-module__hStack {
-        background: #ffffff !important;
-        border-radius: 24px !important;
-        padding: 8px 16px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        height: auto !important;
-        min-height: 48px !important;
-      }
-      .SearchBar-module__minimized .SearchBar-module__vStack {
-        gap: 0 !important;
-      }
-      /* Hide helper cards in minimized state */
-      .SearchBar-module__minimized .SearchHelperCards-module__helperCardsContainer {
-        display: none !important;
-      }
-      /* Minimized SearchBar animation - enter from below */
-      .ScrollableSearchBar-module__searchBarWrapper.minimized-visible {
-        transform: translateY(0) !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-      }
-      .ScrollableSearchBar-module__searchBarWrapper.minimized-hidden {
-        transform: translateY(100%) !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-      }
     </style>
   </head>
   <body>
@@ -640,7 +602,6 @@
         let searchBar = null;
         let scrollHandlerInitialized = false;
         let scrollStopTimeout = null;
-        let isMinimized = false;
         
         function findSearchBarElements() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
@@ -648,23 +609,15 @@
           return searchBarWrapper !== null && searchBar !== null;
         }
         
-        // Show expanded SearchBar (only at top of page or when clicking minimized)
-        function showExpandedSearchBar() {
+        function showSearchBar() {
           if (!findSearchBarElements()) return;
           
-          // Remove minimized state
-          searchBar.classList.remove('SearchBar-module__minimized');
-          searchBarWrapper.classList.remove('minimized-visible', 'minimized-hidden');
-          isMinimized = false;
-          
-          // Add expanded state
           searchBar.classList.add('SearchBar-module__expanded');
           searchBarWrapper.classList.add('SearchBar-module__expanded');
           searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
           searchBarWrapper.style.opacity = '1';
           searchBarWrapper.style.visibility = 'visible';
           searchBarWrapper.style.display = '';
-          searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
           
           // Position 24px from bottom of viewport
           const originalTransform = searchBarWrapper.style.transform;
@@ -681,43 +634,13 @@
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
         }
         
-        // Show minimized SearchBar (on scroll up or after 1 second pause)
-        function showMinimizedSearchBar() {
-          if (!findSearchBarElements()) return;
-          
-          // Remove expanded state
-          searchBar.classList.remove('SearchBar-module__expanded');
-          searchBarWrapper.classList.remove('SearchBar-module__expanded');
-          
-          // Add minimized state
-          searchBar.classList.add('SearchBar-module__minimized');
-          searchBarWrapper.classList.remove('minimized-hidden');
-          searchBarWrapper.classList.add('minimized-visible');
-          isMinimized = true;
-          
-          // Make visible
-          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
-          searchBarWrapper.style.opacity = '1';
-          searchBarWrapper.style.visibility = 'visible';
-          searchBarWrapper.style.display = '';
-          searchBarWrapper.style.setProperty('pointer-events', 'auto', 'important');
-          searchBarWrapper.style.setProperty('transform', 'translateY(0)', 'important');
-          searchBarWrapper.removeAttribute('data-scroll-collapsed');
-        }
-        
-        // Hide SearchBar completely (on scroll down)
         function hideSearchBar() {
           if (!findSearchBarElements()) return;
           
           searchBar.classList.remove('SearchBar-module__expanded');
           searchBarWrapper.classList.remove('SearchBar-module__expanded');
-          searchBarWrapper.classList.remove('minimized-visible');
-          searchBarWrapper.classList.add('minimized-hidden');
-          
-          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out, opacity 0.3s ease-out', 'important');
+          searchBarWrapper.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
           searchBarWrapper.style.setProperty('transform', 'translateY(100%)', 'important');
-          searchBarWrapper.style.setProperty('opacity', '0', 'important');
-          searchBarWrapper.style.setProperty('pointer-events', 'none', 'important');
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
         }
         
@@ -734,26 +657,16 @@
           clearTimeout(scrollStopTimeout);
           
           if (scrollingDown && scrollTop > scrollThreshold) {
-            // Scroll down - hide SearchBar
             if (!isCurrentlyCollapsed) {
               hideSearchBar();
             }
-          } else if (scrollingUp) {
-            // Scroll up - show minimized SearchBar
-            showMinimizedSearchBar();
-          } else if (atTop) {
-            // At top of page - show expanded SearchBar
-            showExpandedSearchBar();
+          } else if (scrollingUp || atTop) {
+            showSearchBar();
           }
           
-          // Show minimized SearchBar after 1 second of no scrolling (unless at top)
+          // Show SearchBar after 1 second of no scrolling
           scrollStopTimeout = setTimeout(function() {
-            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (currentScrollTop <= scrollThreshold) {
-              showExpandedSearchBar();
-            } else {
-              showMinimizedSearchBar();
-            }
+            showSearchBar();
           }, 1000);
           
           lastScrollTop = scrollTop;
@@ -773,11 +686,8 @@
           if (findSearchBarElements() && !scrollHandlerInitialized) {
             lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
-            // Show expanded if at top, otherwise show minimized
             if (lastScrollTop <= scrollThreshold) {
-              showExpandedSearchBar();
-            } else {
-              showMinimizedSearchBar();
+              showSearchBar();
             }
             
             window.addEventListener('scroll', onScroll, { passive: true });
@@ -786,11 +696,6 @@
           }
           return false;
         }
-        
-        // Expose function for click handler to use
-        window.showExpandedSearchBar = function() {
-          showExpandedSearchBar();
-        };
         
         let attempts = 0;
         const maxAttempts = 100;
@@ -1020,13 +925,6 @@
           const searchBar = document.querySelector('.SearchBar-module__searchBar');
           const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
           
-          // If SearchBar is minimized, expand it fully
-          if (searchBar && searchBar.classList.contains('SearchBar-module__minimized')) {
-            if (window.showExpandedSearchBar) {
-              window.showExpandedSearchBar();
-            }
-          }
-          
           if (searchBar) {
             searchBar.classList.add('SearchBar-module__expanded');
           }
@@ -1051,14 +949,9 @@
             input.setAttribute('data-focus-handler-added', 'true');
           }
           
-          // Add click handler to search bar (including minimized state)
+          // Add click handler to search bar
           if (!searchBar.hasAttribute('data-click-handler-added')) {
             searchBar.addEventListener('click', function(e) {
-              // If minimized, expand to full state
-              if (searchBar.classList.contains('SearchBar-module__minimized')) {
-                expandHelperCards();
-                return;
-              }
               // Only expand if clicking on the search bar itself, not on child elements that might navigate
               if (e.target === searchBar || e.target === input || e.target.closest('.SearchBar-module__searchInput')) {
                 expandHelperCards();
