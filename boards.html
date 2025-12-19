@@ -1068,8 +1068,24 @@
         }
         
         // Attach handler immediately to document - don't wait for element
+        // Use mousedown to capture position BEFORE any animations start
+        document.addEventListener('mousedown', function(e) {
+          const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
+          if (iconContainer) {
+            const rect = iconContainer.getBoundingClientRect();
+            // Store the position at mousedown time
+            window.__avatarRectAtMousedown = {
+              x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+              timestamp: Date.now()
+            };
+            // #region agent log
+            console.log('[DEBUG MOUSEDOWN] Captured avatar position', window.__avatarRectAtMousedown);
+            // #endregion
+          }
+        }, true);
+        
         document.addEventListener('click', function(e) {
-          // Check if searchIconContainer exists in DOM and if click is within bounds (with tolerance)
+          // Check if searchIconContainer exists in DOM
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (!iconContainer) {
             // #region agent log
@@ -1078,18 +1094,30 @@
             return;
           }
           
-          const rect = iconContainer.getBoundingClientRect();
-          const tolerance = 5; // 5px tolerance for edge clicks
+          // Use the position captured at mousedown (before animations)
+          const rect = window.__avatarRectAtMousedown || iconContainer.getBoundingClientRect();
+          const currentRect = iconContainer.getBoundingClientRect();
+          
+          // #region agent log
+          console.log('[DEBUG H1] Position comparison', {
+            mousedownPos: rect ? {x: Math.round(rect.x), y: Math.round(rect.y)} : 'none',
+            currentPos: {x: Math.round(currentRect.x), y: Math.round(currentRect.y)},
+            moved: rect ? (Math.round(currentRect.x - rect.x) + 'px, ' + Math.round(currentRect.y - rect.y) + 'px') : 'N/A'
+          });
+          // #endregion
+          
+          const tolerance = 10; // Increased to 10px tolerance
           const clickInBounds = e.clientX >= (rect.x - tolerance) && 
                                 e.clientX <= (rect.x + rect.width + tolerance) && 
                                 e.clientY >= (rect.y - tolerance) && 
                                 e.clientY <= (rect.y + rect.height + tolerance);
           
           // #region agent log
-          console.log('[DEBUG H1] Click check', {
+          console.log('[DEBUG H2] Bounds check', {
             clickX: e.clientX, clickY: e.clientY,
             avatarX: Math.round(rect.x), avatarY: Math.round(rect.y),
-            avatarW: Math.round(rect.width), avatarH: Math.round(rect.height),
+            avatarRight: Math.round(rect.x + rect.width + tolerance),
+            avatarBottom: Math.round(rect.y + rect.height + tolerance),
             inBounds: clickInBounds
           });
           // #endregion
@@ -1100,26 +1128,26 @@
           // Accept click if EITHER: within bounds OR closest() found it
           if (!clickInBounds && !clickedIconContainer) {
             // #region agent log
-            console.log('[DEBUG H2] Click rejected - not on avatar');
+            console.log('[DEBUG H3] Click rejected - not on avatar');
             // #endregion
             return;
           }
           
           // #region agent log
-          console.log('[DEBUG H3] Click ACCEPTED on avatar!', {byBounds: clickInBounds, byClosest: !!clickedIconContainer});
+          console.log('[DEBUG H4] Click ACCEPTED on avatar!', {byBounds: clickInBounds, byClosest: !!clickedIconContainer});
           // #endregion
           
           // Find the SearchBar (use iconContainer since we already have it)
           const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
           // #region agent log
-          console.log('[DEBUG H4] searchBar check', {found:!!searchBar,classes:searchBar?searchBar.className:'N/A'});
+          console.log('[DEBUG H5] searchBar check', {found:!!searchBar,classes:searchBar?searchBar.className:'N/A'});
           // #endregion
           if (!searchBar) return;
           
           // Only trigger when SearchBar has the expanded class
           const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
           // #region agent log
-          console.log('[DEBUG H5] isExpanded check', {isExpanded:isExpanded});
+          console.log('[DEBUG H6] isExpanded check', {isExpanded:isExpanded});
           // #endregion
           if (!isExpanded) return;
           
@@ -1128,18 +1156,18 @@
           e.stopImmediatePropagation();
           
           // #region agent log
-          console.log('[DEBUG H6] All checks passed - adding avatar card!');
+          console.log('[DEBUG H7] All checks passed - adding avatar card!');
           // #endregion
           
           // Try to find existing container, retry if not found
           let helperCardsContainer = getExistingHelperCardsContainer();
           // #region agent log
-          console.log('[DEBUG H7] helperCardsContainer check', {found:!!helperCardsContainer});
+          console.log('[DEBUG H8] helperCardsContainer check', {found:!!helperCardsContainer});
           // #endregion
           if (helperCardsContainer) {
             const added = addAvatarCardToContainer(helperCardsContainer);
             // #region agent log
-            console.log('[DEBUG H8] addAvatarCardToContainer result', {added:added});
+            console.log('[DEBUG H9] addAvatarCardToContainer result', {added:added});
             // #endregion
           } else {
             // Container not found - wait for React to render it

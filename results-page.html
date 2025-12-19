@@ -822,14 +822,27 @@
           return false;
         }
         
+        // Use mousedown to capture position BEFORE any animations start
+        document.addEventListener('mousedown', function(e) {
+          const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
+          if (iconContainer) {
+            const rect = iconContainer.getBoundingClientRect();
+            window.__avatarRectAtMousedown = {
+              x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+              timestamp: Date.now()
+            };
+          }
+        }, true);
+        
         // Attach handler immediately to document - don't wait for element
         document.addEventListener('click', function(e) {
           // Check if searchIconContainer exists in DOM and if click is within bounds (with tolerance)
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (!iconContainer) return;
           
-          const rect = iconContainer.getBoundingClientRect();
-          const tolerance = 5; // 5px tolerance for edge clicks
+          // Use the position captured at mousedown (before animations)
+          const rect = window.__avatarRectAtMousedown || iconContainer.getBoundingClientRect();
+          const tolerance = 10; // 10px tolerance for edge clicks
           const clickInBounds = e.clientX >= (rect.x - tolerance) && 
                                 e.clientX <= (rect.x + rect.width + tolerance) && 
                                 e.clientY >= (rect.y - tolerance) && 
