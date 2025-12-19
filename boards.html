@@ -1075,10 +1075,10 @@
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (iconContainer) {
             const rect = iconContainer.getBoundingClientRect();
-            console.log('[DEBUG H1b] searchIconContainer in DOM', {rect:{x:rect.x,y:rect.y,w:rect.width,h:rect.height},visible:rect.width>0&&rect.height>0});
-            // Check if click is within the iconContainer bounds
+            console.log('[DEBUG H1b] searchIconContainer POSITION', 'LEFT:'+Math.round(rect.x)+' TOP:'+Math.round(rect.y)+' WIDTH:'+Math.round(rect.width)+' HEIGHT:'+Math.round(rect.height));
+            console.log('[DEBUG H1c] YOUR CLICK was at X:'+e.clientX+' Y:'+e.clientY);
             const clickInBounds = e.clientX >= rect.x && e.clientX <= rect.x + rect.width && e.clientY >= rect.y && e.clientY <= rect.y + rect.height;
-            console.log('[DEBUG H1c] Click in iconContainer bounds?', {clickInBounds});
+            console.log('[DEBUG H1d] Click in iconContainer bounds?', clickInBounds ? 'YES - SHOULD WORK' : 'NO - CLICK IS OUTSIDE AVATAR');
           } else {
             console.log('[DEBUG H1b] searchIconContainer NOT in DOM');
           }
