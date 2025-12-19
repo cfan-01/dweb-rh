@@ -1069,13 +1069,22 @@
           
           console.log('[AvatarCard] Click detected on searchIconContainer!');
           
-          // Only handle clicks when SearchBar is expanded
+          // Find the SearchBar
           const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
           
-          if (!searchBar || !searchBar.classList.contains('SearchBar-module__expanded')) {
-            console.log('[AvatarCard] SearchBar not expanded, skipping');
+          if (!searchBar) {
+            console.log('[AvatarCard] SearchBar not found, skipping');
             return;
           }
+          
+          // Check if SearchBar is in collapsed state (skip if truly collapsed)
+          const isCollapsed = searchBar.classList.contains('SearchBar-module__collapsed');
+          if (isCollapsed) {
+            console.log('[AvatarCard] SearchBar is collapsed, skipping');
+            return;
+          }
+          
+          console.log('[AvatarCard] SearchBar found, proceeding...');
           
           e.preventDefault();
           e.stopPropagation();
