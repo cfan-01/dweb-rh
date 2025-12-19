@@ -1067,116 +1067,56 @@
           return false;
         }
         
-        // Attach handler immediately to document - don't wait for element
-        // Use mousedown to capture position AND expanded state BEFORE any animations start
+        // Capture avatar position and expanded state at mousedown (before animations)
         document.addEventListener('mousedown', function(e) {
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (iconContainer) {
             const rect = iconContainer.getBoundingClientRect();
             const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
             const isExpanded = searchBar ? searchBar.classList.contains('SearchBar-module__expanded') : false;
-            // Store the position AND state at mousedown time
             window.__avatarStateAtMousedown = {
               x: rect.x, y: rect.y, width: rect.width, height: rect.height,
-              isExpanded: isExpanded,
-              searchBarClasses: searchBar ? searchBar.className : 'N/A',
-              timestamp: Date.now()
+              isExpanded: isExpanded
             };
-            // #region agent log
-            console.log('[DEBUG MOUSEDOWN] Captured state', {
-              avatarX: Math.round(rect.x), avatarY: Math.round(rect.y),
-              isExpanded: isExpanded,
-              classes: searchBar ? searchBar.className : 'N/A'
-            });
-            // #endregion
           }
         }, true);
         
         document.addEventListener('click', function(e) {
-          // Check if searchIconContainer exists in DOM
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
-          if (!iconContainer) {
-            // #region agent log
-            console.log('[DEBUG H1] searchIconContainer NOT in DOM');
-            // #endregion
-            return;
-          }
+          if (!iconContainer) return;
           
           // Use the state captured at mousedown (before animations)
           const savedState = window.__avatarStateAtMousedown;
           const rect = savedState || iconContainer.getBoundingClientRect();
           
-          const tolerance = 10; // 10px tolerance
+          const tolerance = 10;
           const clickInBounds = e.clientX >= (rect.x - tolerance) && 
                                 e.clientX <= (rect.x + rect.width + tolerance) && 
                                 e.clientY >= (rect.y - tolerance) && 
                                 e.clientY <= (rect.y + rect.height + tolerance);
           
-          // #region agent log
-          console.log('[DEBUG H1] Bounds check', {
-            clickX: e.clientX, clickY: e.clientY,
-            avatarX: Math.round(rect.x), avatarY: Math.round(rect.y),
-            inBounds: clickInBounds
-          });
-          // #endregion
-          
           // Also check closest() as a fallback
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
           
           // Accept click if EITHER: within bounds OR closest() found it
-          if (!clickInBounds && !clickedIconContainer) {
-            // #region agent log
-            console.log('[DEBUG H2] Click rejected - not on avatar');
-            // #endregion
-            return;
-          }
-          
-          // #region agent log
-          console.log('[DEBUG H3] Click ACCEPTED on avatar!');
-          // #endregion
+          if (!clickInBounds && !clickedIconContainer) return;
           
           // Find the SearchBar
           const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
           if (!searchBar) return;
           
-          // Use the expanded state from MOUSEDOWN time (before animation started)
-          const isExpandedAtMousedown = savedState ? savedState.isExpanded : false;
-          const isExpandedNow = searchBar.classList.contains('SearchBar-module__expanded');
-          
-          // #region agent log
-          console.log('[DEBUG H4] isExpanded check', {
-            atMousedown: isExpandedAtMousedown,
-            now: isExpandedNow,
-            mousedownClasses: savedState ? savedState.searchBarClasses : 'N/A'
-          });
-          // #endregion
-          
           // Only trigger when SearchBar WAS expanded at mousedown time
-          if (!isExpandedAtMousedown) {
-            // #region agent log
-            console.log('[DEBUG H5] Rejected - SearchBar was NOT expanded when you clicked');
-            // #endregion
-            return;
-          }
+          const isExpandedAtMousedown = savedState ? savedState.isExpanded : false;
+          if (!isExpandedAtMousedown) return;
           
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
           
-          // #region agent log
-          console.log('[DEBUG H6] All checks passed - adding avatar card!');
-          // #endregion
-          
           // Try to find existing container, retry if not found
           let helperCardsContainer = getExistingHelperCardsContainer();
-          // #region agent log
-          console.log('[DEBUG H7] helperCardsContainer check', {found:!!helperCardsContainer});
-          // #endregion
           if (helperCardsContainer) {
-            const added = addAvatarCardToContainer(helperCardsContainer);
-            // #region agent log
-            console.log('[DEBUG H8] addAvatarCardToContainer result', {added:added});
-            // #endregion
+            addAvatarCardToContainer(helperCardsContainer);
           } else {
             // Container not found - wait for React to render it
             let retries = 0;
