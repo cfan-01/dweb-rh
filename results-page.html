@@ -802,15 +802,21 @@
             return null;
           }
           
-          // Create the container
+          // Create the container - position it ABOVE the SearchBar to avoid clipping
           container = document.createElement('div');
           container.className = 'SearchHelperCards-module__helperCardsContainer SearchHelperCards-module__visible';
           container.style.display = 'flex';
           container.style.gap = '8px';
           container.style.marginBottom = '4px';
+          container.style.position = 'absolute';
+          container.style.bottom = '100%'; // Position above the parent
+          container.style.left = '0';
+          container.style.width = '100%';
+          container.style.zIndex = '100';
           
-          // Insert at the beginning of vStack (before hStack)
-          vStack.insertBefore(container, vStack.firstChild);
+          // Insert into searchBar (which should have position: relative)
+          searchBar.style.position = 'relative';
+          searchBar.appendChild(container);
           
           console.log('[AvatarCard] Created and inserted helperCardsContainer');
           return container;
