@@ -1069,15 +1069,28 @@
         
         // Attach handler immediately to document - don't wait for element
         document.addEventListener('click', function(e) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:click-handler',message:'H1: Click event received',data:{targetClass:e.target.className,targetTag:e.target.tagName},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+          // #endregion
+          
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:icon-check',message:'H2: clickedIconContainer check',data:{found:!!clickedIconContainer},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+          // #endregion
           if (!clickedIconContainer) return;
           
           // Find the SearchBar
           const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:searchbar-check',message:'H3: searchBar check',data:{found:!!searchBar,classes:searchBar?searchBar.className:'N/A'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
+          // #endregion
           if (!searchBar) return;
           
           // Only trigger when SearchBar has the expanded class
           const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:expanded-check',message:'H4: isExpanded check',data:{isExpanded:isExpanded},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4'})}).catch(()=>{});
+          // #endregion
           if (!isExpanded) return;
           
           e.preventDefault();
@@ -1086,8 +1099,17 @@
           
           // Try to find existing container, retry if not found
           let helperCardsContainer = getExistingHelperCardsContainer();
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:container-check',message:'H5: helperCardsContainer check',data:{found:!!helperCardsContainer},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+          // #endregion
           if (helperCardsContainer) {
-            addAvatarCardToContainer(helperCardsContainer);
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:add-card',message:'H6: Calling addAvatarCardToContainer',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
+            // #endregion
+            const added = addAvatarCardToContainer(helperCardsContainer);
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/627a531a-b9e8-445a-8ca4-6eba4bdd3bf9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'boards.html:add-result',message:'H6: addAvatarCardToContainer result',data:{added:added},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
+            // #endregion
           } else {
             // Container not found - wait for React to render it
             let retries = 0;
