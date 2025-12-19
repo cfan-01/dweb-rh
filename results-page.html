@@ -1194,6 +1194,192 @@
         });
       })();
       
+      // Prevent SearchBar navigation while keeping animation/behavior
+      (function() {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        function preventSearchbarNavigation() {
+          // Find all searchbar elements
+          const searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+          const searchBarVStack = document.querySelector('.SearchBar-module__vStack');
+          const searchBar = document.querySelector('.SearchBar-module__searchBar');
+          const allSearchBarElements = document.querySelectorAll('[class*="SearchBar"], [class*="searchBar"]');
+          
+          let found = false;
+          
+          // Function to expand SearchBar when collapsed
+          function expandIfCollapsed(element) {
+            const searchBarEl = element.closest('.SearchBar-module__searchBar') || 
+                               document.querySelector('.SearchBar-module__searchBar');
+            if (searchBarEl && searchBarEl.classList.contains('SearchBar-module__collapsed')) {
+              // Remove collapsed, add expanded
+              searchBarEl.classList.remove('SearchBar-module__collapsed');
+              searchBarEl.classList.add('SearchBar-module__expanded');
+              
+              // Show helper cards
+              const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+              if (helperCards) {
+                helperCards.classList.add('SearchHelperCards-module__visible');
+              }
+              
+              // Call global expand function if available
+              if (window.expandSearchBar) {
+                window.expandSearchBar();
+              }
+              
+              // Focus input
+              const input = searchBarEl.querySelector('input');
+              if (input) {
+                setTimeout(() => input.focus(), 100);
+              }
+            }
+          }
+          
+          // Remove href attributes and prevent navigation on all searchbar links
+          allSearchBarElements.forEach(element => {
+            const links = element.querySelectorAll('a');
+            links.forEach(link => {
+              const href = link.getAttribute('href');
+              if (href && href !== '#' && !href.startsWith('javascript:')) {
+                // Remove or neutralize href
+                link.setAttribute('data-original-href', href);
+                link.removeAttribute('href');
+                link.style.cursor = 'pointer';
+                
+                // Prevent all click navigation
+                link.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  
+                  // Expand if collapsed, otherwise focus input
+                  expandIfCollapsed(element);
+                  return false;
+                }, true);
+                
+                found = true;
+              }
+            });
+            
+            // Also prevent clicks on the element itself if it's an anchor
+            element.addEventListener('click', function(e) {
+              const target = e.target;
+              if (target.tagName === 'A' || target.closest('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                expandIfCollapsed(element);
+                return false;
+              }
+            }, true);
+          });
+          
+          // Prevent navigation on searchbar wrapper specifically
+          if (searchBarWrapper) {
+            const allClickable = searchBarWrapper.querySelectorAll('a, [role="button"], button');
+            allClickable.forEach(el => {
+              if (el.tagName === 'A') {
+                const href = el.getAttribute('href');
+                if (href && href !== '#' && !href.startsWith('javascript:')) {
+                  el.setAttribute('data-original-href', href);
+                  el.removeAttribute('href');
+                }
+              }
+              el.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                expandIfCollapsed(searchBarWrapper);
+                return false;
+              }, true);
+            });
+            found = true;
+          }
+          
+          // Prevent navigation on searchbar vStack
+          if (searchBarVStack) {
+            const allClickable = searchBarVStack.querySelectorAll('a, [role="button"], button');
+            allClickable.forEach(el => {
+              if (el.tagName === 'A') {
+                const href = el.getAttribute('href');
+                if (href && href !== '#' && !href.startsWith('javascript:')) {
+                  el.setAttribute('data-original-href', href);
+                  el.removeAttribute('href');
+                }
+              }
+              el.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                expandIfCollapsed(searchBarVStack);
+                return false;
+              }, true);
+            });
+            found = true;
+          }
+          
+          return found;
+        }
+        
+        // Prevent navigation via window.location if triggered from searchbar
+        document.addEventListener('click', function(e) {
+          const target = e.target;
+          const searchBarElement = target.closest('[class*="SearchBar"], [class*="searchBar"]');
+          if (searchBarElement) {
+            const searchBar = document.querySelector('.SearchBar-module__searchBar');
+            
+            // If collapsed, expand instead of navigating
+            if (searchBar && searchBar.classList.contains('SearchBar-module__collapsed')) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Remove collapsed, add expanded
+              searchBar.classList.remove('SearchBar-module__collapsed');
+              searchBar.classList.add('SearchBar-module__expanded');
+              
+              // Show helper cards
+              const helperCards = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+              if (helperCards) {
+                helperCards.classList.add('SearchHelperCards-module__visible');
+              }
+              
+              // Call global expand function if available
+              if (window.expandSearchBar) {
+                window.expandSearchBar();
+              }
+              
+              // Focus input
+              const input = searchBar.querySelector('input');
+              if (input) {
+                setTimeout(() => input.focus(), 0);
+              }
+            }
+          }
+        }, true);
+        
+        if (!preventSearchbarNavigation()) {
+          const observer = new MutationObserver(function() {
+            attempts++;
+            if (preventSearchbarNavigation() || attempts >= maxAttempts) {
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          
+          const interval = setInterval(function() {
+            attempts++;
+            if (preventSearchbarNavigation() || attempts >= maxAttempts) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          }, 100);
+        }
+      })();
+      
       // Number SearchHelperCards and update category text
       (function() {
         let isProcessed = false;
