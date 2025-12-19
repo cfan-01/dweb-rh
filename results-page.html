@@ -822,13 +822,17 @@
           return false;
         }
         
-        // Use mousedown to capture position BEFORE any animations start
+        // Use mousedown to capture position AND expanded state BEFORE any animations start
         document.addEventListener('mousedown', function(e) {
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (iconContainer) {
             const rect = iconContainer.getBoundingClientRect();
-            window.__avatarRectAtMousedown = {
+            const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
+            const isExpanded = searchBar ? searchBar.classList.contains('SearchBar-module__expanded') : false;
+            window.__avatarStateAtMousedown = {
               x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+              isExpanded: isExpanded,
+              searchBarClasses: searchBar ? searchBar.className : 'N/A',
               timestamp: Date.now()
             };
           }
@@ -836,31 +840,31 @@
         
         // Attach handler immediately to document - don't wait for element
         document.addEventListener('click', function(e) {
-          // Check if searchIconContainer exists in DOM and if click is within bounds (with tolerance)
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
           if (!iconContainer) return;
           
-          // Use the position captured at mousedown (before animations)
-          const rect = window.__avatarRectAtMousedown || iconContainer.getBoundingClientRect();
-          const tolerance = 10; // 10px tolerance for edge clicks
+          // Use the state captured at mousedown (before animations)
+          const savedState = window.__avatarStateAtMousedown;
+          const rect = savedState || iconContainer.getBoundingClientRect();
+          const tolerance = 10; // 10px tolerance
           const clickInBounds = e.clientX >= (rect.x - tolerance) && 
                                 e.clientX <= (rect.x + rect.width + tolerance) && 
                                 e.clientY >= (rect.y - tolerance) && 
                                 e.clientY <= (rect.y + rect.height + tolerance);
           
-          // Also check closest() as a fallback (for clicks directly on avatar/children)
+          // Also check closest() as a fallback
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
           
           // Accept click if EITHER: within bounds OR closest() found it
           if (!clickInBounds && !clickedIconContainer) return;
           
-          // Find the SearchBar (use iconContainer since we already have it)
+          // Find the SearchBar
           const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
           if (!searchBar) return;
           
-          // Only trigger when SearchBar has the expanded class
-          const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
-          if (!isExpanded) return;
+          // Use the expanded state from MOUSEDOWN time (before animation started)
+          const isExpandedAtMousedown = savedState ? savedState.isExpanded : false;
+          if (!isExpandedAtMousedown) return;
           
           e.preventDefault();
           e.stopPropagation();
