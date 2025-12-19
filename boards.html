@@ -78,6 +78,27 @@
       .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer:hover::after {
         background: rgba(0, 0, 0, 0.2) !important;
       }
+      /* Close icon on hover - centered over overlay */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        width: 16px !important;
+        height: 16px !important;
+        transform: translate(-50%, -50%) !important;
+        background-image: url('/dweb-rh/assets/compact-close.svg') !important;
+        background-size: 16px 16px !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        opacity: 0 !important;
+        transition: opacity 0.15s ease !important;
+        pointer-events: none !important;
+        z-index: 1 !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer:hover::before {
+        opacity: 1 !important;
+      }
       .boards-title {
         position: absolute;
         top: 28px;
