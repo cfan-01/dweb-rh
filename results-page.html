@@ -784,6 +784,38 @@
           return card;
         }
         
+        function getOrCreateHelperCardsContainer(searchBar) {
+          // First, try to find existing container
+          let container = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          if (container) {
+            console.log('[AvatarCard] Found existing helperCardsContainer');
+            return container;
+          }
+          
+          // Container doesn't exist - create it
+          console.log('[AvatarCard] Creating helperCardsContainer');
+          
+          // Find the vStack inside SearchBar where helper cards should go
+          const vStack = searchBar.querySelector('.SearchBar-module__vStack');
+          if (!vStack) {
+            console.log('[AvatarCard] vStack not found, cannot create container');
+            return null;
+          }
+          
+          // Create the container
+          container = document.createElement('div');
+          container.className = 'SearchHelperCards-module__helperCardsContainer SearchHelperCards-module__visible';
+          container.style.display = 'flex';
+          container.style.gap = '8px';
+          container.style.marginBottom = '4px';
+          
+          // Insert at the beginning of vStack (before hStack)
+          vStack.insertBefore(container, vStack.firstChild);
+          
+          console.log('[AvatarCard] Created and inserted helperCardsContainer');
+          return container;
+        }
+        
         // Attach handler immediately to document - don't wait for element
         console.log('[AvatarCard] Attaching document-level click handler');
         document.addEventListener('click', function(e) {
@@ -791,13 +823,9 @@
           if (!clickedIconContainer) return;
           
           console.log('[AvatarCard] Click detected on searchIconContainer!');
-          console.log('[AvatarCard] Target element:', e.target);
-          console.log('[AvatarCard] Icon container:', clickedIconContainer);
           
           // Only handle clicks when SearchBar is expanded
           const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
-          console.log('[AvatarCard] SearchBar:', searchBar);
-          console.log('[AvatarCard] SearchBar classes:', searchBar ? searchBar.className : 'N/A');
           
           if (!searchBar || !searchBar.classList.contains('SearchBar-module__expanded')) {
             console.log('[AvatarCard] SearchBar not expanded, skipping');
@@ -808,9 +836,9 @@
           e.stopPropagation();
           e.stopImmediatePropagation();
           
-          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          const helperCardsContainer = getOrCreateHelperCardsContainer(searchBar);
           if (!helperCardsContainer) {
-            console.log('[AvatarCard] helperCardsContainer not found');
+            console.log('[AvatarCard] Could not get or create helperCardsContainer');
             return;
           }
           
