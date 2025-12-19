@@ -100,17 +100,27 @@
         opacity: 1 !important;
       }
       /* Avatar helper card - prepended on icon click */
+      /* Inherits base .SearchHelperCard-module__helperCard styles, adds avatar-specific overrides */
       .SearchHelperCard-module__helperCard--avatar {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
         gap: 12px !important;
+        padding: 12px !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+        min-width: 200px !important;
+        flex-shrink: 0 !important;
       }
       .SearchHelperCard-module__helperCard--avatar .SearchHelperCard-module__thumbnail {
         width: 96px !important;
         height: 96px !important;
         min-width: 96px !important;
-        margin-left: 4px !important;
+        flex-shrink: 0 !important;
         position: relative !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
       }
       .SearchHelperCard-module__helperCard--avatar .avatar-thumb-overlay {
         position: relative !important;
@@ -122,6 +132,7 @@
         height: 96px !important;
         border-radius: 8px !important;
         object-fit: cover !important;
+        display: block !important;
       }
       .SearchHelperCard-module__helperCard--avatar .avatar-thumb-darken {
         position: absolute !important;
@@ -149,8 +160,10 @@
         font-family: "Pin Sans", var(--font-family-pin-sans) !important;
         font-weight: 500 !important;
         font-size: 20px !important;
-        display: flex !important;
-        align-items: center !important;
+        line-height: 1.2 !important;
+        color: #111111 !important;
+        margin: 0 !important;
+        padding-right: 12px !important;
       }
       .boards-title {
         position: absolute;
@@ -1008,8 +1021,6 @@
       
       // Add avatar helper card on searchIconContainer click
       (function() {
-        console.log('[AvatarCard] Script starting...');
-        
         function createAvatarHelperCard() {
           const card = document.createElement('div');
           card.className = 'SearchHelperCard-module__helperCard SearchHelperCard-module__helperCard--avatar';
@@ -1029,95 +1040,58 @@
           return card;
         }
         
-        function getOrCreateHelperCardsContainer(searchBar) {
-          // First, try to find existing container
-          let container = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
-          if (container) {
-            console.log('[AvatarCard] Found existing helperCardsContainer');
-            return container;
+        function getExistingHelperCardsContainer() {
+          // Only return the existing React-rendered container
+          return document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+        }
+        
+        function addAvatarCardToContainer(container) {
+          // Check if avatar card already exists - don't add duplicate
+          const existingCard = container.querySelector('[data-avatar-card="true"]');
+          if (!existingCard) {
+            const avatarCard = createAvatarHelperCard();
+            container.insertBefore(avatarCard, container.firstChild);
+            return true;
           }
-          
-          // Container doesn't exist - create it
-          console.log('[AvatarCard] Creating helperCardsContainer');
-          
-          // Find the vStack inside SearchBar where helper cards should go
-          const vStack = searchBar.querySelector('.SearchBar-module__vStack');
-          if (!vStack) {
-            console.log('[AvatarCard] vStack not found, cannot create container');
-            return null;
-          }
-          
-          // Create the container - position it ABOVE the SearchBar to avoid clipping
-          container = document.createElement('div');
-          container.className = 'SearchHelperCards-module__helperCardsContainer SearchHelperCards-module__visible';
-          container.style.display = 'flex';
-          container.style.gap = '8px';
-          container.style.marginBottom = '4px';
-          container.style.position = 'absolute';
-          container.style.bottom = '100%'; // Position above the parent
-          container.style.left = '0';
-          container.style.width = '100%';
-          container.style.zIndex = '100';
-          
-          // Insert into searchBar (which should have position: relative)
-          searchBar.style.position = 'relative';
-          searchBar.appendChild(container);
-          
-          console.log('[AvatarCard] Created and inserted helperCardsContainer');
-          return container;
+          return false;
         }
         
         // Attach handler immediately to document - don't wait for element
-        console.log('[AvatarCard] Attaching document-level click handler');
         document.addEventListener('click', function(e) {
-          // Debug: log every click
-          const isSearchBarClick = e.target.closest('[class*="SearchBar"]');
-          if (isSearchBarClick) {
-            console.log('[AvatarCard] Click in SearchBar area, target:', e.target);
-            console.log('[AvatarCard] Target classes:', e.target.className);
-          }
-          
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
-          console.log('[AvatarCard] searchIconContainer check:', clickedIconContainer);
           if (!clickedIconContainer) return;
-          
-          console.log('[AvatarCard] Click detected on searchIconContainer!');
           
           // Find the SearchBar
           const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
           
-          if (!searchBar) {
-            console.log('[AvatarCard] SearchBar not found, skipping');
-            return;
-          }
+          if (!searchBar) return;
           
           // Check if SearchBar is in collapsed state (skip if truly collapsed)
           const isCollapsed = searchBar.classList.contains('SearchBar-module__collapsed');
-          if (isCollapsed) {
-            console.log('[AvatarCard] SearchBar is collapsed, skipping');
-            return;
-          }
-          
-          console.log('[AvatarCard] SearchBar found, proceeding...');
+          if (isCollapsed) return;
           
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
           
-          const helperCardsContainer = getOrCreateHelperCardsContainer(searchBar);
-          if (!helperCardsContainer) {
-            console.log('[AvatarCard] Could not get or create helperCardsContainer');
-            return;
-          }
-          
-          // Check if avatar card already exists - don't add duplicate
-          const existingCard = helperCardsContainer.querySelector('[data-avatar-card="true"]');
-          if (!existingCard) {
-            console.log('[AvatarCard] Creating and prepending avatar card');
-            const avatarCard = createAvatarHelperCard();
-            helperCardsContainer.insertBefore(avatarCard, helperCardsContainer.firstChild);
+          // Try to find existing container, retry if not found
+          let helperCardsContainer = getExistingHelperCardsContainer();
+          if (helperCardsContainer) {
+            addAvatarCardToContainer(helperCardsContainer);
           } else {
-            console.log('[AvatarCard] Avatar card already exists');
+            // Container not found - wait for React to render it
+            let retries = 0;
+            const maxRetries = 20;
+            const retryInterval = setInterval(() => {
+              retries++;
+              helperCardsContainer = getExistingHelperCardsContainer();
+              if (helperCardsContainer) {
+                clearInterval(retryInterval);
+                addAvatarCardToContainer(helperCardsContainer);
+              } else if (retries >= maxRetries) {
+                clearInterval(retryInterval);
+              }
+            }, 50);
           }
           
           // Also focus the input field
@@ -1126,8 +1100,6 @@
             setTimeout(() => input.focus(), 0);
           }
         }, true); // Use capturing phase to run before other handlers
-        
-        console.log('[AvatarCard] Handler attached successfully');
       })();
       
       // Fix avatar image in GlobalNav AvatarButton
