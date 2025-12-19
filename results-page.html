@@ -824,11 +824,25 @@
         
         // Attach handler immediately to document - don't wait for element
         document.addEventListener('click', function(e) {
-          const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
-          if (!clickedIconContainer) return;
+          // Check if searchIconContainer exists in DOM and if click is within bounds (with tolerance)
+          const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
+          if (!iconContainer) return;
           
-          // Find the SearchBar
-          const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
+          const rect = iconContainer.getBoundingClientRect();
+          const tolerance = 5; // 5px tolerance for edge clicks
+          const clickInBounds = e.clientX >= (rect.x - tolerance) && 
+                                e.clientX <= (rect.x + rect.width + tolerance) && 
+                                e.clientY >= (rect.y - tolerance) && 
+                                e.clientY <= (rect.y + rect.height + tolerance);
+          
+          // Also check closest() as a fallback (for clicks directly on avatar/children)
+          const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
+          
+          // Accept click if EITHER: within bounds OR closest() found it
+          if (!clickInBounds && !clickedIconContainer) return;
+          
+          // Find the SearchBar (use iconContainer since we already have it)
+          const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
           if (!searchBar) return;
           
           // Only trigger when SearchBar has the expanded class

@@ -1069,38 +1069,57 @@
         
         // Attach handler immediately to document - don't wait for element
         document.addEventListener('click', function(e) {
-          // #region agent log
-          console.log('[DEBUG H1] Click event received', {targetClass:e.target.className,targetTag:e.target.tagName,x:e.clientX,y:e.clientY});
-          // Check if searchIconContainer exists in DOM
+          // Check if searchIconContainer exists in DOM and if click is within bounds (with tolerance)
           const iconContainer = document.querySelector('.SearchBar-module__searchIconContainer');
-          if (iconContainer) {
-            const rect = iconContainer.getBoundingClientRect();
-            console.log('[DEBUG H1b] searchIconContainer POSITION', 'LEFT:'+Math.round(rect.x)+' TOP:'+Math.round(rect.y)+' WIDTH:'+Math.round(rect.width)+' HEIGHT:'+Math.round(rect.height));
-            console.log('[DEBUG H1c] YOUR CLICK was at X:'+e.clientX+' Y:'+e.clientY);
-            const clickInBounds = e.clientX >= rect.x && e.clientX <= rect.x + rect.width && e.clientY >= rect.y && e.clientY <= rect.y + rect.height;
-            console.log('[DEBUG H1d] Click in iconContainer bounds?', clickInBounds ? 'YES - SHOULD WORK' : 'NO - CLICK IS OUTSIDE AVATAR');
-          } else {
-            console.log('[DEBUG H1b] searchIconContainer NOT in DOM');
+          if (!iconContainer) {
+            // #region agent log
+            console.log('[DEBUG H1] searchIconContainer NOT in DOM');
+            // #endregion
+            return;
           }
+          
+          const rect = iconContainer.getBoundingClientRect();
+          const tolerance = 5; // 5px tolerance for edge clicks
+          const clickInBounds = e.clientX >= (rect.x - tolerance) && 
+                                e.clientX <= (rect.x + rect.width + tolerance) && 
+                                e.clientY >= (rect.y - tolerance) && 
+                                e.clientY <= (rect.y + rect.height + tolerance);
+          
+          // #region agent log
+          console.log('[DEBUG H1] Click check', {
+            clickX: e.clientX, clickY: e.clientY,
+            avatarX: Math.round(rect.x), avatarY: Math.round(rect.y),
+            avatarW: Math.round(rect.width), avatarH: Math.round(rect.height),
+            inBounds: clickInBounds
+          });
           // #endregion
           
+          // Also check closest() as a fallback (for clicks directly on avatar/children)
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
-          // #region agent log
-          console.log('[DEBUG H2] clickedIconContainer check', {found:!!clickedIconContainer});
-          // #endregion
-          if (!clickedIconContainer) return;
           
-          // Find the SearchBar
-          const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
+          // Accept click if EITHER: within bounds OR closest() found it
+          if (!clickInBounds && !clickedIconContainer) {
+            // #region agent log
+            console.log('[DEBUG H2] Click rejected - not on avatar');
+            // #endregion
+            return;
+          }
+          
           // #region agent log
-          console.log('[DEBUG H3] searchBar check', {found:!!searchBar,classes:searchBar?searchBar.className:'N/A'});
+          console.log('[DEBUG H3] Click ACCEPTED on avatar!', {byBounds: clickInBounds, byClosest: !!clickedIconContainer});
+          // #endregion
+          
+          // Find the SearchBar (use iconContainer since we already have it)
+          const searchBar = iconContainer.closest('.SearchBar-module__searchBar');
+          // #region agent log
+          console.log('[DEBUG H4] searchBar check', {found:!!searchBar,classes:searchBar?searchBar.className:'N/A'});
           // #endregion
           if (!searchBar) return;
           
           // Only trigger when SearchBar has the expanded class
           const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
           // #region agent log
-          console.log('[DEBUG H4] isExpanded check', {isExpanded:isExpanded});
+          console.log('[DEBUG H5] isExpanded check', {isExpanded:isExpanded});
           // #endregion
           if (!isExpanded) return;
           
@@ -1108,18 +1127,19 @@
           e.stopPropagation();
           e.stopImmediatePropagation();
           
+          // #region agent log
+          console.log('[DEBUG H6] All checks passed - adding avatar card!');
+          // #endregion
+          
           // Try to find existing container, retry if not found
           let helperCardsContainer = getExistingHelperCardsContainer();
           // #region agent log
-          console.log('[DEBUG H5] helperCardsContainer check', {found:!!helperCardsContainer});
+          console.log('[DEBUG H7] helperCardsContainer check', {found:!!helperCardsContainer});
           // #endregion
           if (helperCardsContainer) {
-            // #region agent log
-            console.log('[DEBUG H6] Calling addAvatarCardToContainer');
-            // #endregion
             const added = addAvatarCardToContainer(helperCardsContainer);
             // #region agent log
-            console.log('[DEBUG H6] addAvatarCardToContainer result', {added:added});
+            console.log('[DEBUG H8] addAvatarCardToContainer result', {added:added});
             // #endregion
           } else {
             // Container not found - wait for React to render it
