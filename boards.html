@@ -99,6 +99,59 @@
       .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer:hover::before {
         opacity: 1 !important;
       }
+      /* Avatar helper card - prepended on icon click */
+      .SearchHelperCard-module__helperCard--avatar {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .SearchHelperCard-module__thumbnail {
+        width: 96px !important;
+        height: 96px !important;
+        min-width: 96px !important;
+        margin-left: 4px !important;
+        position: relative !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .avatar-thumb-overlay {
+        position: relative !important;
+        width: 96px !important;
+        height: 96px !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .SearchHelperCard-module__imageThumb {
+        width: 96px !important;
+        height: 96px !important;
+        border-radius: 8px !important;
+        object-fit: cover !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .avatar-thumb-darken {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 96px !important;
+        height: 96px !important;
+        background: rgba(0, 0, 0, 0.2) !important;
+        border-radius: 8px !important;
+        pointer-events: none !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .avatar-thumb-close {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 16px !important;
+        height: 16px !important;
+        pointer-events: none !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .SearchHelperCard-module__category {
+        display: none !important;
+      }
+      .SearchHelperCard-module__helperCard--avatar .SearchHelperCard-module__title {
+        font-family: "Pin Sans", var(--font-family-pin-sans) !important;
+        font-weight: 500 !important;
+        font-size: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+      }
       .boards-title {
         position: absolute;
         top: 28px;
@@ -490,6 +543,9 @@
     <div id="root"></div>
     <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
     <script>
+      alert('boards.html script running!');
+      console.log('[DEBUG] boards.html inline script starting...');
+      
       // Fix image paths for GitHub Pages
       (function() {
         const basePath = '/dweb-rh';
@@ -682,8 +738,18 @@
           
           // Remove href attributes and prevent navigation on all searchbar links
           allSearchBarElements.forEach(element => {
+            // SKIP searchIconContainer - it has its own click handler for avatar card
+            if (element.classList.contains('SearchBar-module__searchIconContainer')) {
+              return;
+            }
+            
             const links = element.querySelectorAll('a');
             links.forEach(link => {
+              // SKIP links inside searchIconContainer
+              if (link.closest('.SearchBar-module__searchIconContainer')) {
+                return;
+              }
+              
               const href = link.getAttribute('href');
               if (href && href !== '#' && !href.startsWith('javascript:')) {
                 // Remove or neutralize href
@@ -711,9 +777,13 @@
               }
             });
             
-            // Also prevent clicks on the element itself
+            // Also prevent clicks on the element itself (but skip searchIconContainer)
             element.addEventListener('click', function(e) {
               const target = e.target;
+              // SKIP if click originated from searchIconContainer
+              if (target.closest('.SearchBar-module__searchIconContainer')) {
+                return;
+              }
               if (target.tagName === 'A' || target.closest('a')) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -732,6 +802,10 @@
           if (searchBarWrapper) {
             const allClickable = searchBarWrapper.querySelectorAll('a, [role="button"], button');
             allClickable.forEach(el => {
+              // SKIP elements inside searchIconContainer
+              if (el.closest('.SearchBar-module__searchIconContainer')) {
+                return;
+              }
               if (el.tagName === 'A') {
                 const href = el.getAttribute('href');
                 if (href && href !== '#' && !href.startsWith('javascript:')) {
@@ -740,6 +814,10 @@
                 }
               }
               el.addEventListener('click', function(e) {
+                // SKIP if click originated from searchIconContainer
+                if (e.target.closest('.SearchBar-module__searchIconContainer')) {
+                  return;
+                }
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
@@ -758,6 +836,10 @@
           if (searchBarVStack) {
             const allClickable = searchBarVStack.querySelectorAll('a, [role="button"], button');
             allClickable.forEach(el => {
+              // SKIP elements inside searchIconContainer
+              if (el.closest('.SearchBar-module__searchIconContainer')) {
+                return;
+              }
               if (el.tagName === 'A') {
                 const href = el.getAttribute('href');
                 if (href && href !== '#' && !href.startsWith('javascript:')) {
@@ -766,6 +848,10 @@
                 }
               }
               el.addEventListener('click', function(e) {
+                // SKIP if click originated from searchIconContainer
+                if (e.target.closest('.SearchBar-module__searchIconContainer')) {
+                  return;
+                }
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
@@ -787,10 +873,17 @@
         const originalLocationSetter = Object.getOwnPropertyDescriptor(window, 'location') || 
                                       Object.getOwnPropertyDescriptor(Window.prototype, 'location');
         
-        // Prevent navigation via window.location if triggered from searchbar
+        // Prevent navigation via window.location if triggered from searchbar (except searchIconContainer)
         document.addEventListener('click', function(e) {
           const target = e.target;
           const searchBarElement = target.closest('[class*="SearchBar"], [class*="searchBar"]');
+          
+          // Skip if clicking on searchIconContainer - let our custom handler handle it
+          const searchIconContainer = target.closest('.SearchBar-module__searchIconContainer');
+          if (searchIconContainer) {
+            return; // Don't prevent, let the avatar card handler run
+          }
+          
           if (searchBarElement) {
             // Prevent any navigation
             e.preventDefault();
@@ -912,6 +1005,79 @@
             }
           }, 100);
         }
+      })();
+      
+      // Add avatar helper card on searchIconContainer click
+      (function() {
+        console.log('[AvatarCard] Script starting...');
+        
+        function createAvatarHelperCard() {
+          const card = document.createElement('div');
+          card.className = 'SearchHelperCard-module__helperCard SearchHelperCard-module__helperCard--avatar';
+          card.setAttribute('data-avatar-card', 'true');
+          
+          card.innerHTML = `
+            <div class="SearchHelperCard-module__thumbnail">
+              <div class="avatar-thumb-overlay">
+                <img src="/dweb-rh/assets/avatar/avatar.png" class="SearchHelperCard-module__imageThumb" alt="Avatar">
+                <div class="avatar-thumb-darken"></div>
+                <img src="/dweb-rh/assets/compact-close.svg" class="avatar-thumb-close" alt="">
+              </div>
+            </div>
+            <div class="SearchHelperCard-module__title">Search your Pins</div>
+          `;
+          
+          return card;
+        }
+        
+        // Attach handler immediately to document - don't wait for element
+        console.log('[AvatarCard] Attaching document-level click handler');
+        document.addEventListener('click', function(e) {
+          const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
+          if (!clickedIconContainer) return;
+          
+          console.log('[AvatarCard] Click detected on searchIconContainer!');
+          console.log('[AvatarCard] Target element:', e.target);
+          console.log('[AvatarCard] Icon container:', clickedIconContainer);
+          
+          // Only handle clicks when SearchBar is expanded
+          const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
+          console.log('[AvatarCard] SearchBar:', searchBar);
+          console.log('[AvatarCard] SearchBar classes:', searchBar ? searchBar.className : 'N/A');
+          
+          if (!searchBar || !searchBar.classList.contains('SearchBar-module__expanded')) {
+            console.log('[AvatarCard] SearchBar not expanded, skipping');
+            return;
+          }
+          
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          
+          const helperCardsContainer = document.querySelector('.SearchHelperCards-module__helperCardsContainer');
+          if (!helperCardsContainer) {
+            console.log('[AvatarCard] helperCardsContainer not found');
+            return;
+          }
+          
+          // Check if avatar card already exists - don't add duplicate
+          const existingCard = helperCardsContainer.querySelector('[data-avatar-card="true"]');
+          if (!existingCard) {
+            console.log('[AvatarCard] Creating and prepending avatar card');
+            const avatarCard = createAvatarHelperCard();
+            helperCardsContainer.insertBefore(avatarCard, helperCardsContainer.firstChild);
+          } else {
+            console.log('[AvatarCard] Avatar card already exists');
+          }
+          
+          // Also focus the input field
+          const input = searchBar.querySelector('input');
+          if (input) {
+            setTimeout(() => input.focus(), 0);
+          }
+        }, true); // Use capturing phase to run before other handlers
+        
+        console.log('[AvatarCard] Handler attached successfully');
       })();
       
       // Fix avatar image in GlobalNav AvatarButton
