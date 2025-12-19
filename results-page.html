@@ -831,9 +831,9 @@
           const searchBar = clickedIconContainer.closest('.SearchBar-module__searchBar');
           if (!searchBar) return;
           
-          // Check if SearchBar is in collapsed state (skip if truly collapsed)
-          const isCollapsed = searchBar.classList.contains('SearchBar-module__collapsed');
-          if (isCollapsed) return;
+          // Only trigger when SearchBar has the expanded class
+          const isExpanded = searchBar.classList.contains('SearchBar-module__expanded');
+          if (!isExpanded) return;
           
           e.preventDefault();
           e.stopPropagation();
