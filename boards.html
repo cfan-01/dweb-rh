@@ -118,7 +118,7 @@
         cursor: pointer !important;
         pointer-events: auto !important;
         flex-shrink: 0 !important;
-        order: -1 !important;
+        order: -9999 !important;
         animation: SearchHelperCard-module__slideIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) backwards !important;
         transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1) !important;
       }
@@ -1060,7 +1060,8 @@
           const existingCard = container.querySelector('[data-avatar-card="true"]');
           if (!existingCard) {
             const avatarCard = createAvatarHelperCard();
-            container.insertBefore(avatarCard, container.firstChild);
+            // Append to end - CSS order: -9999 will position it first visually
+            container.appendChild(avatarCard);
             return true;
           }
           return false;
