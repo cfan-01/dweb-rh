@@ -58,6 +58,26 @@
         transform-origin: center top !important;
         will-change: transform, opacity !important;
       }
+      /* Hover overlay for expanded SearchBar icon */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer {
+        position: relative !important;
+        cursor: pointer !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0) !important;
+        border-radius: 50% !important;
+        transition: background 0.15s ease !important;
+        pointer-events: none !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchIconContainer:hover::after {
+        background: rgba(0, 0, 0, 0.2) !important;
+      }
       .boards-title {
         position: absolute;
         top: 28px;
