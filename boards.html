@@ -1064,7 +1064,15 @@
         // Attach handler immediately to document - don't wait for element
         console.log('[AvatarCard] Attaching document-level click handler');
         document.addEventListener('click', function(e) {
+          // Debug: log every click
+          const isSearchBarClick = e.target.closest('[class*="SearchBar"]');
+          if (isSearchBarClick) {
+            console.log('[AvatarCard] Click in SearchBar area, target:', e.target);
+            console.log('[AvatarCard] Target classes:', e.target.className);
+          }
+          
           const clickedIconContainer = e.target.closest('.SearchBar-module__searchIconContainer');
+          console.log('[AvatarCard] searchIconContainer check:', clickedIconContainer);
           if (!clickedIconContainer) return;
           
           console.log('[AvatarCard] Click detected on searchIconContainer!');
