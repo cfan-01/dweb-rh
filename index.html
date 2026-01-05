@@ -8,6 +8,26 @@
       <script type="module" crossorigin src="/dweb-rh/assets/index-BLL-NyY1.js"></script>
       <link rel="stylesheet" crossorigin href="/dweb-rh/assets/index-I0l3_rlN.css">
       <!-- Updated paths for GitHub Pages -->
+      <style>
+      /* ScrollableSearchBar scroll behavior - wrapper positioning */
+      .ScrollableSearchBar-module__searchBarWrapper {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: fit-content !important;
+        z-index: 1000 !important;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+      }
+      /* Hide wrapper when data-scroll-collapsed="true" */
+      .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"] {
+        transform: translateY(calc(100% + 48px)) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+      </style>
     </head>
 
   <body>
@@ -484,6 +504,116 @@
             }
           }, 100);
         }
+      })();
+      
+      // ScrollableSearchBar scroll behavior with 1-second debounced show
+      // Hides immediately on scroll down, shows only after 1 second of no scrolling
+      (function() {
+        let lastScrollTop = 0;
+        let isScrolling = false;
+        const scrollThreshold = 50;
+        let searchBarWrapper = null;
+        let scrollHandlerInitialized = false;
+        
+        // Debounce timeout for showing the SearchBar (1 second delay)
+        let scrollShowTimeout = null;
+        
+        function findSearchBarWrapper() {
+          searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+          return searchBarWrapper !== null;
+        }
+        
+        // Hide SearchBar IMMEDIATELY (add data-scroll-collapsed="true")
+        function hideSearchBar() {
+          if (!searchBarWrapper) return;
+          // Clear any pending show timeout - user is still scrolling
+          clearTimeout(scrollShowTimeout);
+          scrollShowTimeout = null;
+          // Hide immediately
+          searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
+        }
+        
+        // Show SearchBar (remove data-scroll-collapsed) - called after 1s delay
+        function showSearchBar() {
+          if (!searchBarWrapper) return;
+          searchBarWrapper.removeAttribute('data-scroll-collapsed');
+        }
+        
+        // Schedule showing the SearchBar after 1 second of no scrolling
+        function scheduleShowSearchBar() {
+          // Clear any existing timeout
+          clearTimeout(scrollShowTimeout);
+          // Set new timeout - SearchBar will show after 1 second of inactivity
+          scrollShowTimeout = setTimeout(function() {
+            showSearchBar();
+          }, 1000); // 1 second delay before showing
+        }
+        
+        function handleScroll() {
+          if (!findSearchBarWrapper()) return;
+          
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollDelta = scrollTop - lastScrollTop;
+          const scrollingDown = scrollDelta > 0;
+          const atTop = scrollTop <= scrollThreshold;
+          
+          // At top of page - show SearchBar immediately (no delay needed)
+          if (atTop) {
+            clearTimeout(scrollShowTimeout);
+            scrollShowTimeout = null;
+            showSearchBar();
+          }
+          // Scrolling down past threshold - hide SearchBar IMMEDIATELY
+          else if (scrollingDown && scrollTop > scrollThreshold) {
+            hideSearchBar();
+          }
+          // Scrolling up or stopped - schedule show after 1 second delay
+          else {
+            // Only schedule if currently hidden
+            if (searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true') {
+              scheduleShowSearchBar();
+            }
+          }
+          
+          lastScrollTop = scrollTop;
+        }
+        
+        function onScroll() {
+          if (!isScrolling) {
+            window.requestAnimationFrame(function() {
+              handleScroll();
+              isScrolling = false;
+            });
+            isScrolling = true;
+          }
+        }
+        
+        function initScrollListener() {
+          if (findSearchBarWrapper() && !scrollHandlerInitialized) {
+            lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.addEventListener('scroll', onScroll, { passive: true });
+            scrollHandlerInitialized = true;
+            return true;
+          }
+          return false;
+        }
+        
+        // Wait for React to render the SearchBar
+        let attempts = 0;
+        const maxAttempts = 100;
+        const checkInterval = setInterval(function() {
+          attempts++;
+          if (initScrollListener() || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        }, 100);
+        
+        const observer = new MutationObserver(function() {
+          if (findSearchBarWrapper() && !scrollHandlerInitialized) {
+            initScrollListener();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
       })();
     </script>
   </body>
