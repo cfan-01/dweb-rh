@@ -556,14 +556,14 @@
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
         }
         
-        // Schedule showing the SearchBar after 1 second of no scrolling
+        // Schedule showing the SearchBar after 0.5 seconds of no scrolling
         function scheduleShowSearchBar() {
-          console.log('[ScrollBehavior] Scheduling show in 1 second...');
+          console.log('[ScrollBehavior] Scheduling show in 0.5 seconds...');
           clearTimeout(scrollShowTimeout);
           scrollShowTimeout = setTimeout(function() {
-            console.log('[ScrollBehavior] 1 second passed - showing now');
+            console.log('[ScrollBehavior] 0.5 seconds passed - showing now');
             showSearchBar();
-          }, 1000);
+          }, 500);
         }
         
         function getScrollTop() {
