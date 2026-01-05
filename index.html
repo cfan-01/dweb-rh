@@ -509,6 +509,7 @@
       // ScrollableSearchBar scroll behavior with 1-second debounced show
       // Hides immediately on scroll down, shows only after 1 second of no scrolling
       (function() {
+        console.log('[ScrollBehavior] Script starting...');
         let lastScrollTop = 0;
         let isScrolling = false;
         const scrollThreshold = 50;
@@ -520,12 +521,16 @@
         
         function findSearchBarWrapper() {
           searchBarWrapper = document.querySelector('.ScrollableSearchBar-module__searchBarWrapper');
+          if (searchBarWrapper) {
+            console.log('[ScrollBehavior] Found wrapper:', searchBarWrapper.className);
+          }
           return searchBarWrapper !== null;
         }
         
         // Hide SearchBar IMMEDIATELY (add data-scroll-collapsed="true")
         function hideSearchBar() {
           if (!searchBarWrapper) return;
+          console.log('[ScrollBehavior] HIDE - adding data-scroll-collapsed');
           // Clear any pending show timeout - user is still scrolling
           clearTimeout(scrollShowTimeout);
           scrollShowTimeout = null;
@@ -536,15 +541,18 @@
         // Show SearchBar (remove data-scroll-collapsed) - called after 1s delay
         function showSearchBar() {
           if (!searchBarWrapper) return;
+          console.log('[ScrollBehavior] SHOW - removing data-scroll-collapsed');
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
         }
         
         // Schedule showing the SearchBar after 1 second of no scrolling
         function scheduleShowSearchBar() {
+          console.log('[ScrollBehavior] Scheduling show in 1 second...');
           // Clear any existing timeout
           clearTimeout(scrollShowTimeout);
           // Set new timeout - SearchBar will show after 1 second of inactivity
           scrollShowTimeout = setTimeout(function() {
+            console.log('[ScrollBehavior] 1 second passed - showing now');
             showSearchBar();
           }, 1000); // 1 second delay before showing
         }
@@ -557,20 +565,26 @@
           const scrollingDown = scrollDelta > 0;
           const atTop = scrollTop <= scrollThreshold;
           
+          console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta, 'atTop:', atTop, 'scrollingDown:', scrollingDown);
+          
           // At top of page - show SearchBar immediately (no delay needed)
           if (atTop) {
+            console.log('[ScrollBehavior] At top - showing immediately');
             clearTimeout(scrollShowTimeout);
             scrollShowTimeout = null;
             showSearchBar();
           }
           // Scrolling down past threshold - hide SearchBar IMMEDIATELY
           else if (scrollingDown && scrollTop > scrollThreshold) {
+            console.log('[ScrollBehavior] Scrolling down - hiding');
             hideSearchBar();
           }
           // Scrolling up or stopped - schedule show after 1 second delay
           else {
             // Only schedule if currently hidden
-            if (searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true') {
+            const isHidden = searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
+            console.log('[ScrollBehavior] Scroll up/stopped - isHidden:', isHidden);
+            if (isHidden) {
               scheduleShowSearchBar();
             }
           }
@@ -593,6 +607,7 @@
             lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
             window.addEventListener('scroll', onScroll, { passive: true });
             scrollHandlerInitialized = true;
+            console.log('[ScrollBehavior] ✓ Scroll listener initialized! lastScrollTop:', lastScrollTop);
             return true;
           }
           return false;
