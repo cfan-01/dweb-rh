@@ -40,7 +40,7 @@
         opacity: 0 !important;
         pointer-events: none !important;
       }
-      /* Collapsed SearchBar state - responsive width, chips stay visible */
+      /* Collapsed SearchBar state - matches inputRow styling */
       .SearchBar-module__searchBar.SearchBar-module__collapsed {
         display: flex !important;
         align-items: center !important;
@@ -49,23 +49,27 @@
         min-height: 64px !important;
         max-height: 64px !important;
         padding: 0 14px !important;
-        column-gap: 14px !important;
+        column-gap: 12px !important;
         row-gap: 12px !important;
-        width: 100% !important;
         background: #ffffff !important;
         border-radius: 16px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
         cursor: pointer !important;
         pointer-events: auto !important;
         font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
+        font-size: 12.25px !important;
+        font-weight: 400 !important;
+        line-height: 18.375px !important;
+        color: rgb(3, 2, 19) !important;
         -webkit-font-smoothing: antialiased !important;
+        flex-shrink: 0 !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__hStack {
         display: flex !important;
         align-items: center !important;
         height: 64px !important;
         padding: 0 !important;
-        column-gap: 14px !important;
+        column-gap: 12px !important;
         width: 100% !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__vStack {
@@ -82,30 +86,38 @@
         height: 0 !important;
         overflow: hidden !important;
       }
-      /* Icon - fixed size, flex-shrink 0, no padding */
+      /* Icon - 20px size, no extra padding */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
         flex-shrink: 0 !important;
-        width: 48px !important;
-        height: 48px !important;
+        width: 20px !important;
+        height: 20px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         padding: 0 !important;
+        margin: 0 !important;
       }
-      .SearchBar-module__searchBar.SearchBar-module__collapsed .Icon-module__icon {
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .Icon-module__icon,
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIcon {
         flex-shrink: 0 !important;
-        width: 48px !important;
-        height: 48px !important;
+        width: 20px !important;
+        height: 20px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .Icon-module__icon svg,
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIcon svg {
+        width: 20px !important;
+        height: 20px !important;
       }
       /* Input - flex to fill remaining space */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchInput,
       .SearchBar-module__searchBar.SearchBar-module__collapsed input {
         flex: 1 1 auto !important;
         min-width: 0 !important;
-        width: 100% !important;
         color: #62625B !important;
         font-size: 16px !important;
         font-weight: 400 !important;
@@ -113,6 +125,8 @@
         background: transparent !important;
         border: none !important;
         outline: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed input::placeholder {
         color: #62625B !important;
@@ -120,13 +134,16 @@
         font-weight: 400 !important;
         font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
       }
-      /* Input row container - responsive */
+      /* Input row container - matches computed styles */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__inputRow {
         display: flex !important;
         align-items: center !important;
-        column-gap: 14px !important;
+        column-gap: 12px !important;
+        row-gap: 12px !important;
         width: 100% !important;
         flex: 1 1 auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       </style>
     </head>
