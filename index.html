@@ -723,8 +723,10 @@
           const scrollDelta = scrollTop - lastScrollTop;
           const scrollingDown = scrollDelta > 0;
           const atTop = scrollTop <= scrollThreshold;
+          const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
+          const isExpanded = searchBar && searchBar.classList.contains('SearchBar-module__expanded');
           
-          console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta, 'atTop:', atTop);
+          console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta, 'atTop:', atTop, 'isExpanded:', isExpanded);
           
           // Clear any pending timeout on every scroll event
           clearTimeout(scrollShowTimeout);
@@ -735,11 +737,13 @@
             console.log('[ScrollBehavior] Scrolling down - hiding');
             hideSearchBar();
           }
-          // Scrolling up or at top - schedule appropriate show after 0.5s pause
+          // Scrolling (up or down) while not at top - collapse if currently expanded
+          else if (!atTop && isExpanded) {
+            console.log('[ScrollBehavior] Not at top but expanded - collapsing');
+            showSearchBarCollapsed();
+          }
+          // Scrolling up or stopped - schedule appropriate show after 0.5s pause
           else if (!scrollingDown) {
-            const isHidden = searchBarWrapper.classList.contains('ScrollableSearchBar-module__hidden') ||
-                            searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
-            
             // Schedule show after 0.5s pause - will check position when timer fires
             console.log('[ScrollBehavior] Scroll up/stopped - scheduling show after 0.5s');
             scrollShowTimeout = setTimeout(function() {
