@@ -125,6 +125,23 @@
         height: 0 !important;
         overflow: hidden !important;
       }
+      /* Show helper cards in expanded state */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCardsContainer {
+        display: flex !important;
+        visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCardsContainer.SearchHelperCards-module__visible {
+        display: flex !important;
+        visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
       /* Icon - 20px size, no extra padding */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
         flex-shrink: 0 !important;
