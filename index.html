@@ -132,7 +132,9 @@
         height: auto !important;
         overflow: visible !important;
         opacity: 1 !important;
-        pointer-events: auto !important;
+        pointer-events: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
       }
       .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCardsContainer.SearchHelperCards-module__visible {
         display: flex !important;
@@ -140,7 +142,18 @@
         height: auto !important;
         overflow: visible !important;
         opacity: 1 !important;
+        pointer-events: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      /* Helper cards themselves are clickable */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCard-module__helperCard {
         pointer-events: auto !important;
+      }
+      /* Helper cards inner container matches SearchBar width */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCards {
+        width: 100% !important;
+        max-width: 100% !important;
       }
       /* Icon - 20px size, no extra padding */
       .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
