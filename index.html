@@ -40,6 +40,18 @@
       .ScrollableSearchBar-module__searchBarWrapper ~ * {
         pointer-events: auto !important;
       }
+      /* CRITICAL: Allow scroll events to pass through the focus overlay */
+      .ScrollableSearchBar-module__focusOverlay {
+        pointer-events: none !important;
+        touch-action: auto !important;
+      }
+      /* But keep the SearchBar itself clickable */
+      .SearchBar-module__searchBar,
+      .SearchBar-module__inputRow,
+      .SearchBar-module__searchInput,
+      .SearchHelperCard-module__helperCard {
+        pointer-events: auto !important;
+      }
       /* ScrollableSearchBar scroll behavior - wrapper positioning */
       .ScrollableSearchBar-module__searchBarWrapper {
         position: fixed !important;
