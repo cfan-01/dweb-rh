@@ -724,28 +724,36 @@
           const scrollingDown = scrollDelta > 0;
           const atTop = scrollTop <= scrollThreshold;
           
-          console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta);
+          console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta, 'atTop:', atTop);
           
-          // At top of page - show SearchBar EXPANDED immediately
-          if (atTop) {
-            console.log('[ScrollBehavior] At top - showing expanded immediately');
-            clearTimeout(scrollShowTimeout);
-            scrollShowTimeout = null;
-            showSearchBarExpanded();
-          }
+          // Clear any pending timeout on every scroll event
+          clearTimeout(scrollShowTimeout);
+          scrollShowTimeout = null;
+          
           // Scrolling down past threshold - hide SearchBar IMMEDIATELY
-          else if (scrollingDown && scrollTop > scrollThreshold) {
+          if (scrollingDown && scrollTop > scrollThreshold) {
             console.log('[ScrollBehavior] Scrolling down - hiding');
             hideSearchBar();
           }
-          // Scrolling up - schedule show after 1 second delay
+          // Scrolling up or at top - schedule appropriate show after 0.5s pause
           else if (!scrollingDown) {
             const isHidden = searchBarWrapper.classList.contains('ScrollableSearchBar-module__hidden') ||
                             searchBarWrapper.getAttribute('data-scroll-collapsed') === 'true';
-            console.log('[ScrollBehavior] Scroll up - isHidden:', isHidden);
-            if (isHidden) {
-              scheduleShowSearchBar();
-            }
+            
+            // Schedule show after 0.5s pause - will check position when timer fires
+            console.log('[ScrollBehavior] Scroll up/stopped - scheduling show after 0.5s');
+            scrollShowTimeout = setTimeout(function() {
+              const currentScrollTop = getScrollTop();
+              const currentAtTop = currentScrollTop <= scrollThreshold;
+              
+              if (currentAtTop) {
+                console.log('[ScrollBehavior] 0.5s passed, at top - showing expanded');
+                showSearchBarExpanded();
+              } else {
+                console.log('[ScrollBehavior] 0.5s passed, not at top - showing collapsed');
+                showSearchBarCollapsed();
+              }
+            }, 500);
           }
           
           lastScrollTop = scrollTop;
