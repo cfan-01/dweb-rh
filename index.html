@@ -13,6 +13,11 @@
       .SearchBar-module__searchBar {
         margin-bottom: 0 !important;
       }
+      /* Enable scrolling even when SearchBar is expanded */
+      body, html {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+      }
       /* ScrollableSearchBar scroll behavior - wrapper positioning */
       .ScrollableSearchBar-module__searchBarWrapper {
         position: fixed !important;
@@ -800,6 +805,19 @@
               });
               console.log('[ScrollBehavior] ✓ Click handler added for collapsed SearchBar');
             }
+            
+            // Ensure scrolling stays enabled - MutationObserver to remove overflow:hidden
+            const scrollEnforcer = new MutationObserver(function() {
+              if (document.body.style.overflow === 'hidden') {
+                document.body.style.overflow = 'auto';
+              }
+              if (document.documentElement.style.overflow === 'hidden') {
+                document.documentElement.style.overflow = 'auto';
+              }
+            });
+            scrollEnforcer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+            scrollEnforcer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+            console.log('[ScrollBehavior] ✓ Scroll enforcer MutationObserver initialized');
             
             scrollHandlerInitialized = true;
             console.log('[ScrollBehavior] ✓ Scroll listeners initialized! lastScrollTop:', lastScrollTop);
