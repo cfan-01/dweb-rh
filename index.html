@@ -215,6 +215,81 @@
         padding: 0 !important;
         margin: 0 !important;
       }
+      
+      /* Avatar Menu Overlay */
+      .avatar-menu-overlay {
+        position: fixed;
+        width: 280px;
+        height: 308px;
+        background-color: #FFFFFF;
+        border-radius: 12px;
+        box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        display: none;
+        flex-direction: column;
+        font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif;
+        overflow: hidden;
+      }
+      .avatar-menu-overlay.visible {
+        display: flex;
+      }
+      .avatar-menu-overlay__section {
+        padding: 16px;
+      }
+      .avatar-menu-overlay__section-header {
+        font-size: 12px;
+        font-weight: 400;
+        color: #767676;
+        margin-bottom: 12px;
+      }
+      .avatar-menu-overlay__current-account {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .avatar-menu-overlay__account-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .avatar-menu-overlay__account-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .avatar-menu-overlay__account-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111111;
+      }
+      .avatar-menu-overlay__account-type {
+        font-size: 14px;
+        font-weight: 400;
+        color: #767676;
+      }
+      .avatar-menu-overlay__checkmark {
+        width: 24px;
+        height: 24px;
+        color: #111111;
+      }
+      .avatar-menu-overlay__menu-item {
+        padding: 12px 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111111;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+      .avatar-menu-overlay__menu-item:hover {
+        background-color: #F0F0F0;
+      }
+      .avatar-menu-overlay__divider {
+        height: 1px;
+        background-color: #EFEFEF;
+        margin: 0;
+      }
       </style>
     </head>
 
@@ -914,6 +989,137 @@
         const observer = new MutationObserver(function() {
           if (findElements() && !scrollHandlerInitialized) {
             initScrollListener();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      })();
+      
+      // Avatar Menu Overlay
+      (function() {
+        console.log('[AvatarMenu] Script starting...');
+        let avatarMenu = null;
+        let avatarButton = null;
+        let isMenuOpen = false;
+        
+        function createAvatarMenu() {
+          if (avatarMenu) return avatarMenu;
+          
+          avatarMenu = document.createElement('div');
+          avatarMenu.className = 'avatar-menu-overlay';
+          avatarMenu.innerHTML = `
+            <div class="avatar-menu-overlay__section">
+              <div class="avatar-menu-overlay__section-header">Currently in</div>
+              <div class="avatar-menu-overlay__current-account">
+                <img class="avatar-menu-overlay__account-avatar" src="/dweb-rh/assets/avatar/avatar.png" alt="Profile" />
+                <div class="avatar-menu-overlay__account-info">
+                  <span class="avatar-menu-overlay__account-name">kim</span>
+                  <span class="avatar-menu-overlay__account-type">Personal</span>
+                </div>
+                <svg class="avatar-menu-overlay__checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="avatar-menu-overlay__divider"></div>
+            <div class="avatar-menu-overlay__menu-item">Visit profile</div>
+            <div class="avatar-menu-overlay__menu-item">Convert to business</div>
+            <div class="avatar-menu-overlay__divider"></div>
+            <div class="avatar-menu-overlay__section">
+              <div class="avatar-menu-overlay__section-header">Your accounts</div>
+            </div>
+            <div class="avatar-menu-overlay__menu-item">Add Pinterest account</div>
+            <div class="avatar-menu-overlay__menu-item">Log out</div>
+          `;
+          
+          document.body.appendChild(avatarMenu);
+          console.log('[AvatarMenu] Menu element created');
+          return avatarMenu;
+        }
+        
+        function positionMenu() {
+          if (!avatarMenu || !avatarButton) return;
+          
+          const globalNav = document.querySelector('[class*="GlobalNav-module__globalNav"]');
+          const buttonRect = avatarButton.getBoundingClientRect();
+          
+          // Position: 8px to the right of GlobalNav, 40px above the top of AvatarButton
+          let top = buttonRect.top - 40;
+          let left = 8; // 8px from left edge of viewport (right of GlobalNav)
+          
+          // If GlobalNav exists, position relative to it
+          if (globalNav) {
+            const navRect = globalNav.getBoundingClientRect();
+            left = navRect.right + 8; // 8px to the right of GlobalNav
+            top = navRect.bottom + 8; // 8px below GlobalNav
+          }
+          
+          avatarMenu.style.top = top + 'px';
+          avatarMenu.style.left = left + 'px';
+        }
+        
+        function showMenu() {
+          if (!avatarMenu) createAvatarMenu();
+          positionMenu();
+          avatarMenu.classList.add('visible');
+          isMenuOpen = true;
+          console.log('[AvatarMenu] Menu shown');
+        }
+        
+        function hideMenu() {
+          if (avatarMenu) {
+            avatarMenu.classList.remove('visible');
+          }
+          isMenuOpen = false;
+          console.log('[AvatarMenu] Menu hidden');
+        }
+        
+        function toggleMenu(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if (isMenuOpen) {
+            hideMenu();
+          } else {
+            showMenu();
+          }
+        }
+        
+        function handleOutsideClick(e) {
+          if (!isMenuOpen) return;
+          
+          // Check if click is outside the menu and avatar button
+          if (avatarMenu && !avatarMenu.contains(e.target) && 
+              avatarButton && !avatarButton.contains(e.target)) {
+            hideMenu();
+          }
+        }
+        
+        function initAvatarMenu() {
+          avatarButton = document.querySelector('[class*="AvatarButton-module__avatarButton"]');
+          
+          if (avatarButton) {
+            avatarButton.addEventListener('click', toggleMenu);
+            document.addEventListener('click', handleOutsideClick);
+            console.log('[AvatarMenu] ✓ Avatar button click handler attached');
+            return true;
+          }
+          return false;
+        }
+        
+        // Wait for React to render
+        let attempts = 0;
+        const maxAttempts = 100;
+        const checkInterval = setInterval(function() {
+          attempts++;
+          if (initAvatarMenu() || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        }, 100);
+        
+        // Also use MutationObserver
+        const observer = new MutationObserver(function() {
+          if (!avatarButton) {
+            initAvatarMenu();
           }
         });
         observer.observe(document.body, { childList: true, subtree: true });
