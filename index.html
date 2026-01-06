@@ -79,8 +79,16 @@
         height: 0 !important;
         overflow: hidden !important;
       }
-      /* Icon - fixed size, flex-shrink 0 */
-      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer,
+      /* Icon - fixed size, flex-shrink 0, no padding */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
+        flex-shrink: 0 !important;
+        width: 48px !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+      }
       .SearchBar-module__searchBar.SearchBar-module__collapsed .Icon-module__icon {
         flex-shrink: 0 !important;
         width: 48px !important;
