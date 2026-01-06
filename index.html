@@ -125,7 +125,18 @@
         height: 0 !important;
         overflow: hidden !important;
       }
-      /* Show helper cards in expanded state */
+      /* Show helper cards when visible class is present (regardless of expanded state) */
+      .SearchHelperCards-module__helperCardsContainer.SearchHelperCards-module__visible {
+        display: flex !important;
+        visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        pointer-events: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      /* Also show in expanded state */
       .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCardsContainer {
         display: flex !important;
         visibility: visible !important;
@@ -136,22 +147,12 @@
         width: 100% !important;
         max-width: 100% !important;
       }
-      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCardsContainer.SearchHelperCards-module__visible {
-        display: flex !important;
-        visibility: visible !important;
-        height: auto !important;
-        overflow: visible !important;
-        opacity: 1 !important;
-        pointer-events: none !important;
-        width: 100% !important;
-        max-width: 100% !important;
-      }
       /* Helper cards themselves are clickable */
-      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCard-module__helperCard {
+      .SearchHelperCard-module__helperCard {
         pointer-events: auto !important;
       }
       /* Helper cards inner container matches SearchBar width */
-      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchHelperCards-module__helperCards {
+      .SearchHelperCards-module__helperCards {
         width: 100% !important;
         max-width: 100% !important;
       }
