@@ -754,6 +754,24 @@
             // Listen on document for any scroll
             document.addEventListener('scroll', onScroll, { passive: true, capture: true });
             
+            // Add click handler for collapsed SearchBar - expand on click
+            const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
+            if (searchBar) {
+              searchBar.addEventListener('click', function(e) {
+                // Only expand if currently collapsed
+                if (searchBar.classList.contains('SearchBar-module__collapsed')) {
+                  console.log('[ScrollBehavior] Collapsed SearchBar clicked - expanding');
+                  showSearchBarExpanded();
+                  // Focus the input
+                  const input = searchBar.querySelector('input');
+                  if (input) {
+                    setTimeout(function() { input.focus(); }, 50);
+                  }
+                }
+              });
+              console.log('[ScrollBehavior] ✓ Click handler added for collapsed SearchBar');
+            }
+            
             scrollHandlerInitialized = true;
             console.log('[ScrollBehavior] ✓ Scroll listeners initialized! lastScrollTop:', lastScrollTop);
             return true;
