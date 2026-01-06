@@ -27,6 +27,67 @@
         opacity: 0 !important;
         pointer-events: none !important;
       }
+      /* Collapsed SearchBar state - smaller input, chips stay visible */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed {
+        height: 64px !important;
+        min-height: 64px !important;
+        max-height: 64px !important;
+        padding: 0 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        cursor: pointer !important;
+        overflow: hidden !important;
+        width: auto !important;
+        min-width: 300px !important;
+        max-width: calc(100vw - 200px) !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__hStack {
+        height: 64px !important;
+        padding: 0 !important;
+        gap: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__vStack {
+        gap: 0 !important;
+        height: 64px !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      /* Hide helper cards in collapsed state */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchHelperCards-module__helperCardsContainer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+      }
+      /* Avatar vertically centered in collapsed state */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchIconContainer {
+        width: 48px !important;
+        height: 48px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      /* Input text styling in collapsed state */
+      .SearchBar-module__searchBar.SearchBar-module__collapsed .SearchBar-module__searchInput,
+      .SearchBar-module__searchBar.SearchBar-module__collapsed input {
+        color: #62625B !important;
+        font-size: 16px !important;
+        font-weight: 400 !important;
+        font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__collapsed input::placeholder {
+        color: #62625B !important;
+        font-size: 16px !important;
+        font-weight: 400 !important;
+        font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
+      }
       </style>
     </head>
 
@@ -546,23 +607,47 @@
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
         }
         
-        // Show SearchBar - called after 1s delay
-        function showSearchBar() {
+        // Show SearchBar in COLLAPSED state - called after scroll pause
+        function showSearchBarCollapsed() {
           if (!searchBarWrapper) return;
-          console.log('[ScrollBehavior] SHOW');
-          // Use React's class + remove our attribute
+          console.log('[ScrollBehavior] SHOW (collapsed)');
+          // Show wrapper
           searchBarWrapper.classList.remove('ScrollableSearchBar-module__hidden');
           searchBarWrapper.classList.add('ScrollableSearchBar-module__visible');
           searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          
+          // Set SearchBar to collapsed state (smaller input, chips stay visible)
+          const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
+          if (searchBar) {
+            searchBar.classList.remove('SearchBar-module__expanded');
+            searchBar.classList.add('SearchBar-module__collapsed');
+          }
         }
         
-        // Schedule showing the SearchBar after 0.5 seconds of no scrolling
+        // Show SearchBar in EXPANDED state - called at top of page
+        function showSearchBarExpanded() {
+          if (!searchBarWrapper) return;
+          console.log('[ScrollBehavior] SHOW (expanded)');
+          // Show wrapper
+          searchBarWrapper.classList.remove('ScrollableSearchBar-module__hidden');
+          searchBarWrapper.classList.add('ScrollableSearchBar-module__visible');
+          searchBarWrapper.removeAttribute('data-scroll-collapsed');
+          
+          // Set SearchBar to expanded state
+          const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
+          if (searchBar) {
+            searchBar.classList.remove('SearchBar-module__collapsed');
+            searchBar.classList.add('SearchBar-module__expanded');
+          }
+        }
+        
+        // Schedule showing the SearchBar in COLLAPSED state after 0.5 seconds of no scrolling
         function scheduleShowSearchBar() {
-          console.log('[ScrollBehavior] Scheduling show in 0.5 seconds...');
+          console.log('[ScrollBehavior] Scheduling show (collapsed) in 0.5 seconds...');
           clearTimeout(scrollShowTimeout);
           scrollShowTimeout = setTimeout(function() {
-            console.log('[ScrollBehavior] 0.5 seconds passed - showing now');
-            showSearchBar();
+            console.log('[ScrollBehavior] 0.5 seconds passed - showing collapsed');
+            showSearchBarCollapsed();
           }, 500);
         }
         
@@ -584,12 +669,12 @@
           
           console.log('[ScrollBehavior] handleScroll - scrollTop:', scrollTop, 'delta:', scrollDelta);
           
-          // At top of page - show SearchBar immediately
+          // At top of page - show SearchBar EXPANDED immediately
           if (atTop) {
-            console.log('[ScrollBehavior] At top - showing immediately');
+            console.log('[ScrollBehavior] At top - showing expanded immediately');
             clearTimeout(scrollShowTimeout);
             scrollShowTimeout = null;
-            showSearchBar();
+            showSearchBarExpanded();
           }
           // Scrolling down past threshold - hide SearchBar IMMEDIATELY
           else if (scrollingDown && scrollTop > scrollThreshold) {
