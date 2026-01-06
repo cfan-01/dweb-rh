@@ -17,6 +17,28 @@
       body, html {
         overflow-y: auto !important;
         overflow-x: hidden !important;
+        height: auto !important;
+        position: static !important;
+      }
+      #root {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        position: static !important;
+      }
+      /* Ensure main content containers allow scrolling */
+      .App-module__main,
+      .HomePage-module__homePage,
+      [class*="homePage"],
+      [class*="mainContent"] {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+      }
+      /* Prevent any modal/overlay from blocking interaction */
+      .SearchBar-module__searchBar.SearchBar-module__expanded ~ *,
+      .ScrollableSearchBar-module__searchBarWrapper ~ * {
+        pointer-events: auto !important;
       }
       /* ScrollableSearchBar scroll behavior - wrapper positioning */
       .ScrollableSearchBar-module__searchBarWrapper {
@@ -807,16 +829,26 @@
             }
             
             // Ensure scrolling stays enabled - MutationObserver to remove overflow:hidden
-            const scrollEnforcer = new MutationObserver(function() {
-              if (document.body.style.overflow === 'hidden') {
-                document.body.style.overflow = 'auto';
-              }
-              if (document.documentElement.style.overflow === 'hidden') {
-                document.documentElement.style.overflow = 'auto';
-              }
-            });
-            scrollEnforcer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
-            scrollEnforcer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+            function forceEnableScroll() {
+              const elements = [document.body, document.documentElement, document.getElementById('root')];
+              elements.forEach(function(el) {
+                if (el && el.style) {
+                  if (el.style.overflow === 'hidden') el.style.overflow = 'auto';
+                  if (el.style.overflowY === 'hidden') el.style.overflowY = 'auto';
+                  if (el.style.position === 'fixed') el.style.position = 'static';
+                  if (el.style.height === '100%' || el.style.height === '100vh') el.style.height = 'auto';
+                }
+              });
+            }
+            const scrollEnforcer = new MutationObserver(forceEnableScroll);
+            scrollEnforcer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+            scrollEnforcer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+            const rootEl = document.getElementById('root');
+            if (rootEl) {
+              scrollEnforcer.observe(rootEl, { attributes: true, attributeFilter: ['style', 'class'] });
+            }
+            // Also run periodically as fallback
+            setInterval(forceEnableScroll, 500);
             console.log('[ScrollBehavior] ✓ Scroll enforcer MutationObserver initialized');
             
             scrollHandlerInitialized = true;
