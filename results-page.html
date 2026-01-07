@@ -980,6 +980,12 @@
             helperCards.classList.remove('SearchHelperCards-module__visible');
           }
           
+          // Remove inline styles that might override CSS (from showCollapsedSearchBar/showExpandedSearchBar)
+          searchBarWrapper.style.removeProperty('transform');
+          searchBarWrapper.style.removeProperty('opacity');
+          searchBarWrapper.style.removeProperty('pointer-events');
+          searchBarWrapper.style.removeProperty('visibility');
+          
           // Mark wrapper as hidden (CSS handles the animation)
           searchBarWrapper.setAttribute('data-scroll-collapsed', 'true');
           
