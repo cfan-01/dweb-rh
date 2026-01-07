@@ -1095,13 +1095,26 @@
         }
         
         function initAvatarMenu() {
-          avatarButton = document.querySelector('[class*="AvatarButton-module__avatarButton"]');
+          // Try multiple selectors
+          avatarButton = document.querySelector('[class*="AvatarButton-module__avatarButton"]') ||
+                         document.querySelector('[class*="avatarButton"]') ||
+                         document.querySelector('.AvatarButton-module__avatarButton');
           
           if (avatarButton) {
-            avatarButton.addEventListener('click', toggleMenu);
+            console.log('[AvatarMenu] Found avatar button:', avatarButton.className);
+            // Use capturing phase to ensure our handler runs first
+            avatarButton.addEventListener('click', toggleMenu, { capture: true });
             document.addEventListener('click', handleOutsideClick);
             console.log('[AvatarMenu] ✓ Avatar button click handler attached');
             return true;
+          } else {
+            // Log what elements exist in the nav for debugging
+            const nav = document.querySelector('[class*="GlobalNav"]');
+            if (nav) {
+              const buttons = nav.querySelectorAll('button, [role="button"], div[class*="avatar"], img[class*="avatar"]');
+              console.log('[AvatarMenu] Found potential buttons in nav:', buttons.length);
+              buttons.forEach((b, i) => console.log('[AvatarMenu] Button', i, ':', b.className || b.tagName));
+            }
           }
           return false;
         }
@@ -1112,6 +1125,9 @@
         const checkInterval = setInterval(function() {
           attempts++;
           if (initAvatarMenu() || attempts >= maxAttempts) {
+            if (attempts >= maxAttempts) {
+              console.log('[AvatarMenu] Max attempts reached, button not found');
+            }
             clearInterval(checkInterval);
           }
         }, 100);
