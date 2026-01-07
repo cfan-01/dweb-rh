@@ -246,8 +246,6 @@
       .search-typing-card__icon svg {
         width: 20px !important;
         height: 20px !important;
-        fill: #767676 !important;
-        color: #767676 !important;
       }
       /* Ensure container stretches to match SearchBar width when in typing mode */
       .SearchHelperCards-module__helperCardsContainer.typing-mode {
@@ -1214,8 +1212,8 @@
             typingCard.className = 'search-typing-card';
             typingCard.innerHTML = `
               <span class="search-typing-card__icon">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6m13.12 2.88-4.26-4.26A9.842 9.842 0 0 0 20 10c0-5.52-4.48-10-10-10S0 4.48 0 10s4.48 10 10 10c1.67 0 3.24-.41 4.62-1.14l4.26 4.26a3 3 0 0 0 4.24 0 3 3 0 0 0 0-4.24"></path>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.3287 18.7429C15.6049 20.1536 13.4013 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11C21 13.4013 20.1536 15.6049 18.7429 17.3287L23.2117 21.7975L21.7975 23.2117L17.3287 18.7429ZM19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" fill="#74746C"/>
                 </svg>
               </span>
               <span class="search-typing-card__title"></span>
