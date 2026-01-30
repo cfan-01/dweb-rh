@@ -75,10 +75,12 @@
       }
       /* Hide wrapper when data-scroll-collapsed="true" */
       .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"] {
+        transform: none !important;
         opacity: 0.5 !important;
       }
       /* Restore full opacity on hover when partially hidden */
       .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"]:hover {
+        transform: none !important;
         opacity: 1 !important;
       }
       /* Collapsed SearchBar state - matches inputRow styling */
