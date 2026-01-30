@@ -75,9 +75,11 @@
       }
       /* Hide wrapper when data-scroll-collapsed="true" */
       .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"] {
-        transform: translateY(calc(100% + 48px)) !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
+        opacity: 0.5 !important;
+      }
+      /* Restore full opacity on hover when partially hidden */
+      .ScrollableSearchBar-module__searchBarWrapper[data-scroll-collapsed="true"]:hover {
+        opacity: 1 !important;
       }
       /* Collapsed SearchBar state - matches inputRow styling */
       .SearchBar-module__searchBar.SearchBar-module__collapsed {
