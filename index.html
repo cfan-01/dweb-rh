@@ -944,7 +944,6 @@
           const scrollTop = getScrollTop();
           const scrollDelta = scrollTop - lastScrollTop;
           const scrollingDown = scrollDelta > 0;
-          const scrollingUp = scrollDelta < 0;
           const atTop = scrollTop <= scrollThreshold;
           const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
           const isExpanded = searchBar && searchBar.classList.contains('SearchBar-module__expanded');
@@ -960,12 +959,15 @@
             console.log('[ScrollBehavior] Scrolling down - hiding');
             hideSearchBar();
           }
-          // Scrolling up (not at top) - hide SearchBar (50% opacity)
-          else if (scrollingUp && !atTop) {
-            console.log('[ScrollBehavior] Scrolling up - hiding');
-            hideSearchBar();
-            
-            // Schedule show after 0.5s pause
+          // Scrolling (up or down) while not at top - collapse if currently expanded
+          else if (!atTop && isExpanded) {
+            console.log('[ScrollBehavior] Not at top but expanded - collapsing');
+            showSearchBarCollapsed();
+          }
+          // Scrolling up or stopped - schedule appropriate show after 0.5s pause
+          else if (!scrollingDown) {
+            // Schedule show after 0.5s pause - will check position when timer fires
+            console.log('[ScrollBehavior] Scroll up/stopped - scheduling show after 0.5s');
             scrollShowTimeout = setTimeout(function() {
               const currentScrollTop = getScrollTop();
               const currentAtTop = currentScrollTop <= scrollThreshold;
@@ -978,11 +980,6 @@
                 showSearchBarCollapsed();
               }
             }, 500);
-          }
-          // At top - show expanded
-          else if (atTop) {
-            console.log('[ScrollBehavior] At top - showing expanded');
-            showSearchBarExpanded();
           }
           
           lastScrollTop = scrollTop;
