@@ -877,6 +877,9 @@
         function hideSearchBar() {
           if (!searchBarWrapper) return;
           console.log('[ScrollBehavior] HIDE');
+          // Clear any pending show timeout - user is still scrolling
+          clearTimeout(scrollShowTimeout);
+          scrollShowTimeout = null;
           // Use React's class + our attribute for CSS
           searchBarWrapper.classList.remove('ScrollableSearchBar-module__visible');
           searchBarWrapper.classList.add('ScrollableSearchBar-module__hidden');
@@ -940,7 +943,7 @@
           
           const scrollTop = getScrollTop();
           const scrollDelta = scrollTop - lastScrollTop;
-          const isScrolling = scrollDelta !== 0;
+          const scrollingDown = scrollDelta > 0;
           const atTop = scrollTop <= scrollThreshold;
           const searchBar = searchBarWrapper.querySelector('.SearchBar-module__searchBar');
           const isExpanded = searchBar && searchBar.classList.contains('SearchBar-module__expanded');
@@ -951,17 +954,20 @@
           clearTimeout(scrollShowTimeout);
           scrollShowTimeout = null;
           
-          // At top of page - show at 100% expanded
-          if (atTop) {
-            console.log('[ScrollBehavior] At top - showing expanded');
-            showSearchBarExpanded();
-          }
-          // Any scrolling (up or down) when not at top - hide SearchBar (50% opacity)
-          else if (isScrolling) {
-            console.log('[ScrollBehavior] Scrolling (not at top) - hiding');
+          // Scrolling down past threshold - hide SearchBar IMMEDIATELY
+          if (scrollingDown && scrollTop > scrollThreshold) {
+            console.log('[ScrollBehavior] Scrolling down - hiding');
             hideSearchBar();
-            
-            // Schedule show after 0.5s pause
+          }
+          // Scrolling (up or down) while not at top - collapse if currently expanded
+          else if (!atTop && isExpanded) {
+            console.log('[ScrollBehavior] Not at top but expanded - collapsing');
+            showSearchBarCollapsed();
+          }
+          // Scrolling up or stopped - schedule appropriate show after 0.5s pause
+          else if (!scrollingDown) {
+            // Schedule show after 0.5s pause - will check position when timer fires
+            console.log('[ScrollBehavior] Scroll up/stopped - scheduling show after 0.5s');
             scrollShowTimeout = setTimeout(function() {
               const currentScrollTop = getScrollTop();
               const currentAtTop = currentScrollTop <= scrollThreshold;
