@@ -91,9 +91,9 @@
         width: 380px !important;
         min-width: 380px !important;
         max-width: 380px !important;
-        height: 96px !important;
-        min-height: 96px !important;
-        max-height: 96px !important;
+        height: 108px !important;
+        min-height: 108px !important;
+        max-height: 108px !important;
         padding: 0 0 0 16px !important;
         position: relative !important;
         column-gap: 12px !important;
@@ -159,6 +159,14 @@
       .SearchBar-module__searchBar.SearchBar-module__expanded {
         max-width: 636px !important;
       }
+      /* Expanded SearchBar input text size */
+      .SearchBar-module__searchBar.SearchBar-module__expanded .SearchBar-module__searchInput,
+      .SearchBar-module__searchBar.SearchBar-module__expanded input {
+        font-size: 20px !important;
+      }
+      .SearchBar-module__searchBar.SearchBar-module__expanded input::placeholder {
+        font-size: 20px !important;
+      }
       /* Helper cards themselves are clickable */
       .SearchHelperCard-module__helperCard {
         pointer-events: auto !important;
@@ -201,7 +209,7 @@
         flex: 1 1 auto !important;
         min-width: 0 !important;
         color: #62625B !important;
-        font-size: 14px !important;
+        font-size: 20px !important;
         font-weight: 400 !important;
         font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
         background: transparent !important;
@@ -212,7 +220,7 @@
       }
       .SearchBar-module__searchBar.SearchBar-module__collapsed input::placeholder {
         color: #62625B !important;
-        font-size: 14px !important;
+        font-size: 20px !important;
         font-weight: 400 !important;
         font-family: "Pin Sans", -apple-system, "system-ui", "Segoe UI", sans-serif !important;
       }
