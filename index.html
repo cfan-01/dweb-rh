@@ -877,9 +877,6 @@
         function hideSearchBar() {
           if (!searchBarWrapper) return;
           console.log('[ScrollBehavior] HIDE');
-          // Clear any pending show timeout - user is still scrolling
-          clearTimeout(scrollShowTimeout);
-          scrollShowTimeout = null;
           // Use React's class + our attribute for CSS
           searchBarWrapper.classList.remove('ScrollableSearchBar-module__visible');
           searchBarWrapper.classList.add('ScrollableSearchBar-module__hidden');
